@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claudle - Themed Word Puzzle</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #667eea;
+            font-size: 48px;
+            margin-bottom: 30px;
+        }
+
+        /* Screen 1 - Theme Input */
+        .theme-input-screen {
+            text-align: center;
+        }
+
+        .theme-input-screen h2 {
+            font-size: 32px;
+            margin-bottom: 30px;
+            color: #333;
+        }
+
+        .theme-input-screen input {
+            width: 100%;
+            padding: 20px;
+            font-size: 24px;
+            border: 3px solid #667eea;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .theme-input-screen button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 20px 60px;
+            font-size: 24px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .theme-input-screen button:hover {
+            background: #5568d3;
+        }
+
+        /* Screen 2 - Theme Selection */
+        .theme-selection-screen {
+            text-align: center;
+        }
+
+        .theme-selection-screen h2 {
+            font-size: 32px;
+            margin-bottom: 40px;
+            color: #333;
+        }
+
+        .theme-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .theme-option {
+            background: #f0f0f0;
+            border: 3px solid #667eea;
+            padding: 30px 20px;
+            font-size: 24px;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: #333;
+        }
+
+        .theme-option:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-5px);
+        }
+
+        /* Screen 3 - Game Board */
+        .game-screen {
+            text-align: center;
+        }
+
+        .theme-display {
+            font-size: 28px;
+            margin-bottom: 30px;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .word-boxes {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .letter-box {
+            width: 70px;
+            height: 70px;
+            border: 4px solid #333;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 42px;
+            font-weight: bold;
+            background: white;
+        }
+
+        .letter-box.small-font {
+            width: 55px;
+            height: 55px;
+            font-size: 28px;
+        }
+
+        .letter-box.tiny-font {
+            width: 45px;
+            height: 45px;
+            font-size: 22px;
+        }
+
+        .letter-box.correct {
+            background: #6aaa64;
+            color: white;
+            border-color: #6aaa64;
+        }
+
+        .letter-box.present {
+            background: #c9b458;
+            color: white;
+            border-color: #c9b458;
+        }
+
+        .letter-box.absent {
+            background: #787c7e;
+            color: white;
+            border-color: #787c7e;
+        }
+
+        @keyframes flash {
+            0% { 
+                transform: scale(1);
+                filter: brightness(1);
+            }
+            25% { 
+                transform: scale(1.3);
+                filter: brightness(1.4) hue-rotate(90deg);
+            }
+            50% { 
+                transform: scale(1.15);
+                filter: brightness(1.6) hue-rotate(180deg);
+            }
+            75% { 
+                transform: scale(1.3);
+                filter: brightness(1.4) hue-rotate(270deg);
+            }
+            100% { 
+                transform: scale(1);
+                filter: brightness(1);
+            }
+        }
+
+        .letter-box.flash {
+            animation: flash 1s ease-in-out;
+        }
+
+        .letter-box.drag-over {
+            background: #e0e0ff;
+            border-color: #667eea;
+            transform: scale(1.05);
+        }
+
+        .key.dragging {
+            opacity: 0.5;
+            cursor: grabbing;
+        }
+
+        .key {
+            cursor: grab;
+        }
+
+        .guesses-remaining {
+            font-size: 24px;
+            margin-bottom: 30px;
+            color: #333;
+        }
+
+        .keyboard {
+            margin-bottom: 30px;
+        }
+
+        .keyboard-row {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .key {
+            min-width: 50px;
+            height: 60px;
+            background: #d3d6da;
+            border: none;
+            border-radius: 8px;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .key:hover {
+            background: #bbbec2;
+        }
+
+        .key.used {
+            background: #787c7e;
+            color: white;
+        }
+
+        .key.correct {
+            background: #6aaa64;
+            color: white;
+        }
+
+        .key.present {
+            background: #c9b458;
+            color: white;
+        }
+
+        .guess-input-container {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            align-items: stretch;
+            margin-bottom: 15px;
+        }
+
+        .submit-guess, .give-up-btn {
+            width: 250px;
+            padding: 20px;
+            font-size: 24px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.3s;
+            border: none;
+            color: white;
+        }
+
+        .submit-guess {
+            background: #667eea;
+        }
+
+        .submit-guess:hover {
+            background: #5568d3;
+        }
+
+        .submit-guess:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .give-up-btn {
+            background: #dc3545;
+        }
+
+        .give-up-btn:hover {
+            background: #c82333;
+        }
+
+        .previous-guesses {
+            margin-top: 30px;
+        }
+
+        .previous-guess {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .previous-guess .letter-box {
+            width: 50px;
+            height: 50px;
+            font-size: 28px;
+        }
+
+        .previous-guess .letter-box.small-font {
+            width: 40px;
+            height: 40px;
+            font-size: 20px;
+        }
+
+        .previous-guess .letter-box.tiny-font {
+            width: 35px;
+            height: 35px;
+            font-size: 16px;
+        }
+
+        .message {
+            font-size: 28px;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+
+        .message.win {
+            color: #6aaa64;
+        }
+
+        .message.lose {
+            color: #dc3545;
+        }
+
+        .play-again {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 24px;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Claudle</h1>
+
+        <!-- Screen 1: Theme Input -->
+        <div id="themeInputScreen" class="theme-input-screen">
+            <h2>What theme would you like?</h2>
+            <input type="text" id="themeInput" placeholder="Enter a theme (e.g., Italian Renaissance painters)">
+            <button onclick="generateThemes()">Generate →</button>
+        </div>
+
+        <!-- Screen 2: Theme Selection -->
+        <div id="themeSelectionScreen" class="theme-selection-screen hidden">
+            <h2>Choose your theme:</h2>
+            <div id="themeOptions" class="theme-options"></div>
+        </div>
+
+        <!-- Screen 3: Game Board -->
+        <div id="gameScreen" class="game-screen hidden">
+            <div class="theme-display">Theme: <span id="selectedTheme"></span></div>
+            <div id="wordBoxes" class="word-boxes"></div>
+            <div class="guesses-remaining">Guesses remaining: <span id="guessesRemaining"></span></div>
+            
+            <div id="keyboard" class="keyboard">
+                <div class="keyboard-row">
+                    <button class="key" draggable="true" onclick="addLetter('Q')">Q</button>
+                    <button class="key" draggable="true" onclick="addLetter('W')">W</button>
+                    <button class="key" draggable="true" onclick="addLetter('E')">E</button>
+                    <button class="key" draggable="true" onclick="addLetter('R')">R</button>
+                    <button class="key" draggable="true" onclick="addLetter('T')">T</button>
+                    <button class="key" draggable="true" onclick="addLetter('Y')">Y</button>
+                    <button class="key" draggable="true" onclick="addLetter('U')">U</button>
+                    <button class="key" draggable="true" onclick="addLetter('I')">I</button>
+                    <button class="key" draggable="true" onclick="addLetter('O')">O</button>
+                    <button class="key" draggable="true" onclick="addLetter('P')">P</button>
+                </div>
+                <div class="keyboard-row">
+                    <button class="key" draggable="true" onclick="addLetter('A')">A</button>
+                    <button class="key" draggable="true" onclick="addLetter('S')">S</button>
+                    <button class="key" draggable="true" onclick="addLetter('D')">D</button>
+                    <button class="key" draggable="true" onclick="addLetter('F')">F</button>
+                    <button class="key" draggable="true" onclick="addLetter('G')">G</button>
+                    <button class="key" draggable="true" onclick="addLetter('H')">H</button>
+                    <button class="key" draggable="true" onclick="addLetter('J')">J</button>
+                    <button class="key" draggable="true" onclick="addLetter('K')">K</button>
+                    <button class="key" draggable="true" onclick="addLetter('L')">L</button>
+                </div>
+                <div class="keyboard-row">
+                    <button class="key" draggable="true" onclick="addLetter('Z')">Z</button>
+                    <button class="key" draggable="true" onclick="addLetter('X')">X</button>
+                    <button class="key" draggable="true" onclick="addLetter('C')">C</button>
+                    <button class="key" draggable="true" onclick="addLetter('V')">V</button>
+                    <button class="key" draggable="true" onclick="addLetter('B')">B</button>
+                    <button class="key" draggable="true" onclick="addLetter('N')">N</button>
+                    <button class="key" draggable="true" onclick="addLetter('M')">M</button>
+                    <button class="key" onclick="deleteLetter()">⌫</button>
+                </div>
+            </div>
+
+            <div class="guess-input-container">
+                <button id="submitGuess" class="submit-guess" onclick="submitGuess()">Submit Word</button>
+                <button id="giveUpBtn" class="give-up-btn" onclick="giveUp()">Give Up</button>
+            </div>
+
+            <div id="previousGuesses" class="previous-guesses"></div>
+            <div id="gameMessage" class="message"></div>
+            <button id="resetButton" class="play-again hidden" onclick="resetToTheme()">Reset</button>
+        </div>
+    </div>
+
+    <script>
+        // Your Railway backend URL
+        const API_URL = 'https://wizbee-backend-production.up.railway.app';
+
+        let currentWord = '';
+        let maxGuesses = 0;
+        let remainingGuesses = 0;
+        let currentGuess = '';
+        let guessHistory = [];
+        let gameOver = false;
+        let selectedThemeWord = '';
+
+        function generateThemes() {
+            const input = document.getElementById('themeInput').value.trim();
+            console.log('generateThemes called, input value:', input);
+            
+            if (!input) {
+                alert('Please enter a theme!');
+                return;
+            }
+            
+            // Show theme selection screen immediately
+            document.getElementById('themeInputScreen').classList.add('hidden');
+            document.getElementById('themeSelectionScreen').classList.remove('hidden');
+            
+            const optionsContainer = document.getElementById('themeOptions');
+            
+            // Show single button to start game
+            optionsContainer.innerHTML = '';
+            const button = document.createElement('div');
+            button.className = 'theme-option';
+            button.textContent = `Generate puzzle for: ${input}`;
+            
+            // Capture input value before onclick
+            const capturedTheme = input;
+            console.log('Creating button with capturedTheme:', capturedTheme);
+            
+            button.onclick = function() {
+                console.log('Button clicked! Captured theme:', capturedTheme);
+                fetchAndStartGame(capturedTheme);
+            };
+            optionsContainer.appendChild(button);
+        }
+
+        async function fetchAndStartGame(theme) {
+            console.log('fetchAndStartGame called with theme:', theme, 'type:', typeof theme);
+            
+            if (!theme) {
+                alert('Error: No theme provided');
+                return;
+            }
+            
+            const optionsContainer = document.getElementById('themeOptions');
+            optionsContainer.innerHTML = '<div style="padding: 40px; text-align: center; font-size: 24px;">🐝 Generating puzzle...</div>';
+            
+            try {
+                console.log('Calling API with theme:', theme);
+                
+                const response = await fetch(`${API_URL}/api/generate-word`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ theme: theme })
+                });
+                
+                console.log('API response status:', response.status);
+                const data = await response.json();
+                console.log('API data:', data);
+                
+                if (data.error) {
+                    alert(data.message || 'Failed to generate puzzle. Please try again.');
+                    resetToTheme();
+                    return;
+                }
+                
+                // Start the game
+                console.log('Starting game with word:', data.word);
+                startGame(data,theme);
+		//startGame(data.word, data.letters, theme);
+                
+            } catch (error) {
+                console.error('API Error:', error);
+                alert('Connection error: ' + error.message);
+                resetToTheme();
+            }
+        }
+
+        function startGame(gameData,theme) {
+	//function startGame(centerLetter, outerLetters, theme) {
+            selectedThemeWord = gameData.theme;
+            currentWord = gameData.word.toUpperCase();
+            maxGuesses = gameData.guesses;
+            remainingGuesses = maxGuesses;
+            remainingGuesses = maxGuesses;
+            
+            // Show game screen
+            document.getElementById('themeSelectionScreen').classList.add('hidden');
+            document.getElementById('gameScreen').classList.remove('hidden');
+            document.getElementById('selectedTheme').textContent = theme;
+            
+            // Create word boxes
+            createWordBoxes();
+            updateGuessCount();
+        }
+
+        function createWordBoxes() {
+            const container = document.getElementById('wordBoxes');
+            container.innerHTML = '';
+            
+            // Determine font size based on word length
+            let fontSizeClass = '';
+            if (currentWord.length > 9) {
+                fontSizeClass = 'tiny-font';
+            } else if (currentWord.length > 6) {
+                fontSizeClass = 'small-font';
+            }
+            
+            for (let i = 0; i < currentWord.length; i++) {
+                const box = document.createElement('div');
+                box.className = `letter-box ${fontSizeClass}`;
+                box.id = `box-${i}`;
+                box.setAttribute('draggable', 'true'); // Explicitly set draggable
+                container.appendChild(box);
+            }
+        }
+
+        function addLetter(letter) {
+            if (gameOver) return;
+            if (currentGuess.length < currentWord.length) {
+                currentGuess += letter;
+                updateCurrentGuessDisplay();
+            }
+        }
+
+        function deleteLetter() {
+            if (gameOver) return;
+            currentGuess = currentGuess.slice(0, -1);
+            updateCurrentGuessDisplay();
+        }
+
+        function updateCurrentGuessDisplay() {
+            // Update the main word boxes with current guess
+            for (let i = 0; i < currentWord.length; i++) {
+                const box = document.getElementById(`box-${i}`);
+                if (i < currentGuess.length) {
+                    box.textContent = currentGuess[i];
+                } else {
+                    box.textContent = '';
+                }
+            }
+        }
+
+        function submitGuess() {
+            if (gameOver) return;
+            
+            const guess = currentGuess.toUpperCase();
+            
+            if (guess.length !== currentWord.length) {
+                alert(`Please enter a ${currentWord.length}-letter word!`);
+                return;
+            }
+            
+            // Add to history
+            guessHistory.push(guess);
+            remainingGuesses--;
+            
+            // Show feedback
+            showGuessFeedback(guess);
+            
+            // Update keyboard
+            updateKeyboard(guess);
+            
+            // Check win/lose
+            if (guess === currentWord) {
+                // Keep the winning word visible in the boxes
+                for (let i = 0; i < currentWord.length; i++) {
+                    const box = document.getElementById(`box-${i}`);
+                    box.textContent = currentWord[i];
+                    box.classList.add('correct');
+                }
+                endGame(true);
+            } else if (remainingGuesses === 0) {
+                endGame(false);
+            } else {
+                // Only clear boxes if game continues
+                currentGuess = '';
+                updateCurrentGuessDisplay();
+            }
+            
+            updateGuessCount();
+        }
+
+        function showGuessFeedback(guess) {
+            const container = document.getElementById('previousGuesses');
+            const guessDiv = document.createElement('div');
+            guessDiv.className = 'previous-guess';
+            
+            const wordCopy = currentWord.split('');
+            const guessCopy = guess.split('');
+            const feedback = new Array(guess.length).fill('absent');
+            
+            // First pass: mark correct positions
+            for (let i = 0; i < guess.length; i++) {
+                if (guess[i] === currentWord[i]) {
+                    feedback[i] = 'correct';
+                    wordCopy[i] = null;
+                    guessCopy[i] = null;
+                }
+            }
+            
+            // Second pass: mark present letters
+            for (let i = 0; i < guess.length; i++) {
+                if (guessCopy[i] !== null) {
+                    const index = wordCopy.indexOf(guessCopy[i]);
+                    if (index !== -1) {
+                        feedback[i] = 'present';
+                        wordCopy[index] = null;
+                    }
+                }
+            }
+            
+            // Determine font size based on word length
+            let fontSizeClass = '';
+            if (currentWord.length > 9) {
+                fontSizeClass = 'tiny-font';
+            } else if (currentWord.length > 6) {
+                fontSizeClass = 'small-font';
+            }
+            
+            // Create boxes
+            for (let i = 0; i < guess.length; i++) {
+                const box = document.createElement('div');
+                box.className = `letter-box ${feedback[i]} ${fontSizeClass}`;
+                box.textContent = guess[i];
+                guessDiv.appendChild(box);
+            }
+            
+            container.appendChild(guessDiv);
+        }
+
+        function updateKeyboard(guess) {
+            const wordCopy = currentWord.split('');
+            
+            for (let i = 0; i < guess.length; i++) {
+                const letter = guess[i];
+                const key = Array.from(document.querySelectorAll('.key')).find(k => k.textContent === letter);
+                
+                if (!key) continue;
+                
+                if (guess[i] === currentWord[i]) {
+                    key.classList.add('correct');
+                    key.classList.remove('present', 'used');
+                } else if (wordCopy.includes(letter) && !key.classList.contains('correct')) {
+                    key.classList.add('present');
+                    key.classList.remove('used');
+                } else if (!key.classList.contains('correct') && !key.classList.contains('present')) {
+                    key.classList.add('used');
+                }
+            }
+        }
+
+        function updateGuessCount() {
+            document.getElementById('guessesRemaining').textContent = remainingGuesses;
+        }
+
+        function endGame(won) {
+            gameOver = true;
+            const messageDiv = document.getElementById('gameMessage');
+            const submitButton = document.getElementById('submitGuess');
+            const giveUpButton = document.getElementById('giveUpBtn');
+            const resetButton = document.getElementById('resetButton');
+            
+            submitButton.disabled = true;
+            giveUpButton.classList.add('hidden');
+            resetButton.classList.remove('hidden');
+            
+            if (won) {
+                // Flash animation for winning
+                celebrateWin();
+                messageDiv.textContent = `🎉 You won! The word was ${currentWord}`;
+                messageDiv.className = 'message win';
+            } else {
+                messageDiv.textContent = `Game over! The word was ${currentWord}`;
+                messageDiv.className = 'message lose';
+            }
+        }
+
+        function celebrateWin() {
+            // Flash each letter box twice with delays
+            for (let i = 0; i < currentWord.length; i++) {
+                const box = document.getElementById(`box-${i}`);
+                
+                // First flash
+                setTimeout(() => {
+                    box.classList.add('flash');
+                }, i * 150);
+                
+                // Remove flash class after animation
+                setTimeout(() => {
+                    box.classList.remove('flash');
+                }, i * 150 + 1000);
+                
+                // Second flash
+                setTimeout(() => {
+                    box.classList.add('flash');
+                }, i * 150 + 1200);
+                
+                // Remove flash class after second animation
+                setTimeout(() => {
+                    box.classList.remove('flash');
+                }, i * 150 + 2200);
+            }
+        }
+
+        function giveUp() {
+            if (gameOver) return;
+            endGame(false);
+        }
+
+        function resetToTheme() {
+            // Go back to theme selection screen
+            currentWord = '';
+            maxGuesses = 0;
+            remainingGuesses = 0;
+            currentGuess = '';
+            guessHistory = [];
+            gameOver = false;
+            selectedThemeWord = '';
+            
+            // Reset UI
+            document.getElementById('themeInput').value = '';
+            document.getElementById('gameScreen').classList.add('hidden');
+            document.getElementById('themeInputScreen').classList.remove('hidden');
+            document.getElementById('previousGuesses').innerHTML = '';
+            document.getElementById('gameMessage').textContent = '';
+            document.getElementById('resetButton').classList.add('hidden');
+            document.getElementById('giveUpBtn').classList.remove('hidden');
+            document.getElementById('submitGuess').disabled = false;
+            
+            // Reset keyboard
+            document.querySelectorAll('.key').forEach(key => {
+                key.classList.remove('correct', 'present', 'used');
+            });
+        }
+
+        // Allow keyboard input
+        document.addEventListener('keydown', (e) => {
+            if (gameOver) return;
+            
+            if (e.key === 'Enter') {
+                submitGuess();
+            } else if (e.key === 'Backspace') {
+                deleteLetter();
+            } else if (/^[a-zA-Z]$/.test(e.key)) {
+                addLetter(e.key.toUpperCase());
+            }
+        });
+
+        // Drag and drop functionality using event delegation
+        let draggedLetter = null;
+        let dragSourceIndex = null;
+        let dragSourceType = null;
+
+        // Add drag event listeners to all keyboard keys
+        document.querySelectorAll('.key[draggable="true"]').forEach(key => {
+            key.addEventListener('dragstart', (e) => {
+                if (gameOver) {
+                    e.preventDefault();
+                    return;
+                }
+                draggedLetter = e.target.textContent;
+                dragSourceType = 'keyboard';
+                e.target.classList.add('dragging');
+                e.dataTransfer.effectAllowed = 'copy';
+                e.dataTransfer.setData('text/plain', draggedLetter);
+            });
+
+            key.addEventListener('dragend', (e) => {
+                e.target.classList.remove('dragging');
+            });
+        });
+
+        // Use event delegation on the word boxes container
+        document.getElementById('wordBoxes').addEventListener('dragstart', (e) => {
+            if (gameOver) return;
+            if (e.target.classList.contains('letter-box') && e.target.textContent.trim()) {
+                draggedLetter = e.target.textContent;
+                dragSourceType = 'box';
+                dragSourceIndex = parseInt(e.target.id.split('-')[1]);
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/plain', draggedLetter);
+                e.target.style.opacity = '0.5';
+                e.target.classList.add('dragging');
+            }
+        }, true);
+
+        document.getElementById('wordBoxes').addEventListener('dragend', (e) => {
+            if (e.target.classList.contains('letter-box')) {
+                e.target.style.opacity = '1';
+                e.target.classList.remove('dragging');
+            }
+        }, true);
+
+        document.getElementById('wordBoxes').addEventListener('dragover', (e) => {
+            if (gameOver) return;
+            if (e.target.classList.contains('letter-box')) {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = dragSourceType === 'box' ? 'move' : 'copy';
+                e.target.classList.add('drag-over');
+            }
+        }, true);
+
+        document.getElementById('wordBoxes').addEventListener('dragleave', (e) => {
+            if (e.target.classList.contains('letter-box')) {
+                e.target.classList.remove('drag-over');
+            }
+        }, true);
+
+        document.getElementById('wordBoxes').addEventListener('drop', (e) => {
+            if (gameOver) return;
+            if (!e.target.classList.contains('letter-box')) return;
+            
+            e.preventDefault();
+            e.target.classList.remove('drag-over');
+            
+            const targetIndex = parseInt(e.target.id.split('-')[1]);
+            
+            if (dragSourceType === 'box' && dragSourceIndex !== null) {
+                // Moving letter from one box to another
+                if (dragSourceIndex !== targetIndex) {
+                    let guessArray = currentGuess.split('');
+                    
+                    // Swap if target has a letter, otherwise just move
+                    if (targetIndex < guessArray.length && guessArray[targetIndex]) {
+                        // Swap
+                        const temp = guessArray[targetIndex];
+                        guessArray[targetIndex] = guessArray[dragSourceIndex];
+                        guessArray[dragSourceIndex] = temp;
+                    } else {
+                        // Move - remove from source and insert at target
+                        guessArray.splice(dragSourceIndex, 1);
+                        
+                        let adjustedTarget = targetIndex;
+                        if (dragSourceIndex < targetIndex) {
+                            adjustedTarget--;
+                        }
+                        
+                        if (adjustedTarget >= guessArray.length) {
+                            guessArray.push(draggedLetter);
+                        } else {
+                            guessArray.splice(adjustedTarget, 0, draggedLetter);
+                        }
+                    }
+                    
+                    currentGuess = guessArray.join('');
+                    updateCurrentGuessDisplay();
+                }
+            } else if (dragSourceType === 'keyboard') {
+                // Dragging from keyboard
+                if (targetIndex === currentGuess.length && currentGuess.length < currentWord.length) {
+                    addLetter(draggedLetter);
+                } else if (targetIndex < currentGuess.length) {
+                    let guessArray = currentGuess.split('');
+                    guessArray[targetIndex] = draggedLetter;
+                    currentGuess = guessArray.join('');
+                    updateCurrentGuessDisplay();
+                } else if (currentGuess.length < currentWord.length) {
+                    addLetter(draggedLetter);
+                }
+            }
+            
+            // Reset drag state
+            dragSourceType = null;
+            dragSourceIndex = null;
+            draggedLetter = null;
+        }, true);
+
+        // Original setupDropZones function no longer needed - remove it
+        function setupDropZones() {
+            // No longer needed - using event delegation above
+        }
+
+        // Call setupDropZones whenever word boxes are created
+        const originalCreateWordBoxes = createWordBoxes;
+        createWordBoxes = function() {
+            originalCreateWordBoxes.call(this);
+            // Event delegation handles drag/drop now, no need for setupDropZones
+        };
+    </script>
+</body>
+</html>
