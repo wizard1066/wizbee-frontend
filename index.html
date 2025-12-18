@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Claudle - Themed Word Puzzle</title>
+    <title>Wizbee - AI Word Puzzle Game</title>
     <style>
         * {
             margin: 0;
@@ -13,7 +13,7 @@
 
         body {
             font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); /* Yellow to orange - bee themed */
             min-height: 100vh;
             display: flex;
             justify-content: center;
@@ -32,7 +32,7 @@
 
         h1 {
             text-align: center;
-            color: #667eea;
+            color: #f59e0b; /* Orange/gold - bee colors */
             font-size: 48px;
             margin-bottom: 30px;
         }
@@ -155,15 +155,15 @@
         }
 
         .letter-box.correct {
-            background: #6aaa64;
-            color: white;
-            border-color: #6aaa64;
+            background: #000000; /* Black - bee stripe */
+            color: #fbbf24; /* Gold text */
+            border-color: #000000;
         }
 
         .letter-box.present {
-            background: #c9b458;
+            background: #f97316; /* Orange - bee color */
             color: white;
-            border-color: #c9b458;
+            border-color: #f97316;
         }
 
         .letter-box.absent {
@@ -363,7 +363,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>Claudle</h1>
+        <h1>🐝 Wizbee</h1>
 
         <!-- Screen 1: Theme Input -->
         <div id="themeInputScreen" class="theme-input-screen">
@@ -507,8 +507,7 @@
                 
                 // Start the game
                 console.log('Starting game with word:', data.word);
-                startGame(data,theme);
-		//startGame(data.word, data.letters, theme);
+                startGame(data);
                 
             } catch (error) {
                 console.error('API Error:', error);
@@ -517,8 +516,7 @@
             }
         }
 
-        function startGame(gameData,theme) {
-	//function startGame(centerLetter, outerLetters, theme) {
+        function startGame(gameData) {
             selectedThemeWord = gameData.theme;
             currentWord = gameData.word.toUpperCase();
             maxGuesses = gameData.guesses;
