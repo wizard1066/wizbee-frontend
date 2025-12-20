@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wizbee - AI Word Puzzle Game</title>
+    
+    <!-- Google Sign-In -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    
     <style>
         * {
             margin: 0;
@@ -43,6 +47,27 @@
             margin-bottom: 30px;
         }
 
+        /* Login Screen */
+        .login-screen {
+            text-align: center;
+        }
+
+        .login-screen h2 {
+            font-size: 32px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .login-screen p {
+            font-size: 18px;
+            margin-bottom: 30px;
+            color: #666;
+        }
+
+        #google-signin-button {
+            margin: 0 auto;
+        }
+
         /* Screen 1 - Theme Input */
         .theme-input-screen {
             text-align: center;
@@ -77,6 +102,24 @@
 
         .theme-input-screen button:hover {
             background: #5568d3;
+        }
+
+        .user-info {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .logout-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            font-size: 14px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: 10px;
         }
 
         /* Screen 2 - Theme Selection */
@@ -371,8 +414,19 @@
     <div class="container">
 	<h1><img src="bee.png" alt="Wizbee" style="height: 48px; vertical-align: middle;"> Wizbee</h1>
 
+        <!-- Login Screen -->
+        <div id="loginScreen" class="login-screen">
+            <h2>Welcome to Wizbee! 🐝</h2>
+            <p>Sign in with Google to play AI-powered word puzzles</p>
+            <div id="google-signin-button"></div>
+        </div>
+
         <!-- Screen 1: Theme Input -->
-        <div id="themeInputScreen" class="theme-input-screen">
+        <div id="themeInputScreen" class="theme-input-screen hidden">
+            <div class="user-info">
+                Signed in as: <span id="userEmail"></span>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
             <h2>What theme would you like?</h2>
             <input type="text" id="themeInput" placeholder="Enter a theme (e.g., Italian Renaissance painters)">
             <button onclick="generateThemes()">Generate →</button>
@@ -440,7 +494,12 @@
     <script>
         // Your Railway backend URL
         const API_URL = 'https://wizbee-backend-production.up.railway.app';
+        
+        // Google Client ID - REPLACE WITH YOUR ACTUAL CLIENT ID
+        const GOOGLE_CLIENT_ID = '635584185020-emmqudvevrf1j01lpu6nha4tfneju6t2.apps.googleusercontent.com';
 
+        let authToken = null;
+        let userEmail = null;
         let currentWord = '';
         let maxGuesses = 0;
         let remainingGuesses = 0;
@@ -448,6 +507,84 @@
         let guessHistory = [];
         let gameOver = false;
         let selectedThemeWord = '';
+
+        // Initialize Google Sign-In
+        window.onload = function() {
+            // Check if already logged in
+            authToken = localStorage.getItem('authToken');
+            userEmail = localStorage.getItem('userEmail');
+            
+            if (authToken && userEmail) {
+                showThemeInput();
+            } else {
+                google.accounts.id.initialize({
+                    client_id: GOOGLE_CLIENT_ID,
+                    callback: handleGoogleSignIn
+                });
+                
+                google.accounts.id.renderButton(
+                    document.getElementById('google-signin-button'),
+                    { theme: 'outline', size: 'large', text: 'signin_with' }
+                );
+            }
+        };
+
+        // Handle Google Sign-In
+        async function handleGoogleSignIn(response) {
+            try {
+                // Send the Google token to our backend
+                const apiResponse = await fetch(`${API_URL}/auth/google`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: parseJwt(response.credential).email,
+                        googleToken: response.credential
+                    })
+                });
+                
+                const data = await apiResponse.json();
+                
+                if (data.token) {
+                    authToken = data.token;
+                    userEmail = data.email;
+                    
+                    // Store in localStorage
+                    localStorage.setItem('authToken', authToken);
+                    localStorage.setItem('userEmail', userEmail);
+                    
+                    showThemeInput();
+                } else {
+                    alert('Authentication failed. Please try again.');
+                }
+            } catch (error) {
+                console.error('Auth error:', error);
+                alert('Authentication failed. Please try again.');
+            }
+        }
+
+        // Parse JWT to get email
+        function parseJwt(token) {
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+            return JSON.parse(jsonPayload);
+        }
+
+        function showThemeInput() {
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('themeInputScreen').classList.remove('hidden');
+            document.getElementById('userEmail').textContent = userEmail;
+        }
+
+        function logout() {
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('userEmail');
+            authToken = null;
+            userEmail = null;
+            location.reload();
+        }
 
         function generateThemes() {
             const input = document.getElementById('themeInput').value.trim();
@@ -497,7 +634,10 @@
                 
                 const response = await fetch(`${API_URL}/api/generate-word`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`  // Add auth token
+                    },
                     body: JSON.stringify({ theme: theme })
                 });
                 
@@ -527,7 +667,6 @@
             currentWord = gameData.word.toUpperCase();
             maxGuesses = gameData.guesses;
             remainingGuesses = maxGuesses;
-            remainingGuesses = maxGuesses;
             
             // Show game screen
             document.getElementById('themeSelectionScreen').classList.add('hidden');
@@ -555,7 +694,7 @@
                 const box = document.createElement('div');
                 box.className = `letter-box ${fontSizeClass}`;
                 box.id = `box-${i}`;
-                box.setAttribute('draggable', 'true'); // Explicitly set draggable
+                box.setAttribute('draggable', 'true');
                 container.appendChild(box);
             }
         }
@@ -575,7 +714,6 @@
         }
 
         function updateCurrentGuessDisplay() {
-            // Update the main word boxes with current guess
             for (let i = 0; i < currentWord.length; i++) {
                 const box = document.getElementById(`box-${i}`);
                 if (i < currentGuess.length) {
@@ -596,19 +734,13 @@
                 return;
             }
             
-            // Add to history
             guessHistory.push(guess);
             remainingGuesses--;
             
-            // Show feedback
             showGuessFeedback(guess);
-            
-            // Update keyboard
             updateKeyboard(guess);
             
-            // Check win/lose
             if (guess === currentWord) {
-                // Keep the winning word visible in the boxes
                 for (let i = 0; i < currentWord.length; i++) {
                     const box = document.getElementById(`box-${i}`);
                     box.textContent = currentWord[i];
@@ -618,7 +750,6 @@
             } else if (remainingGuesses === 0) {
                 endGame(false);
             } else {
-                // Only clear boxes if game continues
                 currentGuess = '';
                 updateCurrentGuessDisplay();
             }
@@ -635,7 +766,6 @@
             const guessCopy = guess.split('');
             const feedback = new Array(guess.length).fill('absent');
             
-            // First pass: mark correct positions
             for (let i = 0; i < guess.length; i++) {
                 if (guess[i] === currentWord[i]) {
                     feedback[i] = 'correct';
@@ -644,7 +774,6 @@
                 }
             }
             
-            // Second pass: mark present letters
             for (let i = 0; i < guess.length; i++) {
                 if (guessCopy[i] !== null) {
                     const index = wordCopy.indexOf(guessCopy[i]);
@@ -655,7 +784,6 @@
                 }
             }
             
-            // Determine font size based on word length
             let fontSizeClass = '';
             if (currentWord.length > 9) {
                 fontSizeClass = 'tiny-font';
@@ -663,7 +791,6 @@
                 fontSizeClass = 'small-font';
             }
             
-            // Create boxes
             for (let i = 0; i < guess.length; i++) {
                 const box = document.createElement('div');
                 box.className = `letter-box ${feedback[i]} ${fontSizeClass}`;
@@ -711,7 +838,6 @@
             resetButton.classList.remove('hidden');
             
             if (won) {
-                // Flash animation for winning
                 celebrateWin();
                 messageDiv.textContent = `🎉 You won! The word was ${currentWord}`;
                 messageDiv.className = 'message win';
@@ -722,29 +848,13 @@
         }
 
         function celebrateWin() {
-            // Flash each letter box twice with delays
             for (let i = 0; i < currentWord.length; i++) {
                 const box = document.getElementById(`box-${i}`);
                 
-                // First flash
-                setTimeout(() => {
-                    box.classList.add('flash');
-                }, i * 150);
-                
-                // Remove flash class after animation
-                setTimeout(() => {
-                    box.classList.remove('flash');
-                }, i * 150 + 1000);
-                
-                // Second flash
-                setTimeout(() => {
-                    box.classList.add('flash');
-                }, i * 150 + 1200);
-                
-                // Remove flash class after second animation
-                setTimeout(() => {
-                    box.classList.remove('flash');
-                }, i * 150 + 2200);
+                setTimeout(() => { box.classList.add('flash'); }, i * 150);
+                setTimeout(() => { box.classList.remove('flash'); }, i * 150 + 1000);
+                setTimeout(() => { box.classList.add('flash'); }, i * 150 + 1200);
+                setTimeout(() => { box.classList.remove('flash'); }, i * 150 + 2200);
             }
         }
 
@@ -754,7 +864,6 @@
         }
 
         function resetToTheme() {
-            // Go back to theme selection screen
             currentWord = '';
             maxGuesses = 0;
             remainingGuesses = 0;
@@ -763,7 +872,6 @@
             gameOver = false;
             selectedThemeWord = '';
             
-            // Reset UI
             document.getElementById('themeInput').value = '';
             document.getElementById('gameScreen').classList.add('hidden');
             document.getElementById('themeInputScreen').classList.remove('hidden');
@@ -773,13 +881,12 @@
             document.getElementById('giveUpBtn').classList.remove('hidden');
             document.getElementById('submitGuess').disabled = false;
             
-            // Reset keyboard
             document.querySelectorAll('.key').forEach(key => {
                 key.classList.remove('correct', 'present', 'used');
             });
         }
 
-        // Allow keyboard input
+        // Keyboard input
         document.addEventListener('keydown', (e) => {
             if (gameOver) return;
             
@@ -792,12 +899,11 @@
             }
         });
 
-        // Drag and drop functionality using event delegation
+        // Drag and drop (keeping from original)
         let draggedLetter = null;
         let dragSourceIndex = null;
         let dragSourceType = null;
 
-        // Add drag event listeners to all keyboard keys
         document.querySelectorAll('.key[draggable="true"]').forEach(key => {
             key.addEventListener('dragstart', (e) => {
                 if (gameOver) {
@@ -816,7 +922,6 @@
             });
         });
 
-        // Use event delegation on the word boxes container
         document.getElementById('wordBoxes').addEventListener('dragstart', (e) => {
             if (gameOver) return;
             if (e.target.classList.contains('letter-box') && e.target.textContent.trim()) {
@@ -862,18 +967,14 @@
             const targetIndex = parseInt(e.target.id.split('-')[1]);
             
             if (dragSourceType === 'box' && dragSourceIndex !== null) {
-                // Moving letter from one box to another
                 if (dragSourceIndex !== targetIndex) {
                     let guessArray = currentGuess.split('');
                     
-                    // Swap if target has a letter, otherwise just move
                     if (targetIndex < guessArray.length && guessArray[targetIndex]) {
-                        // Swap
                         const temp = guessArray[targetIndex];
                         guessArray[targetIndex] = guessArray[dragSourceIndex];
                         guessArray[dragSourceIndex] = temp;
                     } else {
-                        // Move - remove from source and insert at target
                         guessArray.splice(dragSourceIndex, 1);
                         
                         let adjustedTarget = targetIndex;
@@ -892,7 +993,6 @@
                     updateCurrentGuessDisplay();
                 }
             } else if (dragSourceType === 'keyboard') {
-                // Dragging from keyboard
                 if (targetIndex === currentGuess.length && currentGuess.length < currentWord.length) {
                     addLetter(draggedLetter);
                 } else if (targetIndex < currentGuess.length) {
@@ -905,23 +1005,10 @@
                 }
             }
             
-            // Reset drag state
             dragSourceType = null;
             dragSourceIndex = null;
             draggedLetter = null;
         }, true);
-
-        // Original setupDropZones function no longer needed - remove it
-        function setupDropZones() {
-            // No longer needed - using event delegation above
-        }
-
-        // Call setupDropZones whenever word boxes are created
-        const originalCreateWordBoxes = createWordBoxes;
-        createWordBoxes = function() {
-            originalCreateWordBoxes.call(this);
-            // Event delegation handles drag/drop now, no need for setupDropZones
-        };
     </script>
 </body>
 </html>
