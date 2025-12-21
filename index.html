@@ -761,14 +761,14 @@
                 });
                 
                 console.log('API response status:', response.status);
-                const data = await response.json();
-                console.log('API data:', data);
 
 		if (response.status === 429 || response.status === 503) {
                 	alert(data.message || 'Daily limit reached!');
                 	resetToTheme();
         		return;
         	}
+		const data = await response.json();
+		console.log('API data:', data);
 
                 if (data.error) {
                     alert(data.message || 'Failed to generate puzzle. Please try again.');
