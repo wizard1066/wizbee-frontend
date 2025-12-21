@@ -960,11 +960,15 @@
             const giveUpButton = document.getElementById('giveUpBtn');
             const resetButton = document.getElementById('resetButton');
 	    const hintDisplay = document.getElementById('hintDisplay');  
+	    const hintBtn = document.getElementById('hintBtn');  
+
             
-            submitButton.disabled = true;
+            //submitButton.disabled = true;
             giveUpButton.classList.add('hidden');
             resetButton.classList.remove('hidden');
-
+            hintDisplay.classList.add('hidden');
+    	    hintBtn.classList.add('hidden');  
+	    submitButton.classList.add('hidden'); 
 	    if (won) {
  	   	celebrateWin();
     		messageDiv.textContent = getGameMessage(true, currentLanguage);
