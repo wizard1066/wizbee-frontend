@@ -319,6 +319,38 @@
             margin-bottom: 15px;
         }
 
+	.hint-btn {
+            background: #f59e0b;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background 0.3s;
+        }
+
+        .hint-btn:hover {
+            background: #d97706;
+        }
+
+        .hint-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .hint-display {
+            background: #fff3cd;
+            border: 2px solid #f59e0b;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            font-size: 18px;
+            color: #333;
+            line-height: 1.6;
+        }
+
         .submit-guess, .give-up-btn {
             width: 250px;
             padding: 20px;
@@ -485,6 +517,8 @@
             <div class="guess-input-container">
                 <button id="submitGuess" class="submit-guess" onclick="submitGuess()">Submit Word</button>
                 <button id="giveUpBtn" class="give-up-btn" onclick="giveUp()">Give Up</button>
+		<button id="hintBtn" class="hint-btn" onclick="getHint()">💡 Get Hint</button>
+                     <div id="hintDisplay" class="hint-display hidden"></div>
             </div>
 
             <div id="previousGuesses" class="previous-guesses"></div>
@@ -646,6 +680,9 @@
                 console.log('API response status:', response.status);
                 const data = await response.json();
                 console.log('API data:', data);
+
+		let hintsUsed = 0;
+                const MAX_HINTS = 2;
                 
                 if (data.error) {
                     alert(data.message || 'Failed to generate puzzle. Please try again.');
@@ -865,6 +902,56 @@
             endGame(false);
         }
 
+	async function getHint() {
+            if (gameOver) return;
+            if (hintsUsed >= MAX_HINTS) {
+                alert('You\'ve used all your hints for this puzzle!');
+                return;
+            }
+            
+            const hintBtn = document.getElementById('hintBtn');
+            const hintDisplay = document.getElementById('hintDisplay');
+            
+            hintBtn.disabled = true;
+            hintDisplay.textContent = '💡 Generating hint...';
+            hintDisplay.classList.remove('hidden');
+            
+            try {
+                const response = await fetch(`${API_URL}/api/get-hint`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({
+                        word: currentWord,
+                        theme: selectedThemeWord
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.hint) {
+                    hintDisplay.textContent = '💡 ' + data.hint;
+                    hintsUsed++;
+                    
+                    if (hintsUsed >= MAX_HINTS) {
+                        hintBtn.textContent = '💡 No hints left';
+                    } else {
+                        hintBtn.disabled = false;
+                        hintBtn.textContent = `💡 Get Hint (${MAX_HINTS - hintsUsed} left)`;
+                    }
+                } else {
+                    throw new Error('No hint received');
+                }
+                
+            } catch (error) {
+                console.error('Hint error:', error);
+                hintDisplay.textContent = '❌ Failed to generate hint. Try again!';
+                hintBtn.disabled = false;
+            }
+        }
+
         function resetToTheme() {
             currentWord = '';
             maxGuesses = 0;
@@ -873,6 +960,11 @@
             guessHistory = [];
             gameOver = false;
             selectedThemeWord = '';
+
+	    hintsUsed = 0;
+            document.getElementById('hintBtn').disabled = false;
+            document.getElementById('hintBtn').textContent = '💡 Get Hint';
+            document.getElementById('hintDisplay').classList.add('hidden');
             
             document.getElementById('themeInput').value = '';
             document.getElementById('gameScreen').classList.add('hidden');
