@@ -543,6 +543,8 @@
         let guessHistory = [];
         let gameOver = false;
         let selectedThemeWord = '';
+	let hintsUsed = 0;
+        const MAX_HINTS = 2;
 
         // Initialize Google Sign-In
         window.onload = function() {
@@ -681,9 +683,6 @@
                 const data = await response.json();
                 console.log('API data:', data);
 
-		let hintsUsed = 0;
-                const MAX_HINTS = 2;
-                
                 if (data.error) {
                     alert(data.message || 'Failed to generate puzzle. Please try again.');
                     resetToTheme();
