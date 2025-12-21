@@ -320,16 +320,16 @@
         }
 
 	.hint-btn {
-            background: #f59e0b;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            font-size: 18px;
-            border-radius: 8px;
-            cursor: pointer;
-            margin-top: 20px;
-            transition: background 0.3s;
-        }
+    		width: 250px;
+    		padding: 20px;
+    		font-size: 24px;
+    		border-radius: 10px;
+    		cursor: pointer;
+    		transition: background 0.3s;
+    		border: none;
+    		color: white;
+    		background: #f59e0b;
+	}
 
         .hint-btn:hover {
             background: #d97706;
@@ -473,24 +473,25 @@
         </div>
 
         <!-- Screen 3: Game Board -->
-        <div id="gameScreen" class="game-screen hidden">
-            <div class="theme-display">Theme: <span id="selectedTheme"></span></div>
-            <div id="wordBoxes" class="word-boxes"></div>
-            <div class="guesses-remaining">Guesses remaining: <span id="guessesRemaining"></span></div>
-	    <div id="keyboard" class="keyboard"></div>
-            
-            <div class="guess-input-container">
-                <button id="submitGuess" class="submit-guess" onclick="submitGuess()">Submit Word</button>
-		<button id="hintBtn" class="hint-btn" onclick="getHint()">💡 Get Hint</button>
-                     <div id="hintDisplay" class="hint-display hidden"></div>
-                <button id="giveUpBtn" class="give-up-btn" onclick="giveUp()">Give Up</button>
-	    </div>
+	<div id="gameScreen" class="game-screen hidden">
+    	<div class="theme-display">Theme: <span id="selectedTheme"></span></div>
+    	<div id="wordBoxes" class="word-boxes"></div>
+    	<div class="guesses-remaining">Guesses remaining: <span id="guessesRemaining"></span></div>
+    	<div id="keyboard" class="keyboard"></div>
+    
+    	<div class="guess-input-container">
+        	<button id="submitGuess" class="submit-guess" onclick="submitGuess()">Submit Word</button>
+        	<button id="hintBtn" class="hint-btn" onclick="getHint()">💡 Get Hint</button>
+        	<button id="giveUpBtn" class="give-up-btn" onclick="giveUp()">Give Up</button>
+    		</div>
+    
+    		<div id="hintDisplay" class="hint-display hidden"></div>
 
-            <div id="previousGuesses" class="previous-guesses"></div>
-            <div id="gameMessage" class="message"></div>
-            <button id="resetButton" class="play-again hidden" onclick="resetToTheme()">Reset</button>
+    		<div id="previousGuesses" class="previous-guesses"></div>
+    		<div id="gameMessage" class="message"></div>
+    		<button id="resetButton" class="play-again hidden" onclick="resetToTheme()">Reset</button>
+	</div>
         </div>
-    </div>
 
     <script>
         // Your Railway backend URL
