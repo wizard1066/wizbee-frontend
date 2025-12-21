@@ -780,11 +780,12 @@
                 resetToTheme();
             }
 
-	    if (response.status === 429) {
-    		alert(data.message);
+	if (response.status === 429 || response.status === 503) {
+    		alert(data.message || 'Daily limit reached!');
     		resetToTheme();
-    		return;
-		}
+    	return;
+	}
+
         }
 
         function startGame(gameData) {
