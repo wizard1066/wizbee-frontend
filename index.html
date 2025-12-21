@@ -510,6 +510,23 @@
 	let hintsUsed = 0;
         const MAX_HINTS = 1;
         let currentLanguage = 'en';
+	const keyboardLayouts = {
+  i               en: [
+                        ['Q','W','E','R','T','Y','U','I','O','P'],
+                        ['A','S','D','F','G','H','J','K','L'],
+                        ['Z','X','C','V','B','N','M','⌫']
+                        ],
+                  fr: [ 
+                        ['A','Z','E','R','T','Y','U','I','O','P'],
+                        ['Q','S','D','F','G','H','J','K','L','M'],
+                        ['W','X','C','V','B','N','É','È','Ê','À','⌫']
+                        ],
+                  es: [
+                        ['Q','W','E','R','T','Y','U','I','O','P'],
+                        ['A','S','D','F','G','H','J','K','L','Ñ'],
+                        ['Z','X','C','V','B','N','M','Á','É','Í','Ó','Ú','⌫']
+                        ]
+                };
 
         // Initialize Google Sign-In
         window.onload = function() {
@@ -684,24 +701,6 @@
                     return;
                 }
 
-		const keyboardLayouts = {
-  i		  en: [
-        		['Q','W','E','R','T','Y','U','I','O','P'],
-        		['A','S','D','F','G','H','J','K','L'],
-        		['Z','X','C','V','B','N','M','⌫']
-    			],
-    		  fr: [
-        		['A','Z','E','R','T','Y','U','I','O','P'],
-        		['Q','S','D','F','G','H','J','K','L','M'],
-        		['W','X','C','V','B','N','É','È','Ê','À','⌫']
-    			],
-    		  es: [
-        		['Q','W','E','R','T','Y','U','I','O','P'],
-        		['A','S','D','F','G','H','J','K','L','Ñ'],
-        		['Z','X','C','V','B','N','M','Á','É','Í','Ó','Ú','⌫']
-    			]
-		};
-                
                 // Start the game
                 console.log('Starting game with word:', data.word);
                 startGame(data);
