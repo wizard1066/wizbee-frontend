@@ -121,6 +121,22 @@
             background: #5568d3;
         }
 
+	.back-btn {
+    		background: #6c757d;
+    		color: white;
+    		border: none;
+    		padding: 15px 40px;
+    		font-size: 18px;
+    		border-radius: 10px;
+    		cursor: pointer;
+    		margin-top: 20px;
+    		transition: background 0.3s;
+	}
+
+	.back-btn:hover {
+    		background: #5a6268;
+	}
+
         .user-info {
             text-align: center;
             margin-bottom: 20px;
@@ -490,7 +506,7 @@
         <div id="themeSelectionScreen" class="theme-selection-screen hidden">
             <h2>Choose your theme:</h2>
             <div id="themeOptions" class="theme-options"></div>
-	    <button onclick="resetToTheme()" style="margin-top: 20px;">← Back</button>
+	    <button class="back-btn" onclick="resetToTheme()" style="margin-top: 20px;">← Back</button>
         </div>
 
         <!-- Screen 3: Game Board -->
