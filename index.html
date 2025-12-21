@@ -1069,6 +1069,8 @@
             document.getElementById('submitGuess').disabled = false;
 	    document.getElementById('hintBtn').classList.remove('hidden');  
 	    document.getElementById('submitGuess').classList.remove('hidden');  
+
+	    hintsUsed = 0;
             
             document.querySelectorAll('.key').forEach(key => {
                 key.classList.remove('correct', 'present', 'used');
