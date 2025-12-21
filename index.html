@@ -764,6 +764,12 @@
                 const data = await response.json();
                 console.log('API data:', data);
 
+		if (response.status === 429 || response.status === 503) {
+                	alert(data.message || 'Daily limit reached!');
+                	resetToTheme();
+        		return;
+        	}
+
                 if (data.error) {
                     alert(data.message || 'Failed to generate puzzle. Please try again.');
                     resetToTheme();
@@ -779,12 +785,6 @@
                 alert('Connection error: ' + error.message);
                 resetToTheme();
             }
-
-	if (response.status === 429 || response.status === 503) {
-    		alert(data.message || 'Daily limit reached!');
-    		resetToTheme();
-    	return;
-	}
 
         }
 
