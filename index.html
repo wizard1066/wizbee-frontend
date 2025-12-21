@@ -33,14 +33,38 @@
             padding: 20px;
         }
 
-        .container {
+ /*       .container {
             background: white;
             border-radius: 20px;
             padding: 40px;
             max-width: 800px;
             width: 100%;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-        }
+        }*/
+
+	.container {
+    		background: white;
+    		background-image: url('bee.png');
+    		background-repeat: no-repeat;
+    		background-position: center;
+    		background-size: 400px;
+    		opacity: 1;
+    		background-blend-mode: overlay;
+    		position: relative;
+	}
+
+	.container::before {
+    		content: '';
+    		position: absolute;
+    		top: 0;
+    		left: 0;
+    		right: 0;
+    		bottom: 0;
+    		background: url('bee.png') center/400px no-repeat;
+    		opacity: 0.05;
+    		pointer-events: none;
+    		border-radius: 20px;
+	}
 
         h1 {
             text-align: center;
