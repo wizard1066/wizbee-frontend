@@ -33,6 +33,17 @@
             align-items: center;
             padding: 20px;
         }
+   
+        .error-message {
+    		background: #fee;
+    		border: 2px solid #dc3545;
+    		color: #dc3545;
+    		padding: 20px;
+    		border-radius: 10px;
+    		margin: 20px 0;
+    		font-size: 18px;
+    		text-align: center;
+		}
 
 	.container {
  	   	background: white;
@@ -498,6 +509,7 @@
                 <button class="logout-btn" onclick="logout()">Logout</button>
             </div>
             <h2>What theme would you like?</h2>
+	    <div id="errorMessage" class="error-message hidden"></div>
             <input type="text" id="themeInput" placeholder="Enter a theme (e.g., Italian Renaissance painters)">
             <button onclick="generateThemes()">Generate →</button>
         </div>
@@ -643,11 +655,11 @@
                     
                     showThemeInput();
                 } else {
-                    alert('Authentication failed. Please try again.');
+		    showError('Authentication failed. Please try again.');
                 }
             } catch (error) {
                 console.error('Auth error:', error);
-                alert('Authentication failed. Please try again.');
+		showError('Authentication failed. Please try again.');
             }
         }
 
@@ -691,6 +703,13 @@
     		});
 	 }
 
+	function showError(message) {
+ 	   	const errorDiv = document.getElementById('errorMessage');
+    		errorDiv.textContent = message;
+    		errorDiv.classList.remove('hidden');
+    		setTimeout(() => errorDiv.classList.add('hidden'), 5000);
+	}
+
         function showThemeInput() {
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('themeInputScreen').classList.remove('hidden');
@@ -710,7 +729,7 @@
             console.log('generateThemes called, input value:', input);
             
             if (!input) {
-                alert('Please enter a theme!');
+		showError('Please enter a theme!');
                 return;
             }
             
@@ -741,7 +760,7 @@
             console.log('fetchAndStartGame called with theme:', theme, 'type:', typeof theme);
             
             if (!theme) {
-                alert('Error: No theme provided');
+		showError('Error: No theme provided');
                 return;
             }
             
@@ -766,13 +785,13 @@
                 console.log('API data:', data);
 
 		if (response.status === 429 || response.status === 503) {
-                	alert(data.message || 'Daily limit reached!');
+			showError(data.message || 'Daily limit reached!');
                 	resetToTheme();
         		return;
         	}
 
                 if (data.error) {
-                    alert(data.message || 'Failed to generate puzzle. Please try again.');
+		    showError(data.message || 'Failed to generate puzzle. Please try again.');
                     resetToTheme();
                     return;
                 }
@@ -783,7 +802,7 @@
                 
             } catch (error) {
                 console.error('API Error:', error);
-                alert('Connection error: ' + error.message);
+		showError('Connection error: ' + error.message);
                 resetToTheme();
             }
 
@@ -902,7 +921,7 @@
             const guess = currentGuess.toUpperCase();
             
             if (guess.length !== currentWord.length) {
-                alert(`Please enter a ${currentWord.length}-letter word!`);
+		showError(`Please enter a ${currentWord.length}-letter word!`);
                 return;
             }
             
@@ -1043,7 +1062,7 @@
 	async function getHint() {
             if (gameOver) return;
             if (hintsUsed >= MAX_HINTS) {
-                alert('You\'ve used all your hints for this puzzle!');
+		showError('You\'ve used all your hints for this puzzle!');
                 return;
             }
             
