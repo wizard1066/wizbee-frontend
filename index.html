@@ -559,6 +559,8 @@
         let gameOver = false;
         let selectedThemeWord = '';
 	let hintsUsed = 0;
+	let winMessage = '';
+	let loseMessage = '';
         const MAX_HINTS = 1;
         let currentLanguage = 'en';
 	const keyboardLayouts = {
@@ -604,6 +606,11 @@
 			],
 		sv: [  // Swedish/Norwegian
     			['Q','W','E','R','T','Y','U','I','O','P','Å'],
+    			['A','S','D','F','G','H','J','K','L','Ö','Ä'],
+    			['Z','X','C','V','B','N','M','⌫']
+			]
+		fi: [
+       			['Q','W','E','R','T','Y','U','I','O','P','Å'],
     			['A','S','D','F','G','H','J','K','L','Ö','Ä'],
     			['Z','X','C','V','B','N','M','⌫']
 			]
@@ -814,7 +821,10 @@
             maxGuesses = gameData.guesses;
             remainingGuesses = maxGuesses;
 	    currentLanguage = gameData.language || 'en';  // Easter Egg 
+	    winMessage = gameData.winMessage;  // ADD
+    	    loseMessage = gameData.loseMessage;  // ADD
 	    createKeyboard(currentLanguage);  // ADD THIS LINE
+	    
             
             // Show game screen
             document.getElementById('themeSelectionScreen').classList.add('hidden');
@@ -871,49 +881,6 @@
                 }
             }
         }
-
-	function getGameMessage(won, language) {
-    const messages = {
-        en: {
-            win: `🎉 You won! The word was ${currentWord}`,
-            lose: `Game over! The word was ${currentWord}`
-        },
-        fr: {
-            win: `🎉 Vous avez gagné ! Le mot était ${currentWord}`,
-            lose: `Jeu terminé ! Le mot était ${currentWord}`
-        },
-        es: {
-            win: `🎉 ¡Ganaste! La palabra era ${currentWord}`,
-            lose: `¡Juego terminado! La palabra era ${currentWord}`
-        },
-        de: {
-            win: `🎉 Du hast gewonnen! Das Wort war ${currentWord}`,
-            lose: `Spiel vorbei! Das Wort war ${currentWord}`
-        },
-        it: {
-            win: `🎉 Hai vinto! La parola era ${currentWord}`,
-            lose: `Gioco finito! La parola era ${currentWord}`
-        },
-        pt: {
-            win: `🎉 Você ganhou! A palavra era ${currentWord}`,
-            lose: `Fim de jogo! A palavra era ${currentWord}`
-        },
-        pl: {
-            win: `🎉 Wygrałeś! Słowo to ${currentWord}`,
-            lose: `Koniec gry! Słowo to ${currentWord}`
-        },
-        nl: {
-            win: `🎉 Je hebt gewonnen! Het woord was ${currentWord}`,
-            lose: `Spel voorbij! Het woord was ${currentWord}`
-        },
-        sv: {
-            win: `🎉 Du vann! Ordet var ${currentWord}`,
-            lose: `Spelet över! Ordet var ${currentWord}`
-        }
-    };
-    
-    return messages[language]?.[won ? 'win' : 'lose'] || messages['en'][won ? 'win' : 'lose'];
-}
 
         function submitGuess() {
             if (gameOver) return;
@@ -1035,10 +1002,10 @@
 	    submitButton.classList.add('hidden'); 
 	    if (won) {
  	   	celebrateWin();
-    		messageDiv.textContent = getGameMessage(true, currentLanguage);
+		messageDiv.textContent = `🎉 ${winMessage} ${currentWord}`;
     		messageDiv.className = 'message win';
 	   } else {
-   		messageDiv.textContent = getGameMessage(false, currentLanguage);
+		messageDiv.textContent = `${loseMessage} ${currentWord}`;
     		messageDiv.className = 'message lose';
 	   }
         }
