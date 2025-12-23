@@ -336,8 +336,18 @@
 
 		    showError(data.message || 'Theme limit reached!');
 		    document.getElementById('themeInput').disabled = true;
-    		    document.getElementById('upgradeModal').classList.remove('hidden');
-                    //resetToTheme();
+
+			optionsContainer.innerHTML = '';
+    
+    			// Hide theme input elements
+    			document.getElementById('themeInput').style.display = 'none';
+    			document.querySelector('.theme-input-screen h2').style.display = 'none';
+    			document.querySelector('.theme-input-screen button').style.display = 'none';
+    
+   			 // Show upgrade modal
+    			document.getElementById('upgradeModal').classList.remove('hidden');
+
+                    resetToTheme();
         	    return;
         	}
 
