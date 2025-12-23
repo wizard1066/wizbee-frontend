@@ -833,7 +833,7 @@
             // Show game screen
             document.getElementById('themeSelectionScreen').classList.add('hidden');
             document.getElementById('gameScreen').classList.remove('hidden');
-            document.getElementById('selectedTheme').textContent = selectedThemeWord;
+	    document.getElementById('selectedTheme').textContent = `${selectedThemeWord} (${currentWordIndex + 1}/${wordList.length})`;
             
             // Create word boxes
             createWordBoxes();
