@@ -566,8 +566,8 @@
 <!-- Screen 1: Theme Input -->
 <div id="upgradeModal" class="upgrade-modal hidden">
     <div class="modal-content">
-        <h2>🎉 You've completed 7 free themes!</h2>
-        <p>Upgrade to unlimited puzzles for just $0.99</p>
+	<h2>🎉 You've used 3 of your 4 free themes!</h2>
+	<p>Buy 128 more themes for just $0.99</p>
         <button class="upgrade-btn" onclick="upgradeNow()">Upgrade Now</button>
         <button class="maybe-later-btn" onclick="closeUpgradeModal()">Maybe Later</button>
     </div>
@@ -841,6 +841,18 @@
 		showError('Error: No theme provided');
                 return;
             }
+
+		const data = await response.json();
+		console.log('API data:', data);
+
+		if (data.themesRemaining !== undefined) {
+    			themesPlayedCount = data.themesUsed;
+    
+   		 // Show warning at theme 3
+    		if (data.themesRemaining === 1) {
+        		showError('Warning: Only 1 free theme remaining!');
+    		}
+	}
             
             const optionsContainer = document.getElementById('themeOptions');
 	    optionsContainer.innerHTML = '<div style="padding: 40px; text-align: center; font-size: 24px;"><img src="bee.png" class="loading" style="height: 40px; vertical-align: middle;"> Generating puzzle...</div>';
@@ -962,7 +974,7 @@
 let themesPlayedCount = 0;
 
 function checkUpgradePrompt() {
-    if (themesPlayedCount >= 7) {
+    if (themesPlayedCount >= 3) {
         document.getElementById('upgradeModal').classList.remove('hidden');
     }
 }
