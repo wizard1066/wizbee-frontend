@@ -158,13 +158,15 @@
         }
 
         .theme-input-screen input {
-            width: 100%;
+	    width: 100%;
+	    max-width: 1200px;  /* ADD */
             padding: 20px;
             font-size: 24px;
             border: 3px solid #667eea;
             border-radius: 10px;
-            margin-bottom: 20px;
+	    margin: 0 auto 20px auto;  /* CHANGE THIS */
             text-align: center;
+	     display: block;  /* ADD */
         }
 
         .theme-input-screen button {
@@ -176,9 +178,6 @@
             border-radius: 10px;
             cursor: pointer;
             transition: background 0.3s;
-	    max-width: 1200px;  /* Add max-width */
-    	    margin: 0 auto 20px auto;  /* Add auto left/right margins */
-	    display: block;  /* Must be block for auto margins to work */
         }
 
         .theme-input-screen button:hover {
