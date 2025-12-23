@@ -372,11 +372,23 @@
             document.getElementById('gameScreen').classList.remove('hidden');
 	    document.getElementById('selectedTheme').textContent = `${selectedThemeWord} (${currentWordIndex + 1}/${wordList.length})`;
 
-	//document.body.insertAdjacentHTML('beforeend', '<div class="tutorial-overlay"></div>');
-        //document.getElementById('themeInput').classList.add('tutorial-highlight');
-            
+		
+
             createWordBoxes();
             updateGuessCount();
+
+	    setTimeout(() => {
+        document.body.insertAdjacentHTML('beforeend', '<div class="tutorial-overlay"></div>');
+        document.getElementById('keyboard').classList.add('tutorial-highlight');
+        localStorage.setItem('tutorialSeen', 'true');
+        
+        // Remove after 3 seconds
+        setTimeout(() => {
+            document.querySelector('.tutorial-overlay').remove();
+            document.getElementById('keyboard').classList.remove('tutorial-highlight');
+        }, 3000);
+    }, 500);
+
         }
 
         function createWordBoxes() {
