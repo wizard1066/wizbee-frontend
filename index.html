@@ -1003,16 +1003,16 @@ function upgradeNow() {
             } else if (remainingGuesses === 0) {
                 endGame(false);
             } else {
-                currentGuess = '';
-	for (let i = 0; i < currentWord.length; i++) {
-    	const box = document.getElementById(`box-${i}`);
-    	if (box.style.opacity === '0.5') {
-        // Keep hint letter
-        continue;
-	}
-	}
-		currentGuess = box;	
-                updateCurrentGuessDisplay();
+		// Clear guess but preserve hint letters in currentGuess
+    let preservedGuess = '';
+    for (let i = 0; i < currentWord.length; i++) {
+        const box = document.getElementById(`box-${i}`);
+        if (box.style.opacity === '0.5') {
+            preservedGuess += box.textContent;
+        }
+    }
+    currentGuess = preservedGuess;
+    updateCurrentGuessDisplay();
             }
             
             updateGuessCount();
