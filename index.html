@@ -1009,7 +1009,10 @@ function upgradeNow() {
     	if (box.style.opacity === '0.5') {
         // Keep hint letter
         continue;
-    	}
+    	} else {
+		box-${i} = '';
+	}
+	
 	}
 		
                 updateCurrentGuessDisplay();
