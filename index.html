@@ -864,6 +864,10 @@
 		const data = await response.json();
                 console.log('API data:', data);
 
+		if (data.themesPlayed !== undefined) {
+ 		   themesPlayedCount = data.themesPlayed;
+		}
+
 		if (response.status === 429 || response.status === 503) {
 			showError(data.message || 'Daily limit reached!');
                 	resetToTheme();
