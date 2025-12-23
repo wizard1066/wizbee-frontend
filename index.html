@@ -444,6 +444,19 @@
 
         function closeUpgradeModal() {
             document.getElementById('upgradeModal').classList.add('hidden');
+
+	   // Show upgrade button on theme screen
+    	    	const upgradeBtn = document.createElement('button');
+    	    	upgradeBtn.textContent = '🎉 Get 128 More Themes - $0.99';
+    		upgradeBtn.className = 'upgrade-btn';
+    		upgradeBtn.style.marginTop = '20px';
+    		upgradeBtn.onclick = upgradeNow;
+    
+    		const themeScreen = document.getElementById('themeInputScreen');
+    		if (!document.getElementById('permanentUpgradeBtn')) {
+        		upgradeBtn.id = 'permanentUpgradeBtn';
+        		themeScreen.appendChild(upgradeBtn);
+    		}
         }
 
         function upgradeNow() {
