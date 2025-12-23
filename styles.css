@@ -158,7 +158,7 @@
         }
 
         .theme-input-screen input {
-	    width: 100%;
+	    width: 90%;
 	    max-width: 1200px;  /* ADD */
             padding: 20px;
             font-size: 24px;
