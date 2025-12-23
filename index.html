@@ -33,6 +33,66 @@
             align-items: center;
             padding: 20px;
         }
+
+	.upgrade-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: white;
+    padding: 40px;
+    border-radius: 20px;
+    text-align: center;
+    max-width: 500px;
+}
+
+.modal-content h2 {
+    color: #f59e0b;
+    margin-bottom: 20px;
+}
+
+.modal-content p {
+    font-size: 18px;
+    margin-bottom: 30px;
+}
+
+.upgrade-btn {
+    background: #22c55e;
+    color: white;
+    border: none;
+    padding: 15px 40px;
+    font-size: 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    margin-right: 10px;
+}
+
+.upgrade-btn:hover {
+    background: #16a34a;
+}
+
+.maybe-later-btn {
+    background: #6c757d;
+    color: white;
+    border: none;
+    padding: 15px 40px;
+    font-size: 20px;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.maybe-later-btn:hover {
+    background: #5a6268;
+}
    
         .error-message {
     		background: #fee;
@@ -503,6 +563,17 @@
         </div>
 
         <!-- Screen 1: Theme Input -->
+<!-- Screen 1: Theme Input -->
+<div id="upgradeModal" class="upgrade-modal hidden">
+    <div class="modal-content">
+        <h2>🎉 You've completed 7 free themes!</h2>
+        <p>Upgrade to unlimited puzzles for just $0.99</p>
+        <button class="upgrade-btn" onclick="upgradeNow()">Upgrade Now</button>
+        <button class="maybe-later-btn" onclick="closeUpgradeModal()">Maybe Later</button>
+    </div>
+</div>
+
+<div id="themeInputScreen" class="theme-input-screen hidden">
         <div id="themeInputScreen" class="theme-input-screen hidden">
             <div class="user-info">
                 Signed in as: <span id="userEmail"></span>
@@ -828,6 +899,13 @@
 	    winMessage = gameData.winMessage;  
     	    loseMessage = gameData.loseMessage;  
 	    createKeyboard(currentLanguage);  
+
+	const data = await response.json();
+console.log('API data:', data);
+
+if (data.themesPlayed !== undefined) {
+    themesPlayedCount = data.themesPlayed;
+}
 	    
             
             // Show game screen
@@ -885,6 +963,24 @@
                 }
             }
         }
+
+let themesPlayedCount = 0;
+
+function checkUpgradePrompt() {
+    if (themesPlayedCount >= 7) {
+        document.getElementById('upgradeModal').classList.remove('hidden');
+    }
+}
+
+function closeUpgradeModal() {
+    document.getElementById('upgradeModal').classList.add('hidden');
+}
+
+function upgradeNow() {
+    // Stripe integration goes here later
+    alert('Stripe payment coming soon!');
+    closeUpgradeModal();
+}
 
         function submitGuess() {
             if (gameOver) return;
@@ -1089,6 +1185,7 @@
         }
 
 	function resetToTheme() {
+	
     // Check if moving to next word in set
     if (currentWordIndex < wordList.length - 1 && wordList.length > 0) {
         currentWordIndex++;
@@ -1118,6 +1215,7 @@
         
         createWordBoxes();
         updateGuessCount();
+	checkUpgradePrompt();
         return;
     }
     
