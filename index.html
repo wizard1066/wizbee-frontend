@@ -980,14 +980,6 @@ function upgradeNow() {
         function submitGuess() {
             if (gameOver) return;
 
-	for (let i = 0; i < currentWord.length; i++) {
-    		const box = document.getElementById(`box-${i}`);
-    		if (box.style.opacity === '0.5') {
-        	// Keep hint letter
-        		continue;
-    		}
-	}
-            
             const guess = currentGuess.toUpperCase();
             
             if (guess.length !== currentWord.length) {
@@ -1012,6 +1004,13 @@ function upgradeNow() {
                 endGame(false);
             } else {
                 currentGuess = '';
+	for (let i = 0; i < currentWord.length; i++) {
+    	const box = document.getElementById(`box-${i}`);
+    	if (box.style.opacity === '0.5') {
+        // Keep hint letter
+        continue;
+    	}
+		
                 updateCurrentGuessDisplay();
             }
             
