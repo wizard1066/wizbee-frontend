@@ -979,6 +979,14 @@ function upgradeNow() {
 
         function submitGuess() {
             if (gameOver) return;
+
+	for (let i = 0; i < currentWord.length; i++) {
+    		const box = document.getElementById(`box-${i}`);
+    		if (box.style.opacity === '0.5') {
+        	// Keep hint letter
+        		continue;
+    		}
+	}
             
             const guess = currentGuess.toUpperCase();
             
