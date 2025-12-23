@@ -1138,6 +1138,27 @@ function upgradeNow() {
             
             const hintBtn = document.getElementById('hintBtn');
             const hintDisplay = document.getElementById('hintDisplay');
+
+	    if (hintsUsed < 2) {
+        	const emptyBoxes = [];
+        	for (let i = 0; i < currentWord.length; i++) {
+            	if (!document.getElementById(`box-${i}`).textContent) {
+                	emptyBoxes.push(i);
+            		}
+        	}
+        
+        	if (emptyBoxes.length > 0) {
+            		const randomIndex = emptyBoxes[Math.floor(Math.random() * emptyBoxes.length)];
+            		const box = document.getElementById(`box-${randomIndex}`);
+            		box.textContent = currentWord[randomIndex];
+            		box.style.opacity = '0.5';
+            		currentGuess += currentWord[randomIndex];
+        	}
+        
+            	hintsUsed++;
+            	hintBtn.textContent = `💡 Hint (${3 - hintsUsed} left)`;
+            	return;
+    	    }
             
             hintBtn.disabled = true;
             hintDisplay.textContent = '💡 Generating hint...';
