@@ -900,13 +900,6 @@
     	    loseMessage = gameData.loseMessage;  
 	    createKeyboard(currentLanguage);  
 
-	const data = await response.json();
-console.log('API data:', data);
-
-if (data.themesPlayed !== undefined) {
-    themesPlayedCount = data.themesPlayed;
-}
-	    
             
             // Show game screen
             document.getElementById('themeSelectionScreen').classList.add('hidden');
