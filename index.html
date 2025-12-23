@@ -563,6 +563,8 @@
 	let loseMessage = '';
         const MAX_HINTS = 1;
         let currentLanguage = 'en';
+	let wordList = [];
+	let currentWordIndex = 0;
 	const keyboardLayouts = {
                   en: [ //English
                         ['Q','W','E','R','T','Y','U','I','O','P'],
@@ -816,14 +818,16 @@
         }
 
         function startGame(gameData) {
+	    wordList = gameData.words;
+    	    currentWordIndex = 0;
             selectedThemeWord = gameData.theme;
-            currentWord = gameData.word.toUpperCase();
+	    currentWord = wordList[currentWordIndex];
             maxGuesses = gameData.guesses;
             remainingGuesses = maxGuesses;
 	    currentLanguage = gameData.language || 'en';  // Easter Egg 
-	    winMessage = gameData.winMessage;  // ADD
-    	    loseMessage = gameData.loseMessage;  // ADD
-	    createKeyboard(currentLanguage);  // ADD THIS LINE
+	    winMessage = gameData.winMessage;  
+    	    loseMessage = gameData.loseMessage;  
+	    createKeyboard(currentLanguage);  
 	    
             
             // Show game screen
@@ -1076,7 +1080,73 @@
             }
         }
 
-        function resetToTheme() {
+	function resetToTheme() {
+    // Check if moving to next word in set
+    if (currentWordIndex < wordList.length - 1 && wordList.length > 0) {
+        currentWordIndex++;
+        currentWord = wordList[currentWordIndex];
+        maxGuesses = 8; // or store original
+        remainingGuesses = maxGuesses;
+        currentGuess = '';
+        guessHistory = [];
+        gameOver = false;
+        hintsUsed = 0;
+        
+        document.getElementById('selectedTheme').textContent = `${selectedThemeWord} (${currentWordIndex + 1}/${wordList.length})`;
+        document.getElementById('previousGuesses').innerHTML = '';
+        document.getElementById('gameMessage').textContent = '';
+        document.getElementById('resetButton').classList.add('hidden');
+        document.getElementById('giveUpBtn').classList.remove('hidden');
+        document.getElementById('submitGuess').classList.remove('hidden');
+        document.getElementById('submitGuess').disabled = false;
+        document.getElementById('hintBtn').classList.remove('hidden');
+        document.getElementById('hintBtn').disabled = false;
+        document.getElementById('hintBtn').textContent = '💡 Get Hint';
+        document.getElementById('hintDisplay').classList.add('hidden');
+        
+        document.querySelectorAll('.key').forEach(key => {
+            key.classList.remove('correct', 'present', 'used');
+        });
+        
+        createWordBoxes();
+        updateGuessCount();
+        return;
+    }
+    
+    // Reset to theme input
+    currentWord = '';
+    wordList = [];
+    currentWordIndex = 0;
+    maxGuesses = 0;
+    remainingGuesses = 0;
+    currentGuess = '';
+    guessHistory = [];
+    gameOver = false;
+    selectedThemeWord = '';
+    hintsUsed = 0;
+    
+    document.getElementById('hintBtn').disabled = false;
+    document.getElementById('hintBtn').textContent = '💡 Get Hint';
+    document.getElementById('hintDisplay').classList.add('hidden');
+    document.getElementById('themeSelectionScreen').classList.add('hidden');
+    document.getElementById('themeInput').value = '';
+    document.getElementById('gameScreen').classList.add('hidden');
+    document.getElementById('themeInputScreen').classList.remove('hidden');
+    document.getElementById('previousGuesses').innerHTML = '';
+    document.getElementById('gameMessage').textContent = '';
+    document.getElementById('resetButton').classList.add('hidden');
+    document.getElementById('resetButton').textContent = 'Reset';
+    document.getElementById('giveUpBtn').classList.remove('hidden');
+    document.getElementById('submitGuess').disabled = false;
+    document.getElementById('hintBtn').classList.remove('hidden');
+    document.getElementById('submitGuess').classList.remove('hidden');
+    
+    document.querySelectorAll('.key').forEach(key => {
+        key.classList.remove('correct', 'present', 'used');
+    });
+}
+
+        /*function resetToTheme() {
             currentWord = '';
             maxGuesses = 0;
             remainingGuesses = 0;
@@ -1107,7 +1177,7 @@
             document.querySelectorAll('.key').forEach(key => {
                 key.classList.remove('correct', 'present', 'used');
             });
-        }
+        }*/
 
         // Keyboard input
         document.addEventListener('keydown', (e) => {
