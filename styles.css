@@ -200,23 +200,27 @@
     		background: #5a6268;
 	}
 
-        .user-info {
-            text-align: center;
-            margin-bottom: 20px;
-            color: #666;
-            font-size: 14px;
-        }
+	.user-info {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #666;
+    font-size: 14px;
+    display: flex;
+    flex-direction: column;  /* Stack vertically */
+    align-items: center;     /* Center horizontally */
+    gap: 10px;               /* Space between email and button */
+}
 
-        .logout-btn {
-            background: #dc3545;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            font-size: 14px;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-left: 10px;
-        }
+.logout-btn {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    font-size: 14px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-left: 0;  /* Remove left margin */
+}
 
         /* Screen 2 - Theme Selection */
         .theme-selection-screen {
