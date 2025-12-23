@@ -1012,6 +1012,14 @@
 		messageDiv.textContent = `${loseMessage} ${currentWord}`;
     		messageDiv.className = 'message lose';
 	   }
+	   // Show next word or reset button
+		if (currentWordIndex < wordList.length - 1) {
+    			resetButton.textContent = 'Next Word →';
+    			resetButton.classList.remove('hidden');
+		} else {
+    			resetButton.textContent = 'New Theme';
+    			resetButton.classList.remove('hidden');
+		}
         }
 
         function celebrateWin() {
