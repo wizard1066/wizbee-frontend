@@ -630,7 +630,7 @@
 	let hintsUsed = 0;
 	let winMessage = '';
 	let loseMessage = '';
-        const MAX_HINTS = 1;
+        const MAX_HINTS = 3;
         let currentLanguage = 'en';
 	let wordList = [];
 	let currentWordIndex = 0;
@@ -1148,7 +1148,8 @@ function upgradeNow() {
         	}
         
         	if (emptyBoxes.length > 0) {
-            		const randomIndex = emptyBoxes[Math.floor(Math.random() * emptyBoxes.length)];
+            		//const randomIndex = emptyBoxes[Math.floor(Math.random() * emptyBoxes.length)];
+			const randomIndex = emptyBoxes[0]; // First empty box
             		const box = document.getElementById(`box-${randomIndex}`);
             		box.textContent = currentWord[randomIndex];
             		box.style.opacity = '0.5';
