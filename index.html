@@ -94,6 +94,7 @@
 	let winMessage = '';
 	let loseMessage = '';
         const MAX_HINTS = 3;
+	const MAX_THEMES = 3;
         let currentLanguage = 'en';
 	let wordList = [];
 	let currentWordIndex = 0;
@@ -437,7 +438,7 @@
         }
 
         function checkUpgradePrompt() {
-            if (themesPlayedCount >= 4) {
+            if (themesPlayedCount > MAX_THEMES) {
                 document.getElementById('upgradeModal').classList.remove('hidden');
             }
         }
