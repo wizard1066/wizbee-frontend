@@ -331,6 +331,8 @@
 		}
 
 		if (response.status === 429 || response.status === 503) {
+		    optionsContainer.innerHTML = '';
+
 		    showError(data.message || 'Theme limit reached!');
 		    document.getElementById('themeInput').disabled = true;
     		    document.getElementById('upgradeModal').classList.remove('hidden');
