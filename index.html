@@ -842,6 +842,15 @@
                 return;
             }
 
+	const response = await fetch(`${API_URL}/api/generate-word`, {
+    method: 'POST',
+    headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authToken}`
+    },
+    body: JSON.stringify({ theme: theme })
+});
+
 		const data = await response.json();
 		console.log('API data:', data);
 
