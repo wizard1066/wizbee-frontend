@@ -176,6 +176,9 @@
             border-radius: 10px;
             cursor: pointer;
             transition: background 0.3s;
+	    max-width: 1200px;  /* Add max-width */
+    	    margin: 0 auto 20px auto;  /* Add auto left/right margins */
+	    display: block;  /* Must be block for auto margins to work */
         }
 
         .theme-input-screen button:hover {
