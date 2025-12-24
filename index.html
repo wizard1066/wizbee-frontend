@@ -263,7 +263,10 @@
  	    const errorDiv = document.getElementById('errorMessage');
     	    errorDiv.textContent = message;
     	    errorDiv.classList.remove('hidden');
-    	    setTimeout(() => errorDiv.classList.add('hidden'), 5000);
+    	    
+    	    // Longer display for important messages
+    	    const duration = message.length > 80 ? 8000 : 5000;
+    	    setTimeout(() => errorDiv.classList.add('hidden'), duration);
 	}
 
         function showThemeInput() {
@@ -363,6 +366,14 @@
     			document.getElementById('upgradeModal').classList.remove('hidden');
 
                     resetToTheme();
+        	    return;
+        	}
+        	
+        	// Handle theme pool exhaustion (400 error)
+        	if (response.status === 400 && data.error === 'Theme exhausted') {
+        	    optionsContainer.innerHTML = '';
+        	    showError('⚠️ ' + data.message);
+        	    resetToTheme();
         	    return;
         	}
 
