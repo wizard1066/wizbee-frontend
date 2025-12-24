@@ -738,6 +738,11 @@
 	    } else {
     		resetButton.textContent = 'New Theme';
     		resetButton.classList.remove('hidden');
+    		
+    		// Show tip about word variety for completed themes
+    		if (currentWord.length <= 4) {
+    		    console.log('💡 Tip: Try different themes or longer words for more variety!');
+    		}
 	    }
         }
 
