@@ -1,693 +1,1037 @@
-require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
-const { Pool } = require('pg');
-const jwt = require('jsonwebtoken');
-
-const app = express();
-const PORT = process.env.PORT || 3000;
-
-// Database connection
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
-});
-
-// Test database connection
-pool.query('SELECT NOW()', (err, res) => {
-  if (err) {
-    console.error('❌ Database connection error:', err);
-  } else {
-    console.log('✅ Database connected:', res.rows[0].now);
-  }
-});
-
-// JWT secret
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-this';
-
-// Middleware
-app.use(cors({
-  origin: ['https://wizbee-frontend.vercel.app', 'https://wizbee-frontend-*.vercel.app', 'http://localhost:3000', '*'],
-  methods: ['GET', 'POST'],
-  credentials: false
-}));
-app.use(express.json());
-
-// ============================================================================
-// BITMAP UTILITIES FOR SCORING DATA
-// ============================================================================
-const ScoringBitmap = {
-  // Bit positions for metrics (0-15)
-  GUESSES_OFFSET: 0,      // 4 bits: 0-15 guesses
-  HINTS_OFFSET: 4,        // 2 bits: 0-3 hints used
-  WIN_OFFSET: 6,          // 1 bit: win/loss
-  LETTER_SWAPS_OFFSET: 7, // 4 bits: 0-15 swaps
-  ERROR_TYPE_OFFSET: 11,  // 5 bits: error pattern flags
-  // Bits 16-31 reserved for time in seconds
-
-  encode: (metrics) => {
-    let bitmap = 0;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wizbee - AI Word Puzzle Game</title>
     
-    bitmap |= (Math.min(metrics.guesses || 0, 15) & 0xF) << ScoringBitmap.GUESSES_OFFSET;
-    bitmap |= (Math.min(metrics.hintsUsed || 0, 3) & 0x3) << ScoringBitmap.HINTS_OFFSET;
-    bitmap |= (metrics.won ? 1 : 0) << ScoringBitmap.WIN_OFFSET;
-    bitmap |= (Math.min(metrics.letterSwaps || 0, 15) & 0xF) << ScoringBitmap.LETTER_SWAPS_OFFSET;
+    <!-- Google Sign-In -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+	<h1><img src="bee3.gif" alt="Wizbee" style="height: 48px; vertical-align: middle;"> Wizbee</h1>
+
+        <!-- Login Screen -->
+        <div id="loginScreen" class="login-screen">
+            <h2>Welcome to Wizbee!</h2>
+            <p>Sign in with Google to play AI-powered word puzzles</p>
+		<div style="display: flex; justify-content: center;">
+    		<div id="google-signin-button"></div>
+		</div>
+        </div>
+
+        <!-- Upgrade Modal -->
+        <div id="upgradeModal" class="upgrade-modal hidden">
+            <div class="modal-content">
+	        <h2>🎉 You've used all 4 free themes!</h2>
+	        <p>Buy 128 more themes for just $0.99</p>
+                <button class="upgrade-btn" onclick="upgradeNow()">Upgrade Now</button>
+                <button class="maybe-later-btn" onclick="closeUpgradeModal()">Maybe Later</button>
+            </div>
+        </div>
+
+        <!-- Screen 1: Theme Input -->
+        <div id="themeInputScreen" class="theme-input-screen hidden">
+            <div class="user-info">
+		<div>Signed in as: <span id="userEmail"></span></div>
+        	<button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+            <h2>What theme would you like?</h2>
+	    <div id="errorMessage" class="error-message hidden"></div>
+            <input type="text" id="themeInput" placeholder="Enter a theme (e.g., Italian Renaissance painters)">
+            <button onclick="generateThemes()">Generate →</button>
+        </div>
+
+        <!-- Screen 2: Theme Selection -->
+        <div id="themeSelectionScreen" class="theme-selection-screen hidden">
+            <h2>Choose your theme:</h2>
+            <div id="themeOptions" class="theme-options"></div>
+	    <button class="back-btn" onclick="resetToTheme()" style="margin-top: 20px;">← Back</button>
+        </div>
+
+        <!-- Screen 3: Game Board -->
+	<div id="gameScreen" class="game-screen hidden">
+    	<div class="theme-display">Theme: <span id="selectedTheme"></span></div>
+    	<div id="wordBoxes" class="word-boxes"></div>
+    	<div class="guesses-remaining">Guesses remaining: <span id="guessesRemaining"></span></div>
+    	<div id="keyboard" class="keyboard"></div>
     
-    const errorFlags = ScoringBitmap.encodeErrorTypes(metrics.errorTypes || []);
-    bitmap |= (errorFlags & 0x1F) << ScoringBitmap.ERROR_TYPE_OFFSET;
+    	<div class="guess-input-container">
+        	<button id="submitGuess" class="submit-guess" onclick="submitGuess()">Submit Word</button>
+        	<button id="hintBtn" class="hint-btn" onclick="getHint()">💡 Get Hint</button>
+        	<button id="giveUpBtn" class="give-up-btn" onclick="giveUp()">Give Up</button>
+    	</div>
     
-    const timeSeconds = Math.min(metrics.timeSeconds || 0, 65535);
-    bitmap |= (timeSeconds & 0xFFFF) << 16;
+    	<div id="hintDisplay" class="hint-display hidden"></div>
+
+    	<div id="previousGuesses" class="previous-guesses"></div>
+    	<div id="gameMessage" class="message"></div>
+    	<button id="resetButton" class="play-again hidden" onclick="resetToTheme()">Reset</button>
+	</div>
+    </div>
+
+    <script>
+        // Your Railway backend URL
+        const API_URL = 'https://wizbee-backend-production.up.railway.app';
+        
+        // Google Client ID
+        const GOOGLE_CLIENT_ID = '635584185020-emmqudvevrf1j01lpu6nha4tfneju6t2.apps.googleusercontent.com';
+
+        let authToken = null;
+        let userEmail = null;
+        let currentWord = '';
+        let maxGuesses = 0;
+        let remainingGuesses = 0;
+        let currentGuess = '';
+        let guessHistory = [];
+        let gameOver = false;
+        let selectedThemeWord = '';
+	let hintsUsed = 0;
+	let winMessage = '';
+	let loseMessage = '';
+        const MAX_HINTS = 3;
+	const MAX_THEMES = 3;
+        let currentLanguage = 'en';
+	let wordList = [];
+	let currentWordIndex = 0;
+        let themesPlayedCount = 0;
+        
+        // NEW: Tracking variables for database
+        let currentThemeId = null;
+        let wordStartTime = null;
+        let letterSwapCount = 0;
+        let errorPatterns = [];
+
+	const keyboardLayouts = {
+            en: [ //English
+                ['Q','W','E','R','T','Y','U','I','O','P'],
+                ['A','S','D','F','G','H','J','K','L'],
+                ['Z','X','C','V','B','N','M','⌫']
+            ],
+            fr: [ //French
+                ['A','Z','E','R','T','Y','U','I','O','P'],
+                ['Q','S','D','F','G','H','J','K','L','M'],
+                ['W','X','C','V','B','N','É','È','Ê','À','⌫']
+            ],
+            es: [ //Spanish
+                ['Q','W','E','R','T','Y','U','I','O','P'],
+                ['A','S','D','F','G','H','J','K','L','Ñ'],
+                ['Z','X','C','V','B','N','M','Á','É','Í','Ó','Ú','⌫']
+            ],
+	    de: [ // German
+	        ['Q','W','E','R','T','Z','U','I','O','P','Ü'],
+        	['A','S','D','F','G','H','J','K','L','Ö','Ä'],
+        	['Y','X','C','V','B','N','M','ß','⌫']
+    	    ],
+    	    pl: [ // Polish
+        	['Q','W','E','R','T','Y','U','I','O','P'],
+        	['A','S','D','F','G','H','J','K','L','Ł'],
+        	['Z','X','C','V','B','N','M','Ą','Ć','Ę','Ń','Ó','Ś','Ź','Ż','⌫']
+    	    ],
+    	    it: [  // Italian
+    		['Q','W','E','R','T','Y','U','I','O','P'],
+    		['A','S','D','F','G','H','J','K','L'],
+    		['Z','X','C','V','B','N','M','À','È','É','Ì','Ò','Ù','⌫']
+	    ],
+	    pt: [  // Portuguese
+    		['Q','W','E','R','T','Y','U','I','O','P'],
+    		['A','S','D','F','G','H','J','K','L','Ç'],
+    		['Z','X','C','V','B','N','M','Á','À','Â','Ã','É','Ê','Í','Ó','Ô','Õ','Ú','⌫']
+	    ],
+	    nl: [  // Dutch
+    		['Q','W','E','R','T','Y','U','I','O','P'],
+    		['A','S','D','F','G','H','J','K','L'],
+    		['Z','X','C','V','B','N','M','⌫']
+	    ],
+	    sv: [  // Swedish/Norwegian
+    		['Q','W','E','R','T','Y','U','I','O','P','Å'],
+    		['A','S','D','F','G','H','J','K','L','Ö','Ä'],
+    		['Z','X','C','V','B','N','M','⌫']
+	    ],
+	    fi: [ // Finnish
+       		['Q','W','E','R','T','Y','U','I','O','P','Å'],
+    		['A','S','D','F','G','H','J','K','L','Ö','Ä'],
+    		['Z','X','C','V','B','N','M','⌫']
+	    ]
+        };
+
+        // Initialize Google Sign-In
+        function initializeGoogleSignIn() {
+            if (typeof google !== 'undefined' && google.accounts) {
+                google.accounts.id.initialize({
+                    client_id: GOOGLE_CLIENT_ID,
+                    callback: handleGoogleSignIn
+                });
+                
+                google.accounts.id.renderButton(
+                    document.getElementById('google-signin-button'),
+                    { theme: 'outline', size: 'large', text: 'signin_with' }
+                );
+            } else {
+                // Retry after 100ms if Google script not loaded yet
+                setTimeout(initializeGoogleSignIn, 100);
+            }
+        }
+
+        window.onload = function() {
+            authToken = localStorage.getItem('authToken');
+            userEmail = localStorage.getItem('userEmail');
+            
+            if (authToken && userEmail) {
+                showThemeInput();
+            } else {
+                initializeGoogleSignIn();
+            }
+        };
+
+        // Handle Google Sign-In
+        async function handleGoogleSignIn(response) {
+            try {
+                const apiResponse = await fetch(`${API_URL}/auth/google`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: parseJwt(response.credential).email,
+                        googleToken: response.credential
+                    })
+                });
+                
+                const data = await apiResponse.json();
+                
+                if (data.token) {
+                    authToken = data.token;
+                    userEmail = data.email;
+                    
+                    localStorage.setItem('authToken', authToken);
+                    localStorage.setItem('userEmail', userEmail);
+                    
+                    showThemeInput();
+                } else {
+		    showError('Authentication failed. Please try again.');
+                }
+            } catch (error) {
+                console.error('Auth error:', error);
+		showError('Authentication failed. Please try again.');
+            }
+        }
+
+        // Parse JWT to get email
+        function parseJwt(token) {
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+            return JSON.parse(jsonPayload);
+        }
+
+	// Function create keyboard
+	function createKeyboard(language) {
+    	    const container = document.getElementById('keyboard');
+    	    container.innerHTML = '';
     
-    return bitmap;
-  },
-
-  decode: (bitmap) => {
-    return {
-      guesses: (bitmap >> ScoringBitmap.GUESSES_OFFSET) & 0xF,
-      hintsUsed: (bitmap >> ScoringBitmap.HINTS_OFFSET) & 0x3,
-      won: ((bitmap >> ScoringBitmap.WIN_OFFSET) & 0x1) === 1,
-      letterSwaps: (bitmap >> ScoringBitmap.LETTER_SWAPS_OFFSET) & 0xF,
-      errorTypes: ScoringBitmap.decodeErrorTypes((bitmap >> ScoringBitmap.ERROR_TYPE_OFFSET) & 0x1F),
-      timeSeconds: (bitmap >> 16) & 0xFFFF
-    };
-  },
-
-  // Error type flags
-  ERROR_REVERSAL: 0x01,      // b/d, p/q reversals
-  ERROR_SEQUENCE: 0x02,      // letter order issues
-  ERROR_PHONETIC: 0x04,      // sound-alike substitutions
-  ERROR_VISUAL: 0x08,        // similar-looking letters
-  ERROR_REPETITION: 0x10,    // repeated attempts at same mistake
-
-  encodeErrorTypes: (errorArray) => {
-    let flags = 0;
-    errorArray.forEach(error => {
-      if (error === 'reversal') flags |= ScoringBitmap.ERROR_REVERSAL;
-      if (error === 'sequence') flags |= ScoringBitmap.ERROR_SEQUENCE;
-      if (error === 'phonetic') flags |= ScoringBitmap.ERROR_PHONETIC;
-      if (error === 'visual') flags |= ScoringBitmap.ERROR_VISUAL;
-      if (error === 'repetition') flags |= ScoringBitmap.ERROR_REPETITION;
-    });
-    return flags;
-  },
-
-  decodeErrorTypes: (flags) => {
-    const types = [];
-    if (flags & ScoringBitmap.ERROR_REVERSAL) types.push('reversal');
-    if (flags & ScoringBitmap.ERROR_SEQUENCE) types.push('sequence');
-    if (flags & ScoringBitmap.ERROR_PHONETIC) types.push('phonetic');
-    if (flags & ScoringBitmap.ERROR_VISUAL) types.push('visual');
-    if (flags & ScoringBitmap.ERROR_REPETITION) types.push('repetition');
-    return types;
-  }
-};
-
-// ============================================================================
-// DATABASE HELPER FUNCTIONS
-// ============================================================================
-
-// Insert or get theme
-async function saveTheme(userEmail, themeText) {
-  const result = await pool.query(
-    `INSERT INTO themes (user_email, theme_text, created_at)
-     VALUES ($1, $2, NOW())
-     RETURNING id`,
-    [userEmail, themeText]
-  );
-  return result.rows[0].id;
-}
-
-// Insert word if not exists, return word_id
-async function saveWord(word) {
-  const result = await pool.query(
-    `INSERT INTO words (word)
-     VALUES ($1)
-     ON CONFLICT (word) DO UPDATE SET word = EXCLUDED.word
-     RETURNING id`,
-    [word.toLowerCase()]
-  );
-  return result.rows[0].id;
-}
-
-// Save word attempt with scoring data
-async function saveWordAttempt(themeId, wordId, scoringMetrics) {
-  const bitmap = ScoringBitmap.encode(scoringMetrics);
-  
-  await pool.query(
-    `INSERT INTO word_attempts (theme_id, word_id, scoring_data, created_at)
-     VALUES ($1, $2, $3, NOW())`,
-    [themeId, wordId, bitmap]
-  );
-}
-
-// Get user's recent words for exclusion (last 50 unique words)
-async function getUserRecentWords(userEmail, limit = 50) {
-  const result = await pool.query(
-    `SELECT DISTINCT w.word
-     FROM word_attempts wa
-     JOIN themes t ON wa.theme_id = t.id
-     JOIN words w ON wa.word_id = w.id
-     WHERE t.user_email = $1
-     ORDER BY wa.created_at DESC
-     LIMIT $2`,
-    [userEmail, limit]
-  );
-  
-  return result.rows.map(row => row.word);
-}
-
-// ============================================================================
-// EXISTING HELPER FUNCTIONS (kept for backward compatibility)
-// ============================================================================
-
-// Sanitize user input
-function sanitizeTheme(input) {
-  if (!input || typeof input !== 'string') {
-    return 'random';
-  }
-  
-  const cleaned = input
-    .trim()
-    .slice(0, 200)
-    .replace(/[^a-zA-Z0-9\u00C0-\u017F\s\-',!?]/g, '');
-  
-  if (cleaned.length === 0) {
-    return 'random';
-  }
-  
-  return cleaned;
-}
-
-// Middleware to verify JWT token
-async function authenticateToken(req, res, next) {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-  
-  if (!token) {
-    return res.status(401).json({ error: 'Authentication required' });
-  }
-  
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    req.userEmail = decoded.email;
-    next();
-  } catch (error) {
-    return res.status(403).json({ error: 'Invalid or expired token' });
-  }
-}
-
-// Get daily limit from database (for global API limiting only)
-async function getDailyLimit() {
-  try {
-    const result = await pool.query(
-      "SELECT value FROM config WHERE key = 'daily_limit'"
-    );
-    return result.rows[0]?.value || 100;
-  } catch (error) {
-    console.error('Error getting daily limit:', error);
-    return 100;
-  }
-}
-
-// Get today's API call count
-async function getTodayApiCalls() {
-  try {
-    const today = new Date().toISOString().split('T')[0];
-    const result = await pool.query(
-      'SELECT api_calls FROM daily_stats WHERE date = $1',
-      [today]
-    );
-    return result.rows[0]?.api_calls || 0;
-  } catch (error) {
-    console.error('Error getting API calls:', error);
-    return 0;
-  }
-}
-
-// Increment today's API call count
-async function incrementApiCalls() {
-  try {
-    const today = new Date().toISOString().split('T')[0];
-    await pool.query(
-      `INSERT INTO daily_stats (date, api_calls) VALUES ($1, 1)
-       ON CONFLICT (date) DO UPDATE SET api_calls = daily_stats.api_calls + 1`,
-      [today]
-    );
-  } catch (error) {
-    console.error('Error incrementing API calls:', error);
-  }
-}
-
-// Log usage to database
-async function logUsage(email, theme, ipAddress) {
-  try {
-    await pool.query(
-      'INSERT INTO usage_logs (ip_address, theme, timestamp) VALUES ($1, $2, NOW())',
-      [ipAddress, theme]
-    );
-  } catch (error) {
-    console.error('Error logging usage:', error);
-  }
-}
-
-// Cache puzzle in database (kept for backward compatibility)
-async function cachePuzzle(theme, words, guesses) {
-  try {
-    await pool.query(
-      'INSERT INTO puzzles (theme, word, guesses, created_at) VALUES ($1, $2, $3, NOW())',
-      [theme, words.join(','), guesses]
-    );
-  } catch (error) {
-    console.error('Error caching puzzle:', error);
-  }
-}
-
-// Call Claude API to generate words
-async function generateWordWithClaude(theme, excludeWords = []) {
-  const CLAUDE_API_KEY = process.env.CLAUDE_API_KEY;
-  
-  if (!CLAUDE_API_KEY) {
-    throw new Error('CLAUDE_API_KEY not configured');
-  }
-  
-  const exclusionText = excludeWords.length > 0 
-    ? `\n\nIMPORTANT: Do NOT include any of these words the user has seen recently:\n${excludeWords.join(', ')}` 
-    : '';
-  
-  const prompt = `Generate a word for this word puzzle game.
-
-User's theme request: "${theme}"
-Random seed: ${Date.now()}-${Math.random()}
-
-Requirements:
-- Generate 5-10 words for the theme (varying difficulty, more words for broader themes)
-- IMPORTANT: Generate DIFFERENT words each time. Prioritize variety over perfection.
-- If generating short words (3-4 letters), maximize diversity in your selection.
-${exclusionText}
-
-- Broader themes (e.g., "animals") get more words, specific themes (e.g., "types of sushi") get fewer
-- If the input is nonsense, empty, or unclear, choose a fun default theme (animals, food, countries, etc.)
-- Pick an appropriate word length (4-10 letters based on difficulty)
-- Maximum 12 letters for any word
-- Must be a valid word in the same language as the user's request
-- If user writes in French, respond with French words. If Spanish, Spanish words, etc
-- If user mentions age (e.g., "6 year old"), adjust difficulty accordingly
-- If user requests impossible length (18+ letters), choose closest reasonable length
-- Use the international code for the language variable: "fr" for French, "es" for Spanish, "de" for German, "it" for Italian, "pt" for Portuguese, "nl" for Dutch, "sv" for Swedish, "pl" for Polish, "fi" for Finnish, etc
-
-Respond with ONLY a JSON object (no markdown, no backticks):
-{
-  "words": ["RÉUNION", "LIBERTÉ", "ÉGALITÉ", "FRANÇAIS", "CHÂTEAU", "ÉVÉNEMENT", "FRÈRE"],
-  "guesses": 8,
-  "language": "fr",
-  "theme": "French concepts",
-  "winMessage": "Vous avez gagné !",
-  "loseMessage": "Jeu terminé !",
-  "reasoning": "brief explanation"
-}`;
-
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'x-api-key': CLAUDE_API_KEY,
-      'anthropic-version': '2023-06-01',
-      'content-type': 'application/json'
-    },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 300,
-      messages: [{
-        role: 'user',
-        content: prompt
-      }]
-    })
-  });
-
-  if (!response.ok) {
-    throw new Error(`Claude API error: ${response.status}`);
-  }
-
-  const data = await response.json();
-  const text = data.content[0].text;
-  
-  const jsonMatch = text.match(/\{[\s\S]*\}/);
-  if (!jsonMatch) {
-    throw new Error('Invalid response from Claude');
-  }
-  
-  const result = JSON.parse(jsonMatch[0]);
-
-  return {
-    words: result.words.map(w => w.toUpperCase()),
-    guesses: result.guesses,
-    theme: result.theme,
-    language: result.language || 'en',
-    winMessage: result.winMessage || 'You won!',
-    loseMessage: result.loseMessage || 'Game over!',
-    reasoning: result.reasoning
-  };
-}
-
-// ============================================================================
-// ENDPOINTS
-// ============================================================================
-
-// Google Sign-In endpoint
-app.post('/auth/google', async (req, res) => {
-  try {
-    const { email, googleToken } = req.body;
+    	    const layout = keyboardLayouts[language] || keyboardLayouts['en'];
     
-    if (!email) {
-      return res.status(400).json({ error: 'Email required' });
-    }
-    
-    // Check if user exists, create if not
-    const userCheck = await pool.query(
-      'SELECT * FROM users WHERE email = $1',
-      [email]
-    );
-    
-    if (userCheck.rows.length === 0) {
-      // Create new user with default columns
-      await pool.query(
-        'INSERT INTO users (email, is_paid, total_themes_used, themes_purchased, created_at) VALUES ($1, $2, $3, $4, NOW())',
-        [email, false, 0, 0]
-      );
-      console.log(`✅ New user created: ${email}`);
-    }
-    
-    // Generate JWT token
-    const jwtToken = jwt.sign({ email }, JWT_SECRET, { expiresIn: '30d' });
-    
-    res.json({
-      token: jwtToken,
-      email: email,
-      isPaid: userCheck.rows[0]?.is_paid || false
-    });
-    
-  } catch (error) {
-    console.error('Auth error:', error);
-    res.status(500).json({ error: 'Authentication failed' });
-  }
-});
+    	    layout.forEach(row => {
+        	const rowDiv = document.createElement('div');
+        	rowDiv.className = 'keyboard-row';
+        
+        	row.forEach(letter => {
+            	    const key = document.createElement('button');
+            	    key.className = 'key';
+            	    key.textContent = letter;
+            
+            	    if (letter === '⌫') {
+                	key.onclick = () => deleteLetter();
+            	    } else {
+                	key.setAttribute('draggable', 'true');
+                	key.onclick = () => addLetter(letter);
+            	    }
+            
+            	    rowDiv.appendChild(key);
+       		});
+        
+        	container.appendChild(rowDiv);
+    	    });
+	}
 
-// Health check
-app.get('/', (req, res) => {
-  res.json({ 
-    status: 'ok',
-    service: 'Wizbee API',
-    version: '4.0.0 (dyslexia screening + word exclusion)'
-  });
-});
+	function showError(message) {
+ 	    const errorDiv = document.getElementById('errorMessage');
+    	    errorDiv.textContent = message;
+    	    errorDiv.classList.remove('hidden');
+    	    setTimeout(() => errorDiv.classList.add('hidden'), 5000);
+	}
 
-// Main endpoint: Generate word with exclusion
-app.post('/api/generate-word', authenticateToken, async (req, res) => {
-  try {
-    const { theme } = req.body;
-    const userEmail = req.userEmail;
-    const ipAddress = req.ip || req.connection.remoteAddress;
+        function showThemeInput() {
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('themeInputScreen').classList.remove('hidden');
+            document.getElementById('userEmail').textContent = userEmail;
+        }
+
+        function logout() {
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('userEmail');
+            authToken = null;
+            userEmail = null;
+            location.reload();
+        }
+
+        function generateThemes() {
+            const input = document.getElementById('themeInput').value.trim();
+            console.log('generateThemes called, input value:', input);
+            
+            if (!input) {
+		showError('Please enter a theme!');
+                return;
+            }
+            
+            document.getElementById('themeInputScreen').classList.add('hidden');
+            document.getElementById('themeSelectionScreen').classList.remove('hidden');
+            
+            const optionsContainer = document.getElementById('themeOptions');
+            
+            optionsContainer.innerHTML = '';
+            const button = document.createElement('div');
+            button.className = 'theme-option';
+            button.textContent = `Generate puzzle for: ${input}`;
+            
+            const capturedTheme = input;
+            console.log('Creating button with capturedTheme:', capturedTheme);
+            
+            button.onclick = function() {
+                console.log('Button clicked! Captured theme:', capturedTheme);
+                fetchAndStartGame(capturedTheme);
+            };
+            optionsContainer.appendChild(button);
+        }
+
+        async function fetchAndStartGame(theme) {
+            console.log('fetchAndStartGame called with theme:', theme, 'type:', typeof theme);
+            
+            if (!theme) {
+		showError('Error: No theme provided');
+                return;
+            }
+            
+            const optionsContainer = document.getElementById('themeOptions');
+	    optionsContainer.innerHTML = '<div style="padding: 40px; text-align: center; font-size: 24px;"><img src="bee2.gif" style="height: 80px; vertical-align: middle;"> Generating puzzle...</div>';
+            
+            try {
+                console.log('Calling API with theme:', theme);
+                
+                const response = await fetch(`${API_URL}/api/generate-word`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ theme: theme })
+                });
+                
+                console.log('API response status:', response.status);
+
+		const data = await response.json();
+                console.log('API data:', data);
+
+		if (data.themesRemaining !== undefined) {
+ 		    themesPlayedCount = data.themesUsed;
     
-    const cleanTheme = sanitizeTheme(theme);
+   		    // Show warning at theme 3
+    		    if (data.themesRemaining === 1) {
+        	//	showError('Warning: Only 1 free theme remaining!');
+    		    }
+		}
+
+		if (response.status === 429 || response.status === 503) {
+		    optionsContainer.innerHTML = '';
+
+		    showError(data.message || 'Theme limit reached!');
+		    document.getElementById('themeInput').disabled = true;
+
+			optionsContainer.innerHTML = '';
     
-    // Check global daily API limit
-    const dailyLimit = await getDailyLimit();
-    const todayApiCalls = await getTodayApiCalls();
+    			// Hide theme input elements
+    			document.getElementById('themeInput').style.display = 'none';
+    			document.querySelector('.theme-input-screen h2').style.display = 'none';
+			document.querySelector('.theme-input-screen > button').style.display = 'none';
     
-    if (todayApiCalls >= dailyLimit) {
-      console.log(`🚨 GLOBAL DAILY LIMIT REACHED! ${todayApiCalls}/${dailyLimit}`);
-      return res.status(503).json({
-        error: 'Daily limit reached',
-        message: 'Service has reached its daily puzzle limit. Please try again tomorrow!',
-        upgradeUrl: '/premium'
-      });
-    }
+   			 // Show upgrade modal
+    			document.getElementById('upgradeModal').classList.remove('hidden');
 
-    // Check user's lifetime theme limit
-    const userResult = await pool.query(
-      'SELECT total_themes_used, themes_purchased FROM users WHERE email = $1',
-      [userEmail]
-    );
+                    resetToTheme();
+        	    return;
+        	}
+
+                if (data.error) {
+		    showError(data.message || 'Failed to generate puzzle. Please try again.');
+                    resetToTheme();
+                    return;
+                }
+
+                console.log('Starting game with words:', data.words);
+                startGame(data);
+                
+            } catch (error) {
+                console.error('API Error:', error);
+		showError('Connection error: ' + error.message);
+                resetToTheme();
+            }
+        }
+
+        function startGame(gameData) {
+	    wordList = gameData.words;
+    	    currentWordIndex = 0;
+            selectedThemeWord = gameData.theme;
+	    currentWord = wordList[currentWordIndex];
+            maxGuesses = gameData.guesses;
+            remainingGuesses = maxGuesses;
+	    currentLanguage = gameData.language || 'en';
+	    winMessage = gameData.winMessage;  
+    	    loseMessage = gameData.loseMessage;
+    	    currentThemeId = gameData.themeId;  // NEW: Store theme ID
+            
+            // NEW: Start timer for first word
+            wordStartTime = Date.now();
+            letterSwapCount = 0;
+            errorPatterns = [];
+    	    
+	    createKeyboard(currentLanguage);
+            
+            document.getElementById('themeSelectionScreen').classList.add('hidden');
+            document.getElementById('gameScreen').classList.remove('hidden');
+	    document.getElementById('selectedTheme').textContent = `${selectedThemeWord} (${currentWordIndex + 1}/${wordList.length})`;
+
+            createWordBoxes();
+            updateGuessCount();
+        }
+
+        function createWordBoxes() {
+            const container = document.getElementById('wordBoxes');
+            container.innerHTML = '';
+            
+            let fontSizeClass = '';
+            if (currentWord.length > 9) {
+                fontSizeClass = 'tiny-font';
+            } else if (currentWord.length > 6) {
+                fontSizeClass = 'small-font';
+            }
+            
+            for (let i = 0; i < currentWord.length; i++) {
+                const box = document.createElement('div');
+                box.className = `letter-box ${fontSizeClass}`;
+                box.id = `box-${i}`;
+                box.setAttribute('draggable', 'true');
+                container.appendChild(box);
+            }
+        }
+
+        function addLetter(letter) {
+            if (gameOver) return;
+            if (currentGuess.length < currentWord.length) {
+                currentGuess += letter;
+                updateCurrentGuessDisplay();
+            }
+        }
+
+        function deleteLetter() {
+            if (gameOver) return;
+            currentGuess = currentGuess.slice(0, -1);
+            updateCurrentGuessDisplay();
+        }
+
+        function updateCurrentGuessDisplay() {
+            for (let i = 0; i < currentWord.length; i++) {
+                const box = document.getElementById(`box-${i}`);
+                if (i < currentGuess.length) {
+                    box.textContent = currentGuess[i];
+                } else {
+                    box.textContent = '';
+                }
+            }
+        }
+
+        function checkUpgradePrompt() {
+            if (themesPlayedCount > MAX_THEMES) {
+                document.getElementById('upgradeModal').classList.remove('hidden');
+            }
+        }
+
+        function closeUpgradeModal() {
+            document.getElementById('upgradeModal').classList.add('hidden');
+
+	   // Show upgrade button on theme screen
+    	    	const upgradeBtn = document.createElement('button');
+    	    	upgradeBtn.textContent = '🎉 Get 128 More Themes - $0.99';
+    		upgradeBtn.className = 'upgrade-btn';
+    		upgradeBtn.style.marginTop = '20px';
+    		upgradeBtn.onclick = upgradeNow;
     
-    const totalUsed = userResult.rows[0]?.total_themes_used || 0;
-    const themesPurchased = userResult.rows[0]?.themes_purchased || 0;
-    const themesAllowed = 4 + themesPurchased;
+    		const themeScreen = document.getElementById('themeInputScreen');
+    		if (!document.getElementById('permanentUpgradeBtn')) {
+        		upgradeBtn.id = 'permanentUpgradeBtn';
+        		themeScreen.appendChild(upgradeBtn);
+    		}
+        }
 
-    if (totalUsed >= themesAllowed) {
-      console.log(`⚠️ User ${userEmail} hit theme limit (${totalUsed}/${themesAllowed})`);
-      return res.status(429).json({
-        error: 'Theme limit reached',
-        message: themesPurchased === 0 
-          ? 'You\'ve used your 4 free themes. Buy 128 more for $0.99!' 
-          : 'Theme limit reached. Purchase more themes to continue!',
-        upgradeUrl: '/premium'
-      });
-    }
-    
-    // Get user's recent words for exclusion
-    const recentWords = await getUserRecentWords(userEmail, 50);
-    console.log(`🔍 Excluding ${recentWords.length} recent words for ${userEmail}`);
-    
-    // Generate new words with Claude (with exclusions)
-    console.log(`🐝 Generating words for theme: ${cleanTheme} (user: ${userEmail}, theme ${totalUsed + 1}/${themesAllowed})`);
-    const result = await generateWordWithClaude(cleanTheme, recentWords);
-    
-    // Save theme to new schema
-    const themeId = await saveTheme(userEmail, cleanTheme);
-    console.log(`📝 Theme saved with ID: ${themeId}`);
-    
-    // Save all generated words to words table (for tracking, even if not completed yet)
-    await Promise.all(result.words.map(word => saveWord(word)));
-    
-    // Save to old tables for backward compatibility
-    await cachePuzzle(cleanTheme, result.words, result.guesses);
-    await incrementApiCalls();
-    await logUsage(userEmail, cleanTheme, ipAddress);
-    
-    // Increment user's lifetime theme counter
-    await pool.query(
-      'UPDATE users SET total_themes_used = total_themes_used + 1 WHERE email = $1',
-      [userEmail]
-    );
-    
-    // Get updated counts
-    const updatedUsed = totalUsed + 1;
-    const themesRemaining = themesAllowed - updatedUsed;
-    
-    const updatedApiCount = await getTodayApiCalls();
-    console.log(`✅ Puzzle generated | API calls today: ${updatedApiCount}/${dailyLimit} | User: ${userEmail} | Themes: ${updatedUsed}/${themesAllowed}`);
-    
-    if (updatedApiCount >= dailyLimit * 0.8) {
-      console.log(`⚠️ WARNING: Approaching daily API limit! ${updatedApiCount}/${dailyLimit} used`);
-    }
+        function upgradeNow() {
+            alert('Stripe payment coming soon!');
+            closeUpgradeModal();
+        }
 
-    res.json({
-      ...result,
-      themeId: themeId, // Return themeId for frontend tracking
-      themesUsed: updatedUsed,
-      themesRemaining: themesRemaining,
-      wordsExcluded: recentWords.length
-    });
- 
-  } catch (error) {
-    console.error('Error generating word:', error);
-    res.status(500).json({
-      error: 'Failed to generate word',
-      message: 'Please try again',
-      fallback: {
-        words: ['PUZZLE'],
-        guesses: 7,
-        theme: 'general',
-        language: 'en',
-        winMessage: 'You won!',
-        loseMessage: 'Game over!'
-      }
-    });
-  }
-});
+        // NEW: Detect dyslexia-related error patterns
+        function detectErrorTypes(guess, targetWord) {
+            const errors = [];
+            
+            // Common reversal pairs
+            const reversalPairs = [
+                ['b', 'd'], ['p', 'q'], ['n', 'u'], ['m', 'w'],
+                ['6', '9'], ['s', 'z']
+            ];
+            
+            for (let i = 0; i < guess.length && i < targetWord.length; i++) {
+                const guessChar = guess[i].toLowerCase();
+                const targetChar = targetWord[i].toLowerCase();
+                
+                // Check for reversals
+                for (const [a, b] of reversalPairs) {
+                    if ((guessChar === a && targetChar === b) || 
+                        (guessChar === b && targetChar === a)) {
+                        if (!errors.includes('reversal')) errors.push('reversal');
+                    }
+                }
+                
+                // Check for visual similarity (common confusions)
+                const visualPairs = [
+                    ['o', '0'], ['l', '1'], ['i', 'l'], ['c', 'e'],
+                    ['a', 'o'], ['h', 'n'], ['f', 't']
+                ];
+                for (const [a, b] of visualPairs) {
+                    if ((guessChar === a && targetChar === b) || 
+                        (guessChar === b && targetChar === a)) {
+                        if (!errors.includes('visual')) errors.push('visual');
+                    }
+                }
+                
+                // Check for phonetic confusion (sound-alike)
+                const phoneticPairs = [
+                    ['c', 'k'], ['s', 'c'], ['f', 'ph'], ['j', 'g'],
+                    ['i', 'y'], ['w', 'v']
+                ];
+                for (const [a, b] of phoneticPairs) {
+                    if ((guessChar === a && targetChar === b) || 
+                        (guessChar === b && targetChar === a)) {
+                        if (!errors.includes('phonetic')) errors.push('phonetic');
+                    }
+                }
+            }
+            
+            // Check for sequence errors (transpositions)
+            if (guess.length === targetWord.length) {
+                for (let i = 0; i < guess.length - 1; i++) {
+                    if (guess[i] === targetWord[i + 1] && 
+                        guess[i + 1] === targetWord[i]) {
+                        if (!errors.includes('sequence')) errors.push('sequence');
+                    }
+                }
+            }
+            
+            // Check for repetition (same error as previous guess)
+            if (guessHistory.length > 0) {
+                const prevGuess = guessHistory[guessHistory.length - 1];
+                let sameErrors = 0;
+                for (let i = 0; i < Math.min(guess.length, prevGuess.length); i++) {
+                    if (guess[i] === prevGuess[i] && guess[i] !== targetWord[i]) {
+                        sameErrors++;
+                    }
+                }
+                if (sameErrors >= 2) {
+                    if (!errors.includes('repetition')) errors.push('repetition');
+                }
+            }
+            
+            return errors;
+        }
 
-// NEW: Record word attempt endpoint
-app.post('/api/record-word-attempt', authenticateToken, async (req, res) => {
-  try {
-    const { 
-      themeId, 
-      word, 
-      guesses, 
-      hintsUsed, 
-      won, 
-      letterSwaps, 
-      errorTypes, 
-      timeSeconds 
-    } = req.body;
+        function submitGuess() {
+            if (gameOver) return;
 
-    if (!themeId || !word) {
-      return res.status(400).json({ error: 'themeId and word required' });
-    }
+            const guess = currentGuess.toUpperCase();
+            
+            if (guess.length !== currentWord.length) {
+		showError(`Please enter a ${currentWord.length}-letter word!`);
+                return;
+            }
+            
+            // NEW: Detect error patterns before adding to history
+            const detectedErrors = detectErrorTypes(guess, currentWord);
+            errorPatterns = [...new Set([...errorPatterns, ...detectedErrors])];
+            
+            guessHistory.push(guess);
+            remainingGuesses--;
+            
+            showGuessFeedback(guess);
+            updateKeyboard(guess);
+            
+            if (guess === currentWord) {
+                for (let i = 0; i < currentWord.length; i++) {
+                    const box = document.getElementById(`box-${i}`);
+                    box.textContent = currentWord[i];
+                    box.classList.add('correct');
+                }
+                endGame(true);
+            } else if (remainingGuesses === 0) {
+                endGame(false);
+            } else {
+		// Clear guess but preserve hint letters
+                let preservedGuess = '';
+                for (let i = 0; i < currentWord.length; i++) {
+                    const box = document.getElementById(`box-${i}`);
+                    if (box.style.opacity === '0.5') {
+                        preservedGuess += box.textContent;
+                    }
+                }
+                currentGuess = preservedGuess;
+                updateCurrentGuessDisplay();
+            }
+            
+            updateGuessCount();
+        }
 
-    // Get or create word_id
-    const wordId = await saveWord(word);
+        function showGuessFeedback(guess) {
+            const container = document.getElementById('previousGuesses');
+            const guessDiv = document.createElement('div');
+            guessDiv.className = 'previous-guess';
+            
+            const wordCopy = currentWord.split('');
+            const guessCopy = guess.split('');
+            const feedback = new Array(guess.length).fill('absent');
+            
+            for (let i = 0; i < guess.length; i++) {
+                if (guess[i] === currentWord[i]) {
+                    feedback[i] = 'correct';
+                    wordCopy[i] = null;
+                    guessCopy[i] = null;
+                }
+            }
+            
+            for (let i = 0; i < guess.length; i++) {
+                if (guessCopy[i] !== null) {
+                    const index = wordCopy.indexOf(guessCopy[i]);
+                    if (index !== -1) {
+                        feedback[i] = 'present';
+                        wordCopy[index] = null;
+                    }
+                }
+            }
+            
+            let fontSizeClass = '';
+            if (currentWord.length > 9) {
+                fontSizeClass = 'tiny-font';
+            } else if (currentWord.length > 6) {
+                fontSizeClass = 'small-font';
+            }
+            
+            for (let i = 0; i < guess.length; i++) {
+                const box = document.createElement('div');
+                box.className = `letter-box ${feedback[i]} ${fontSizeClass}`;
+                box.textContent = guess[i];
+                guessDiv.appendChild(box);
+            }
+            
+            container.appendChild(guessDiv);
+        }
 
-    // Save attempt with scoring data
-    await saveWordAttempt(themeId, wordId, {
-      guesses: guesses || 0,
-      hintsUsed: hintsUsed || 0,
-      won: won || false,
-      letterSwaps: letterSwaps || 0,
-      errorTypes: errorTypes || [],
-      timeSeconds: timeSeconds || 0
-    });
+        function updateKeyboard(guess) {
+            const wordCopy = currentWord.split('');
+            
+            for (let i = 0; i < guess.length; i++) {
+                const letter = guess[i];
+                const key = Array.from(document.querySelectorAll('.key')).find(k => k.textContent === letter);
+                
+                if (!key) continue;
+                
+                if (guess[i] === currentWord[i]) {
+                    key.classList.add('correct');
+                    key.classList.remove('present', 'used');
+                } else if (wordCopy.includes(letter) && !key.classList.contains('correct')) {
+                    key.classList.add('present');
+                    key.classList.remove('used');
+                } else if (!key.classList.contains('correct') && !key.classList.contains('present')) {
+                    key.classList.add('used');
+                }
+            }
+        }
 
-    console.log(`✅ Word attempt recorded: ${word} (theme: ${themeId}, won: ${won})`);
-    res.json({ success: true });
+        function updateGuessCount() {
+            document.getElementById('guessesRemaining').textContent = remainingGuesses;
+        }
 
-  } catch (error) {
-    console.error('Error recording word attempt:', error);
-    res.status(500).json({ error: 'Failed to record attempt' });
-  }
-});
+        // NEW: Record word completion to database
+        async function recordWordAttempt(won) {
+            if (!currentThemeId) {
+                console.warn('No theme ID available, skipping record');
+                return;
+            }
+            
+            const timeSeconds = Math.floor((Date.now() - wordStartTime) / 1000);
+            
+            try {
+                await fetch(`${API_URL}/api/record-word-attempt`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({
+                        themeId: currentThemeId,
+                        word: currentWord,
+                        guesses: maxGuesses - remainingGuesses,
+                        hintsUsed: hintsUsed,
+                        won: won,
+                        letterSwaps: letterSwapCount,
+                        errorTypes: errorPatterns,
+                        timeSeconds: timeSeconds
+                    })
+                });
+                console.log(`✅ Word attempt recorded: ${currentWord} (won: ${won}, errors: ${errorPatterns.join(', ')})`);
+            } catch (error) {
+                console.error('Failed to record word attempt:', error);
+                // Non-blocking - game continues even if recording fails
+            }
+        }
 
-// NEW: Analytics endpoint for Showbee
-app.get('/api/analytics/:email', authenticateToken, async (req, res) => {
-  try {
-    const { email } = req.params;
-    
-    // Only allow users to view their own analytics (or admin check here if needed)
-    if (email !== req.userEmail) {
-      return res.status(403).json({ error: 'Unauthorized' });
-    }
+        async function endGame(won) {
+            gameOver = true;
+            
+            // NEW: Record this word attempt
+            await recordWordAttempt(won);
+            
+            const messageDiv = document.getElementById('gameMessage');
+            const submitButton = document.getElementById('submitGuess');
+            const giveUpButton = document.getElementById('giveUpBtn');
+            const resetButton = document.getElementById('resetButton');
+	    const hintDisplay = document.getElementById('hintDisplay');  
+	    const hintBtn = document.getElementById('hintBtn');  
+            
+            giveUpButton.classList.add('hidden');
+            resetButton.classList.remove('hidden');
+            hintDisplay.classList.add('hidden');
+    	    hintBtn.classList.add('hidden');  
+	    submitButton.classList.add('hidden'); 
 
-    // Get all attempts with decoded scoring data
-    const result = await pool.query(
-      `SELECT 
-         t.theme_text,
-         w.word,
-         wa.scoring_data,
-         wa.created_at
-       FROM word_attempts wa
-       JOIN themes t ON wa.theme_id = t.id
-       JOIN words w ON wa.word_id = w.id
-       WHERE t.user_email = $1
-       ORDER BY wa.created_at DESC`,
-      [email]
-    );
+	    if (won) {
+ 	   	celebrateWin();
+		messageDiv.textContent = `🎉 ${winMessage} ${currentWord}`;
+    		messageDiv.className = 'message win';
+	    } else {
+		messageDiv.textContent = `${loseMessage} ${currentWord}`;
+    		messageDiv.className = 'message lose';
+	    }
 
-    const attempts = result.rows.map(row => ({
-      theme: row.theme_text,
-      word: row.word,
-      metrics: ScoringBitmap.decode(row.scoring_data),
-      timestamp: row.created_at
-    }));
+	    if (currentWordIndex < wordList.length - 1) {
+    		resetButton.textContent = 'Next Word →';
+    		resetButton.classList.remove('hidden');
+	    } else {
+    		resetButton.textContent = 'New Theme';
+    		resetButton.classList.remove('hidden');
+	    }
+        }
 
-    // Calculate aggregate statistics
-    const stats = {
-      totalAttempts: attempts.length,
-      totalThemes: new Set(attempts.map(a => a.theme)).size,
-      avgGuesses: attempts.length > 0 ? attempts.reduce((sum, a) => sum + a.metrics.guesses, 0) / attempts.length : 0,
-      winRate: attempts.length > 0 ? attempts.filter(a => a.metrics.won).length / attempts.length : 0,
-      errorPatterns: {},
-      avgTimePerWord: attempts.length > 0 ? attempts.reduce((sum, a) => sum + a.metrics.timeSeconds, 0) / attempts.length : 0
-    };
+        function celebrateWin() {
+            for (let i = 0; i < currentWord.length; i++) {
+                const box = document.getElementById(`box-${i}`);
+                
+                setTimeout(() => { box.classList.add('flash'); }, i * 150);
+                setTimeout(() => { box.classList.remove('flash'); }, i * 150 + 1000);
+                setTimeout(() => { box.classList.add('flash'); }, i * 150 + 1200);
+                setTimeout(() => { box.classList.remove('flash'); }, i * 150 + 2200);
+            }
+        }
 
-    // Aggregate error types
-    attempts.forEach(attempt => {
-      attempt.metrics.errorTypes.forEach(errorType => {
-        stats.errorPatterns[errorType] = (stats.errorPatterns[errorType] || 0) + 1;
-      });
-    });
+        function giveUp() {
+            if (gameOver) return;
+            endGame(false);
+        }
 
-    console.log(`📊 Analytics fetched for ${email}: ${attempts.length} attempts`);
-    res.json({ attempts, stats });
+	async function getHint() {
+            if (gameOver) return;
+            if (hintsUsed >= MAX_HINTS) {
+		showError('You\'ve used all your hints for this puzzle!');
+                return;
+            }
+            
+            const hintBtn = document.getElementById('hintBtn');
+            const hintDisplay = document.getElementById('hintDisplay');
 
-  } catch (error) {
-    console.error('Error fetching analytics:', error);
-    res.status(500).json({ error: 'Failed to fetch analytics' });
-  }
-});
+	    if (hintsUsed < 2) {
+        	const emptyBoxes = [];
+        	for (let i = 0; i < currentWord.length; i++) {
+            	    if (!document.getElementById(`box-${i}`).textContent) {
+                	emptyBoxes.push(i);
+            	    }
+        	}
+        
+        	if (emptyBoxes.length > 0) {
+            	    const randomIndex = emptyBoxes[0]; // First empty box
+            	    const box = document.getElementById(`box-${randomIndex}`);
+            	    box.textContent = currentWord[randomIndex];
+            	    box.style.opacity = '0.5';
+            	    currentGuess += currentWord[randomIndex];
+        	}
+        
+            	hintsUsed++;
+            	hintBtn.textContent = `💡 Hint (${3 - hintsUsed} left)`;
+            	return;
+    	    }
+            
+            hintBtn.disabled = true;
+            hintDisplay.textContent = '💡 Generating hint...';
+            hintDisplay.classList.remove('hidden');
+            
+            try {
+                const response = await fetch(`${API_URL}/api/get-hint`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({
+                        word: currentWord,
+                        theme: selectedThemeWord
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.hint) {
+                    hintDisplay.textContent = '💡 ' + data.hint;
+                    hintsUsed++;
+                    
+                    if (hintsUsed >= MAX_HINTS) {
+                        hintBtn.textContent = '💡 No hints left';
+                    } else {
+                        hintBtn.disabled = false;
+                        hintBtn.textContent = `💡 Get Hint (${MAX_HINTS - hintsUsed} left)`;
+                    }
+                } else {
+                    throw new Error('No hint received');
+                }
+                
+            } catch (error) {
+                console.error('Hint error:', error);
+                hintDisplay.textContent = '❌ Failed to generate hint. Try again!';
+                hintBtn.disabled = false;
+            }
+        }
 
-// Hint endpoint (unchanged)
-app.post('/api/get-hint', authenticateToken, async (req, res) => {
-  try {
-    const { word, theme } = req.body;
-    const userEmail = req.userEmail;
-    
-    if (!word || !theme) {
-      return res.status(400).json({ error: 'Word and theme required' });
-    }
-    
-    const CLAUDE_API_KEY = process.env.CLAUDE_API_KEY;
-    
-    if (!CLAUDE_API_KEY) {
-      throw new Error('CLAUDE_API_KEY not configured');
-    }
-    
-    const prompt = `You're helping someone solve a word puzzle. The word is "${word}" and the theme is "${theme}".
+	function resetToTheme() {
+            // Check if moving to next word in set
+            if (currentWordIndex < wordList.length - 1 && wordList.length > 0) {
+                currentWordIndex++;
+                currentWord = wordList[currentWordIndex];
+                maxGuesses = 8;
+                remainingGuesses = maxGuesses;
+                currentGuess = '';
+                guessHistory = [];
+                gameOver = false;
+                hintsUsed = 0;
+                
+                // NEW: Reset tracking for new word
+                wordStartTime = Date.now();
+                letterSwapCount = 0;
+                errorPatterns = [];
+                
+                document.getElementById('selectedTheme').textContent = `${selectedThemeWord} (${currentWordIndex + 1}/${wordList.length})`;
+                document.getElementById('previousGuesses').innerHTML = '';
+                document.getElementById('gameMessage').textContent = '';
+                document.getElementById('resetButton').classList.add('hidden');
+                document.getElementById('giveUpBtn').classList.remove('hidden');
+                document.getElementById('submitGuess').classList.remove('hidden');
+                document.getElementById('submitGuess').disabled = false;
+                document.getElementById('hintBtn').classList.remove('hidden');
+                document.getElementById('hintBtn').disabled = false;
+                document.getElementById('hintBtn').textContent = '💡 Get Hint';
+                document.getElementById('hintDisplay').classList.add('hidden');
+                
+                document.querySelectorAll('.key').forEach(key => {
+                    key.classList.remove('correct', 'present', 'used');
+                });
+                
+                createWordBoxes();
+                updateGuessCount();
+	        checkUpgradePrompt();
+                return;
+            }
+            
+            // Reset to theme input
+            currentWord = '';
+            wordList = [];
+            currentWordIndex = 0;
+            maxGuesses = 0;
+            remainingGuesses = 0;
+            currentGuess = '';
+            guessHistory = [];
+            gameOver = false;
+            selectedThemeWord = '';
+            hintsUsed = 0;
+            
+            // NEW: Reset tracking variables
+            currentThemeId = null;
+            wordStartTime = null;
+            letterSwapCount = 0;
+            errorPatterns = [];
+            
+            document.getElementById('hintBtn').disabled = false;
+            document.getElementById('hintBtn').textContent = '💡 Get Hint';
+            document.getElementById('hintDisplay').classList.add('hidden');
+            document.getElementById('themeSelectionScreen').classList.add('hidden');
+            document.getElementById('themeInput').value = '';
+            document.getElementById('gameScreen').classList.add('hidden');
+            document.getElementById('themeInputScreen').classList.remove('hidden');
+            document.getElementById('previousGuesses').innerHTML = '';
+            document.getElementById('gameMessage').textContent = '';
+            document.getElementById('resetButton').classList.add('hidden');
+            document.getElementById('resetButton').textContent = 'Reset';
+            document.getElementById('giveUpBtn').classList.remove('hidden');
+            document.getElementById('submitGuess').disabled = false;
+            document.getElementById('hintBtn').classList.remove('hidden');
+            document.getElementById('submitGuess').classList.remove('hidden');
+            
+            document.querySelectorAll('.key').forEach(key => {
+                key.classList.remove('correct', 'present', 'used');
+            });
+        }
 
-Give a clever, creative hint that helps them guess the word WITHOUT revealing it directly. The hint should be:
-- One sentence only
-- Engaging and fun
-- Give context clues about the word's meaning or usage
-- Don't use the word itself or obvious rhymes
-- IMPORTANT: Give the hint in the same language as the word. If the word is French, give the hint in French. If Spanish, give hint in Spanish, etc.
+        // Keyboard input
+        document.addEventListener('keydown', (e) => {
+            if (gameOver) return;
+            
+            if (e.key === 'Enter') {
+                submitGuess();
+            } else if (e.key === 'Backspace') {
+                deleteLetter();
+            } else if (/^[a-zA-Z]$/.test(e.key)) {
+                addLetter(e.key.toUpperCase());
+            }
+        });
 
-Respond with ONLY the hint text, nothing else.`;
+        // Drag and drop
+        let draggedLetter = null;
+        let dragSourceIndex = null;
+        let dragSourceType = null;
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'x-api-key': CLAUDE_API_KEY,
-        'anthropic-version': '2023-06-01',
-        'content-type': 'application/json'
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 100,
-        messages: [{
-          role: 'user',
-          content: prompt
-        }]
-      })
-    });
+        document.querySelectorAll('.key[draggable="true"]').forEach(key => {
+            key.addEventListener('dragstart', (e) => {
+                if (gameOver) {
+                    e.preventDefault();
+                    return;
+                }
+                draggedLetter = e.target.textContent;
+                dragSourceType = 'keyboard';
+                e.target.classList.add('dragging');
+                e.dataTransfer.effectAllowed = 'copy';
+                e.dataTransfer.setData('text/plain', draggedLetter);
+            });
 
-    if (!response.ok) {
-      throw new Error(`Claude API error: ${response.status}`);
-    }
+            key.addEventListener('dragend', (e) => {
+                e.target.classList.remove('dragging');
+            });
+        });
 
-    const data = await response.json();
-    const hint = data.content[0].text.trim();
-    
-    console.log(`💡 Hint generated for ${userEmail}: "${hint}" (word: ${word})`);
-    
-    res.json({ hint });
-    
-  } catch (error) {
-    console.error('Error generating hint:', error);
-    res.status(500).json({
-      error: 'Failed to generate hint',
-      hint: 'Think about the theme and common words related to it.'
-    });
-  }
-});
+        document.getElementById('wordBoxes').addEventListener('dragstart', (e) => {
+            if (gameOver) return;
+            if (e.target.classList.contains('letter-box') && e.target.textContent.trim()) {
+                draggedLetter = e.target.textContent;
+                dragSourceType = 'box';
+                dragSourceIndex = parseInt(e.target.id.split('-')[1]);
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/plain', draggedLetter);
+                e.target.style.opacity = '0.5';
+                e.target.classList.add('dragging');
+            }
+        }, true);
 
-// Get stats (unchanged)
-app.get('/api/stats', async (req, res) => {
-  try {
-    const dailyLimit = await getDailyLimit();
-    const todayApiCalls = await getTodayApiCalls();
-    
-    res.json({
-      apiCallsToday: todayApiCalls,
-      dailyLimit: dailyLimit,
-      percentUsed: Math.round((todayApiCalls / dailyLimit) * 100)
-    });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to get stats' });
-  }
-});
+        document.getElementById('wordBoxes').addEventListener('dragend', (e) => {
+            if (e.target.classList.contains('letter-box')) {
+                e.target.style.opacity = '1';
+                e.target.classList.remove('dragging');
+            }
+        }, true);
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`🐝 Wizbee backend running on port ${PORT}`);
-  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`Claude API configured: ${!!process.env.CLAUDE_API_KEY}`);
-  console.log(`Database configured: ${!!process.env.DATABASE_URL}`);
-});
+        document.getElementById('wordBoxes').addEventListener('dragover', (e) => {
+            if (gameOver) return;
+            if (e.target.classList.contains('letter-box')) {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = dragSourceType === 'box' ? 'move' : 'copy';
+                e.target.classList.add('drag-over');
+            }
+        }, true);
+
+        document.getElementById('wordBoxes').addEventListener('dragleave', (e) => {
+            if (e.target.classList.contains('letter-box')) {
+                e.target.classList.remove('drag-over');
+            }
+        }, true);
+
+        document.getElementById('wordBoxes').addEventListener('drop', (e) => {
+            if (gameOver) return;
+            if (!e.target.classList.contains('letter-box')) return;
+            
+            e.preventDefault();
+            e.target.classList.remove('drag-over');
+            
+            const targetIndex = parseInt(e.target.id.split('-')[1]);
+            
+            if (dragSourceType === 'box' && dragSourceIndex !== null) {
+                if (dragSourceIndex !== targetIndex) {
+                    // NEW: Track letter swap
+                    letterSwapCount++;
+                    
+                    let guessArray = currentGuess.split('');
+                    
+                    if (targetIndex < guessArray.length && guessArray[targetIndex]) {
+                        const temp = guessArray[targetIndex];
+                        guessArray[targetIndex] = guessArray[dragSourceIndex];
+                        guessArray[dragSourceIndex] = temp;
+                    } else {
+                        guessArray.splice(dragSourceIndex, 1);
+                        
+                        let adjustedTarget = targetIndex;
+                        if (dragSourceIndex < targetIndex) {
+                            adjustedTarget--;
+                        }
+                        
+                        if (adjustedTarget >= guessArray.length) {
+                            guessArray.push(draggedLetter);
+                        } else {
+                            guessArray.splice(adjustedTarget, 0, draggedLetter);
+                        }
+                    }
+                    
+                    currentGuess = guessArray.join('');
+                    updateCurrentGuessDisplay();
+                }
+            } else if (dragSourceType === 'keyboard') {
+                if (targetIndex === currentGuess.length && currentGuess.length < currentWord.length) {
+                    addLetter(draggedLetter);
+                } else if (targetIndex < currentGuess.length) {
+                    let guessArray = currentGuess.split('');
+                    guessArray[targetIndex] = draggedLetter;
+                    currentGuess = guessArray.join('');
+                    updateCurrentGuessDisplay();
+                } else if (currentGuess.length < currentWord.length) {
+                    addLetter(draggedLetter);
+                }
+            }
+            
+            dragSourceType = null;
+            dragSourceIndex = null;
+            draggedLetter = null;
+        }, true);
+    </script>
+</body>
+</html>
