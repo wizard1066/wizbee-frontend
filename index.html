@@ -392,7 +392,7 @@
 	    currentLanguage = gameData.language || 'en';
 	    winMessage = gameData.winMessage;  
     	    loseMessage = gameData.loseMessage;
-    	    currentThemeId = gameData.themeId;  // NEW: Store theme ID
+    	    currentThemeId = gameData.themeId || null;  // NEW: Store theme ID (optional for backward compatibility)
             
             // NEW: Start timer for first word
             wordStartTime = Date.now();
