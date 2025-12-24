@@ -454,12 +454,6 @@
             }
         }
 
-        function checkUpgradePrompt() {
-            if (themesPlayedCount > MAX_THEMES) {
-                document.getElementById('upgradeModal').classList.remove('hidden');
-            }
-        }
-
         function closeUpgradeModal() {
             document.getElementById('upgradeModal').classList.add('hidden');
 
@@ -868,7 +862,7 @@
                 
                 createWordBoxes();
                 updateGuessCount();
-	        checkUpgradePrompt();
+                // Removed checkUpgradePrompt() - only check when actually hitting limit on new theme generation
                 return;
             }
             
