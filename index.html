@@ -3,419 +3,585 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wizbee - AI Word Puzzle Game</title>
-    
-    <!-- Google Sign-In -->
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>Wizbee - Word Puzzle Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 500px;
+            width: 100%;
+            padding: 30px;
+        }
+
+        h1 {
+            color: #667eea;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 0.9em;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Auth Screen */
+        .google-btn {
+            background: white;
+            border: 2px solid #ddd;
+            padding: 15px 30px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s;
+        }
+
+        .google-btn:hover {
+            background: #f8f8f8;
+            border-color: #667eea;
+        }
+
+        /* Theme Input */
+        input[type="text"] {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: #5568d3;
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        /* Game Screen */
+        #selectedTheme {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        #wordBoxes {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .letter-box {
+            width: 50px;
+            height: 50px;
+            border: 3px solid #ddd;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            background: white;
+            cursor: move;
+        }
+
+        .letter-box.small-font {
+            font-size: 20px;
+        }
+
+        .letter-box.tiny-font {
+            font-size: 16px;
+        }
+
+        .letter-box.correct {
+            background: #48bb78;
+            color: white;
+            border-color: #48bb78;
+        }
+
+        .letter-box.present {
+            background: #f6ad55;
+            color: white;
+            border-color: #f6ad55;
+        }
+
+        .letter-box.absent {
+            background: #cbd5e0;
+            border-color: #cbd5e0;
+        }
+
+        #guessCount {
+            text-align: center;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        /* Keyboard */
+        #keyboard {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 20px;
+        }
+
+        .keyboard-row {
+            display: flex;
+            gap: 6px;
+            justify-content: center;
+        }
+
+        .key {
+            padding: 15px;
+            background: #e2e8f0;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            min-width: 35px;
+            transition: all 0.2s;
+        }
+
+        .key:hover {
+            background: #cbd5e0;
+        }
+
+        .key.wide {
+            min-width: 65px;
+            font-size: 12px;
+        }
+
+        .key.correct {
+            background: #48bb78;
+            color: white;
+        }
+
+        .key.present {
+            background: #f6ad55;
+            color: white;
+        }
+
+        .key.used {
+            background: #cbd5e0;
+            color: #718096;
+        }
+
+        /* Messages */
+        .message {
+            text-align: center;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+
+        .message.win {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .message.lose {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+
+        #errorMessage {
+            background: #fef5e7;
+            color: #856404;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 2px solid #f39c12;
+        }
+
+        /* Options Container */
+        #optionsContainer {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .option-button {
+            padding: 15px;
+            background: #f7fafc;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .option-button:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        /* Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .modal h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .modal p {
+            margin-bottom: 20px;
+            color: #666;
+        }
+
+        /* Hint Button */
+        #hintButton {
+            background: #f6ad55;
+            margin-top: 10px;
+        }
+
+        #hintButton:hover {
+            background: #ed8936;
+        }
+
+        #hintText {
+            background: #fef5e7;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            font-style: italic;
+            color: #856404;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
-	<h1><img src="bee3.gif" alt="Wizbee" style="height: 48px; vertical-align: middle;"> Wizbee</h1>
+        <h1>🐝 Wizbee</h1>
+        <p class="subtitle">AI Word Puzzle Game</p>
 
-        <!-- Login Screen -->
-        <div id="loginScreen" class="login-screen">
-            <h2>Welcome to Wizbee!</h2>
-            <p>Sign in with Google to play AI-powered word puzzles</p>
-		<div style="display: flex; justify-content: center;">
-    		<div id="google-signin-button"></div>
-		</div>
+        <div id="errorMessage" class="hidden"></div>
+
+        <!-- Auth Screen -->
+        <div id="authScreen" class="screen active">
+            <div id="g_id_onload"
+                 data-client_id="YOUR_GOOGLE_CLIENT_ID"
+                 data-callback="handleCredentialResponse">
+            </div>
+            <button class="google-btn" onclick="loginWithGoogle()">
+                <svg width="18" height="18" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+                    <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                    <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                    <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                    <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                    <path fill="none" d="M0 0h48v48H0z"/>
+                </svg>
+                Sign in with Google
+            </button>
+        </div>
+
+        <!-- Theme Input Screen -->
+        <div id="themeInputScreen" class="screen">
+            <h2>Enter Your Theme</h2>
+            <input type="text" id="themeInput" placeholder="e.g., 3 letter animals for 5 year old" />
+            <button onclick="generateThemes()">Generate Puzzle</button>
+            <div id="optionsContainer"></div>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="gameScreen" class="screen">
+            <div id="selectedTheme"></div>
+            <div id="guessCount"></div>
+            <div id="wordBoxes"></div>
+            
+            <button id="hintButton" onclick="getHint()" class="hidden">Get Hint</button>
+            <div id="hintText" class="hidden"></div>
+            
+            <div id="keyboard"></div>
+            
+            <div id="gameMessage" class="hidden"></div>
+            
+            <button onclick="resetToTheme()" style="margin-top: 20px; background: #718096;">
+                New Theme
+            </button>
         </div>
 
         <!-- Upgrade Modal -->
-        <div id="upgradeModal" class="upgrade-modal hidden">
+        <div id="upgradeModal" class="modal hidden">
             <div class="modal-content">
-	        <h2>🎉 You've used all 4 free themes!</h2>
-	        <p>Buy 128 more themes for just $0.99</p>
-                <button class="upgrade-btn" onclick="upgradeNow()">Upgrade Now</button>
-                <button class="maybe-later-btn" onclick="closeUpgradeModal()">Maybe Later</button>
+                <h2>🎉 Upgrade to Premium</h2>
+                <p>You've used your 4 free themes!</p>
+                <p>Get 128 more themes for just <strong>$0.99</strong></p>
+                <button onclick="window.location.href='/premium'">Upgrade Now</button>
+                <button onclick="closeUpgradeModal()" style="background: #718096; margin-top: 10px;">
+                    Maybe Later
+                </button>
             </div>
         </div>
-
-        <!-- Screen 1: Theme Input -->
-        <div id="themeInputScreen" class="theme-input-screen hidden">
-            <div class="user-info">
-		<div>Signed in as: <span id="userEmail"></span></div>
-        	<button class="logout-btn" onclick="logout()">Logout</button>
-            </div>
-            <h2>What theme would you like?</h2>
-	    <div id="errorMessage" class="error-message hidden"></div>
-            <input type="text" id="themeInput" placeholder="Enter a theme (e.g., Italian Renaissance painters)">
-            <button onclick="generateThemes()">Generate →</button>
-        </div>
-
-        <!-- Screen 2: Theme Selection -->
-        <div id="themeSelectionScreen" class="theme-selection-screen hidden">
-            <h2>Choose your theme:</h2>
-            <div id="themeOptions" class="theme-options"></div>
-	    <button class="back-btn" onclick="resetToTheme()" style="margin-top: 20px;">← Back</button>
-        </div>
-
-        <!-- Screen 3: Game Board -->
-	<div id="gameScreen" class="game-screen hidden">
-    	<div class="theme-display">Theme: <span id="selectedTheme"></span></div>
-    	<div id="wordBoxes" class="word-boxes"></div>
-    	<div class="guesses-remaining">Guesses remaining: <span id="guessesRemaining"></span></div>
-    	<div id="keyboard" class="keyboard"></div>
-    
-    	<div class="guess-input-container">
-        	<button id="submitGuess" class="submit-guess" onclick="submitGuess()">Submit Word</button>
-        	<button id="hintBtn" class="hint-btn" onclick="getHint()">💡 Get Hint</button>
-        	<button id="giveUpBtn" class="give-up-btn" onclick="giveUp()">Give Up</button>
-    	</div>
-    
-    	<div id="hintDisplay" class="hint-display hidden"></div>
-
-    	<div id="previousGuesses" class="previous-guesses"></div>
-    	<div id="gameMessage" class="message"></div>
-    	<button id="resetButton" class="play-again hidden" onclick="resetToTheme()">Reset</button>
-	</div>
     </div>
 
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script>
-        // Your Railway backend URL
+        // Configuration
         const API_URL = 'https://wizbee-backend-production.up.railway.app';
         
-        // Google Client ID
-        const GOOGLE_CLIENT_ID = '635584185020-emmqudvevrf1j01lpu6nha4tfneju6t2.apps.googleusercontent.com';
-
-        let authToken = null;
-        let userEmail = null;
+        // State
+        let userEmail = localStorage.getItem('userEmail');
+        let authToken = localStorage.getItem('authToken');
+        let currentWords = [];
         let currentWord = '';
-        let maxGuesses = 0;
-        let remainingGuesses = 0;
+        let currentWordIndex = 0;
         let currentGuess = '';
-        let guessHistory = [];
+        let guessCount = 0;
+        let maxGuesses = 8;
         let gameOver = false;
-        let selectedThemeWord = '';
-	let hintsUsed = 0;
-	let winMessage = '';
-	let loseMessage = '';
-        const MAX_HINTS = 3;
-	const MAX_THEMES = 3;
         let currentLanguage = 'en';
-	let wordList = [];
-	let currentWordIndex = 0;
-        let themesPlayedCount = 0;
-        
-        // NEW: Tracking variables for database
+        let selectedThemeWord = '';
+        let hintsUsed = 0;
         let currentThemeId = null;
         let wordStartTime = null;
         let letterSwapCount = 0;
         let errorPatterns = [];
 
-	const keyboardLayouts = {
-            en: [ //English
-                ['Q','W','E','R','T','Y','U','I','O','P'],
-                ['A','S','D','F','G','H','J','K','L'],
-                ['Z','X','C','V','B','N','M','⌫']
-            ],
-            fr: [ //French
-                ['A','Z','E','R','T','Y','U','I','O','P'],
-                ['Q','S','D','F','G','H','J','K','L','M'],
-                ['W','X','C','V','B','N','É','È','Ê','À','⌫']
-            ],
-            es: [ //Spanish
-                ['Q','W','E','R','T','Y','U','I','O','P'],
-                ['A','S','D','F','G','H','J','K','L','Ñ'],
-                ['Z','X','C','V','B','N','M','Á','É','Í','Ó','Ú','⌫']
-            ],
-	    de: [ // German
-	        ['Q','W','E','R','T','Z','U','I','O','P','Ü'],
-        	['A','S','D','F','G','H','J','K','L','Ö','Ä'],
-        	['Y','X','C','V','B','N','M','ß','⌫']
-    	    ],
-    	    pl: [ // Polish
-        	['Q','W','E','R','T','Y','U','I','O','P'],
-        	['A','S','D','F','G','H','J','K','L','Ł'],
-        	['Z','X','C','V','B','N','M','Ą','Ć','Ę','Ń','Ó','Ś','Ź','Ż','⌫']
-    	    ],
-    	    it: [  // Italian
-    		['Q','W','E','R','T','Y','U','I','O','P'],
-    		['A','S','D','F','G','H','J','K','L'],
-    		['Z','X','C','V','B','N','M','À','È','É','Ì','Ò','Ù','⌫']
-	    ],
-	    pt: [  // Portuguese
-    		['Q','W','E','R','T','Y','U','I','O','P'],
-    		['A','S','D','F','G','H','J','K','L','Ç'],
-    		['Z','X','C','V','B','N','M','Á','À','Â','Ã','É','Ê','Í','Ó','Ô','Õ','Ú','⌫']
-	    ],
-	    nl: [  // Dutch
-    		['Q','W','E','R','T','Y','U','I','O','P'],
-    		['A','S','D','F','G','H','J','K','L'],
-    		['Z','X','C','V','B','N','M','⌫']
-	    ],
-	    sv: [  // Swedish/Norwegian
-    		['Q','W','E','R','T','Y','U','I','O','P','Å'],
-    		['A','S','D','F','G','H','J','K','L','Ö','Ä'],
-    		['Z','X','C','V','B','N','M','⌫']
-	    ],
-	    fi: [ // Finnish
-       		['Q','W','E','R','T','Y','U','I','O','P','Å'],
-    		['A','S','D','F','G','H','J','K','L','Ö','Ä'],
-    		['Z','X','C','V','B','N','M','⌫']
-	    ]
-        };
-
-        // Initialize Google Sign-In
-        function initializeGoogleSignIn() {
-            if (typeof google !== 'undefined' && google.accounts) {
-                google.accounts.id.initialize({
-                    client_id: GOOGLE_CLIENT_ID,
-                    callback: handleGoogleSignIn
-                });
-                
-                google.accounts.id.renderButton(
-                    document.getElementById('google-signin-button'),
-                    { theme: 'outline', size: 'large', text: 'signin_with' }
-                );
-            } else {
-                // Retry after 100ms if Google script not loaded yet
-                setTimeout(initializeGoogleSignIn, 100);
-            }
-        }
-
+        // Initialize
         window.onload = function() {
-            authToken = localStorage.getItem('authToken');
-            userEmail = localStorage.getItem('userEmail');
-            
             if (authToken && userEmail) {
-                showThemeInput();
+                showScreen('themeInputScreen');
             } else {
+                showScreen('authScreen');
                 initializeGoogleSignIn();
             }
         };
 
-        // Handle Google Sign-In
-        async function handleGoogleSignIn(response) {
+        function initializeGoogleSignIn() {
+            let attempts = 0;
+            const maxAttempts = 50;
+            
+            const checkGoogle = setInterval(() => {
+                attempts++;
+                if (typeof google !== 'undefined' && google.accounts) {
+                    clearInterval(checkGoogle);
+                    google.accounts.id.initialize({
+                        client_id: 'YOUR_GOOGLE_CLIENT_ID',
+                        callback: handleCredentialResponse
+                    });
+                    google.accounts.id.renderButton(
+                        document.querySelector('.google-btn'),
+                        { theme: 'outline', size: 'large' }
+                    );
+                } else if (attempts >= maxAttempts) {
+                    clearInterval(checkGoogle);
+                    console.error('Google Sign-In failed to load');
+                }
+            }, 100);
+        }
+
+        async function handleCredentialResponse(response) {
             try {
-                const apiResponse = await fetch(`${API_URL}/auth/google`, {
+                const decoded = JSON.parse(atob(response.credential.split('.')[1]));
+                userEmail = decoded.email;
+                
+                const authResponse = await fetch(`${API_URL}/auth/google`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        email: parseJwt(response.credential).email,
-                        googleToken: response.credential
-                    })
+                    body: JSON.stringify({ email: userEmail, googleToken: response.credential })
                 });
                 
-                const data = await apiResponse.json();
+                const data = await authResponse.json();
+                authToken = data.token;
                 
-                if (data.token) {
-                    authToken = data.token;
-                    userEmail = data.email;
-                    
-                    localStorage.setItem('authToken', authToken);
-                    localStorage.setItem('userEmail', userEmail);
-                    
-                    showThemeInput();
-                } else {
-		    showError('Authentication failed. Please try again.');
-                }
+                localStorage.setItem('userEmail', userEmail);
+                localStorage.setItem('authToken', authToken);
+                
+                showScreen('themeInputScreen');
             } catch (error) {
-                console.error('Auth error:', error);
-		showError('Authentication failed. Please try again.');
+                showError('Authentication failed. Please try again.');
             }
         }
 
-        // Parse JWT to get email
-        function parseJwt(token) {
-            const base64Url = token.split('.')[1];
-            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-            const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-            }).join(''));
-            return JSON.parse(jsonPayload);
+        function loginWithGoogle() {
+            google.accounts.id.prompt();
         }
 
-	// Function create keyboard
-	function createKeyboard(language) {
-    	    const container = document.getElementById('keyboard');
-    	    container.innerHTML = '';
-    
-    	    const layout = keyboardLayouts[language] || keyboardLayouts['en'];
-    
-    	    layout.forEach(row => {
-        	const rowDiv = document.createElement('div');
-        	rowDiv.className = 'keyboard-row';
-        
-        	row.forEach(letter => {
-            	    const key = document.createElement('button');
-            	    key.className = 'key';
-            	    key.textContent = letter;
-            
-            	    if (letter === '⌫') {
-                	key.onclick = () => deleteLetter();
-            	    } else {
-                	key.setAttribute('draggable', 'true');
-                	key.onclick = () => addLetter(letter);
-            	    }
-            
-            	    rowDiv.appendChild(key);
-       		});
-        
-        	container.appendChild(rowDiv);
-    	    });
-	}
-
-	function showError(message) {
- 	    const errorDiv = document.getElementById('errorMessage');
-    	    errorDiv.textContent = message;
-    	    errorDiv.classList.remove('hidden');
-    	    
-    	    // Longer display for important messages
-    	    const duration = message.length > 80 ? 8000 : 5000;
-    	    setTimeout(() => errorDiv.classList.add('hidden'), duration);
-	}
-
-        function showThemeInput() {
-            document.getElementById('loginScreen').classList.add('hidden');
-            document.getElementById('themeInputScreen').classList.remove('hidden');
-            document.getElementById('userEmail').textContent = userEmail;
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
         }
 
-        function logout() {
-            localStorage.removeItem('authToken');
-            localStorage.removeItem('userEmail');
-            authToken = null;
-            userEmail = null;
-            location.reload();
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.classList.remove('hidden');
+            
+            const duration = message.length > 80 ? 8000 : 5000;
+            setTimeout(() => errorDiv.classList.add('hidden'), duration);
         }
 
-        function generateThemes() {
-            const input = document.getElementById('themeInput').value.trim();
-            console.log('generateThemes called, input value:', input);
-            
-            if (!input) {
-		showError('Please enter a theme!');
-                return;
-            }
-            
-            document.getElementById('themeInputScreen').classList.add('hidden');
-            document.getElementById('themeSelectionScreen').classList.remove('hidden');
-            
-            const optionsContainer = document.getElementById('themeOptions');
-            
-            optionsContainer.innerHTML = '';
-            const button = document.createElement('div');
-            button.className = 'theme-option';
-            button.textContent = `Generate puzzle for: ${input}`;
-            
-            const capturedTheme = input;
-            console.log('Creating button with capturedTheme:', capturedTheme);
-            
-            button.onclick = function() {
-                console.log('Button clicked! Captured theme:', capturedTheme);
-                fetchAndStartGame(capturedTheme);
-            };
-            optionsContainer.appendChild(button);
-        }
-
-        async function fetchAndStartGame(theme) {
-            console.log('fetchAndStartGame called with theme:', theme, 'type:', typeof theme);
+        async function generateThemes() {
+            const theme = document.getElementById('themeInput').value.trim();
             
             if (!theme) {
-		showError('Error: No theme provided');
+                showError('Please enter a theme!');
                 return;
             }
-            
-            const optionsContainer = document.getElementById('themeOptions');
-	    optionsContainer.innerHTML = '<div style="padding: 40px; text-align: center; font-size: 24px;"><img src="bee2.gif" style="height: 80px; vertical-align: middle;"> Generating puzzle...</div>';
-            
+
+            const optionsContainer = document.getElementById('optionsContainer');
+            optionsContainer.innerHTML = '<p>Generating...</p>';
+
             try {
-                console.log('Calling API with theme:', theme);
-                
                 const response = await fetch(`${API_URL}/api/generate-word`, {
                     method: 'POST',
-                    headers: { 
+                    headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${authToken}`
                     },
-                    body: JSON.stringify({ theme: theme })
+                    body: JSON.stringify({ theme })
                 });
-                
-                console.log('API response status:', response.status);
 
-		const data = await response.json();
-                console.log('API data:', data);
+                const data = await response.json();
 
-		if (data.themesRemaining !== undefined) {
- 		    themesPlayedCount = data.themesUsed;
-    
-   		    // Show warning at theme 3
-    		    if (data.themesRemaining === 1) {
-        	//	showError('Warning: Only 1 free theme remaining!');
-    		    }
-		}
-
-		if (response.status === 429 || response.status === 503) {
-		    optionsContainer.innerHTML = '';
-
-		    showError(data.message || 'Theme limit reached!');
-		    document.getElementById('themeInput').disabled = true;
-
-			optionsContainer.innerHTML = '';
-    
-    			// Hide theme input elements
-    			document.getElementById('themeInput').style.display = 'none';
-    			document.querySelector('.theme-input-screen h2').style.display = 'none';
-			document.querySelector('.theme-input-screen > button').style.display = 'none';
-    
-   			 // Show upgrade modal
-    			document.getElementById('upgradeModal').classList.remove('hidden');
-
-                    resetToTheme();
-        	    return;
-        	}
-        	
-        	// Handle theme pool exhaustion (400 error)
-        	if (response.status === 400 && data.error === 'Theme exhausted') {
-        	    optionsContainer.innerHTML = '';
-        	    showError('⚠️ ' + data.message);
-        	    resetToTheme();
-        	    return;
-        	}
-
-                if (data.error) {
-		    showError(data.message || 'Failed to generate puzzle. Please try again.');
-                    resetToTheme();
+                if (response.status === 429 || response.status === 503) {
+                    optionsContainer.innerHTML = '';
+                    showError(data.message || 'Theme limit reached!');
+                    document.getElementById('themeInput').disabled = true;
+                    document.getElementById('themeInput').style.display = 'none';
+                    document.querySelector('#themeInputScreen h2').style.display = 'none';
+                    document.querySelector('#themeInputScreen button').style.display = 'none';
+                    document.getElementById('upgradeModal').classList.remove('hidden');
                     return;
                 }
 
+                if (response.status === 400) {
+                    optionsContainer.innerHTML = '';
+                    showError(data.message);
+                    return;
+                }
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'Failed to generate');
+                }
+
+                optionsContainer.innerHTML = '';
                 console.log('Starting game with words:', data.words);
                 startGame(data);
-                
+
             } catch (error) {
-                console.error('API Error:', error);
-		showError('Connection error: ' + error.message);
-                resetToTheme();
+                optionsContainer.innerHTML = '';
+                showError(error.message || 'Failed to generate puzzle');
             }
         }
 
-        function startGame(gameData) {
-	    wordList = gameData.words;
-    	    currentWordIndex = 0;
-            selectedThemeWord = gameData.theme;
-	    currentWord = wordList[currentWordIndex];
-            maxGuesses = gameData.guesses;
-            remainingGuesses = maxGuesses;
-	    currentLanguage = gameData.language || 'en';
-	    winMessage = gameData.winMessage;  
-    	    loseMessage = gameData.loseMessage;
-    	    currentThemeId = gameData.themeId || null;  // NEW: Store theme ID (optional for backward compatibility)
+        function startGame(data) {
+            currentWords = data.words;
+            currentThemeId = data.themeId || null;
+            currentWordIndex = 0;
+            selectedThemeWord = data.theme;
+            currentLanguage = data.language || 'en';
+            maxGuesses = data.guesses || 8;
             
-            // NEW: Start timer for first word
+            letterSwapCount = 0;
+            errorPatterns = [];
+            wordStartTime = Date.now();
+            
+            createKeyboard(currentLanguage);
+            nextWord();
+            showScreen('gameScreen');
+        }
+
+        function nextWord() {
+            if (currentWordIndex >= currentWords.length) {
+                showGameMessage('🎉 Theme Complete! You finished all words!', 'win');
+                setTimeout(() => resetToTheme(), 3000);
+                return;
+            }
+
+            currentWord = currentWords[currentWordIndex].toUpperCase();
+            currentGuess = '';
+            guessCount = 0;
+            gameOver = false;
+            hintsUsed = 0;
             wordStartTime = Date.now();
             letterSwapCount = 0;
             errorPatterns = [];
-    	    
-	    createKeyboard(currentLanguage);
-            
-            document.getElementById('themeSelectionScreen').classList.add('hidden');
-            document.getElementById('gameScreen').classList.remove('hidden');
-	    document.getElementById('selectedTheme').textContent = `${selectedThemeWord} (${currentWordIndex + 1}/${wordList.length})`;
 
+            document.getElementById('selectedTheme').textContent = 
+                `${selectedThemeWord} (${currentWordIndex + 1}/${currentWords.length})`;
+            document.getElementById('gameMessage').classList.add('hidden');
+            document.getElementById('hintButton').classList.remove('hidden');
+            document.getElementById('hintText').classList.add('hidden');
+            
+            document.querySelectorAll('.key').forEach(key => {
+                key.classList.remove('correct', 'present', 'used');
+            });
+            
             createWordBoxes();
             updateGuessCount();
         }
@@ -425,18 +591,106 @@
             container.innerHTML = '';
             
             let fontSizeClass = '';
-            if (currentWord.length > 9) {
-                fontSizeClass = 'tiny-font';
-            } else if (currentWord.length > 6) {
-                fontSizeClass = 'small-font';
-            }
+            if (currentWord.length > 9) fontSizeClass = 'tiny-font';
+            else if (currentWord.length > 6) fontSizeClass = 'small-font';
             
             for (let i = 0; i < currentWord.length; i++) {
                 const box = document.createElement('div');
                 box.className = `letter-box ${fontSizeClass}`;
                 box.id = `box-${i}`;
                 box.setAttribute('draggable', 'true');
+                box.addEventListener('dragstart', handleDragStart);
+                box.addEventListener('dragover', handleDragOver);
+                box.addEventListener('drop', handleDrop);
                 container.appendChild(box);
+            }
+        }
+
+        let draggedElement = null;
+
+        function handleDragStart(e) {
+            draggedElement = e.target;
+            e.dataTransfer.effectAllowed = 'move';
+        }
+
+        function handleDragOver(e) {
+            if (e.preventDefault) e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            return false;
+        }
+
+        function handleDrop(e) {
+            if (e.stopPropagation) e.stopPropagation();
+            
+            if (draggedElement !== e.target && e.target.classList.contains('letter-box')) {
+                const draggedIndex = Array.from(draggedElement.parentNode.children).indexOf(draggedElement);
+                const targetIndex = Array.from(e.target.parentNode.children).indexOf(e.target);
+                
+                const draggedLetter = currentGuess[draggedIndex];
+                const targetLetter = currentGuess[targetIndex];
+                
+                if (draggedLetter && targetLetter) {
+                    let newGuess = currentGuess.split('');
+                    newGuess[draggedIndex] = targetLetter;
+                    newGuess[targetIndex] = draggedLetter;
+                    currentGuess = newGuess.join('');
+                    letterSwapCount++;
+                    updateCurrentGuessDisplay();
+                }
+            }
+            
+            return false;
+        }
+
+        function createKeyboard(language) {
+            const keyboard = document.getElementById('keyboard');
+            keyboard.innerHTML = '';
+            
+            const layouts = {
+                en: [
+                    ['Q','W','E','R','T','Y','U','I','O','P'],
+                    ['A','S','D','F','G','H','J','K','L'],
+                    ['ENTER','Z','X','C','V','B','N','M','⌫']
+                ],
+                fr: [
+                    ['A','Z','E','R','T','Y','U','I','O','P'],
+                    ['Q','S','D','F','G','H','J','K','L','M'],
+                    ['ENTER','W','X','C','V','B','N','⌫']
+                ]
+            };
+            
+            const layout = layouts[language] || layouts.en;
+            
+            layout.forEach(row => {
+                const rowDiv = document.createElement('div');
+                rowDiv.className = 'keyboard-row';
+                
+                row.forEach(key => {
+                    const keyButton = document.createElement('button');
+                    keyButton.className = 'key';
+                    keyButton.textContent = key;
+                    
+                    if (key === 'ENTER' || key === '⌫') {
+                        keyButton.classList.add('wide');
+                    }
+                    
+                    keyButton.onclick = () => handleKeyPress(key);
+                    rowDiv.appendChild(keyButton);
+                });
+                
+                keyboard.appendChild(rowDiv);
+            });
+        }
+
+        function handleKeyPress(key) {
+            if (gameOver) return;
+            
+            if (key === 'ENTER') {
+                submitGuess();
+            } else if (key === '⌫') {
+                deleteLetter();
+            } else {
+                addLetter(key);
             }
         }
 
@@ -465,225 +719,198 @@
             }
         }
 
-        function closeUpgradeModal() {
-            document.getElementById('upgradeModal').classList.add('hidden');
-
-	   // Show upgrade button on theme screen
-    	    	const upgradeBtn = document.createElement('button');
-    	    	upgradeBtn.textContent = '🎉 Get 128 More Themes - $0.99';
-    		upgradeBtn.className = 'upgrade-btn';
-    		upgradeBtn.style.marginTop = '20px';
-    		upgradeBtn.onclick = upgradeNow;
-    
-    		const themeScreen = document.getElementById('themeInputScreen');
-    		if (!document.getElementById('permanentUpgradeBtn')) {
-        		upgradeBtn.id = 'permanentUpgradeBtn';
-        		themeScreen.appendChild(upgradeBtn);
-    		}
-        }
-
-        function upgradeNow() {
-            alert('Stripe payment coming soon!');
-            closeUpgradeModal();
-        }
-
-        // NEW: Detect dyslexia-related error patterns
         function detectErrorTypes(guess, targetWord) {
             const errors = [];
             
-            // Common reversal pairs
-            const reversalPairs = [
-                ['b', 'd'], ['p', 'q'], ['n', 'u'], ['m', 'w'],
-                ['6', '9'], ['s', 'z']
-            ];
+            const reversalPairs = {
+                b: 'd', d: 'b', p: 'q', q: 'p', n: 'u', u: 'n', 
+                m: 'w', w: 'm', '6': '9', '9': '6', s: 'z', z: 's'
+            };
             
-            for (let i = 0; i < guess.length && i < targetWord.length; i++) {
-                const guessChar = guess[i].toLowerCase();
-                const targetChar = targetWord[i].toLowerCase();
+            const visualSimilar = {
+                o: '0', '0': 'o', l: '1', '1': 'l', i: 'l', 
+                c: 'e', e: 'c', a: 'o', h: 'n', f: 't'
+            };
+            
+            const phoneticSimilar = {
+                c: 'k', k: 'c', s: 'c', f: 'ph', ph: 'f',
+                j: 'g', g: 'j', i: 'y', y: 'i', w: 'v', v: 'w'
+            };
+            
+            for (let i = 0; i < guess.length; i++) {
+                const g = guess[i].toLowerCase();
+                const t = targetWord[i].toLowerCase();
                 
-                // Check for reversals
-                for (const [a, b] of reversalPairs) {
-                    if ((guessChar === a && targetChar === b) || 
-                        (guessChar === b && targetChar === a)) {
-                        if (!errors.includes('reversal')) errors.push('reversal');
-                    }
-                }
-                
-                // Check for visual similarity (common confusions)
-                const visualPairs = [
-                    ['o', '0'], ['l', '1'], ['i', 'l'], ['c', 'e'],
-                    ['a', 'o'], ['h', 'n'], ['f', 't']
-                ];
-                for (const [a, b] of visualPairs) {
-                    if ((guessChar === a && targetChar === b) || 
-                        (guessChar === b && targetChar === a)) {
-                        if (!errors.includes('visual')) errors.push('visual');
-                    }
-                }
-                
-                // Check for phonetic confusion (sound-alike)
-                const phoneticPairs = [
-                    ['c', 'k'], ['s', 'c'], ['f', 'ph'], ['j', 'g'],
-                    ['i', 'y'], ['w', 'v']
-                ];
-                for (const [a, b] of phoneticPairs) {
-                    if ((guessChar === a && targetChar === b) || 
-                        (guessChar === b && targetChar === a)) {
-                        if (!errors.includes('phonetic')) errors.push('phonetic');
+                if (g !== t) {
+                    if (reversalPairs[g] === t) errors.push('reversal');
+                    if (visualSimilar[g] === t) errors.push('visual');
+                    if (phoneticSimilar[g] === t) errors.push('phonetic');
+                    
+                    if (i < guess.length - 1 && guess[i] === targetWord[i + 1] && guess[i + 1] === targetWord[i]) {
+                        errors.push('sequence');
                     }
                 }
             }
             
-            // Check for sequence errors (transpositions)
-            if (guess.length === targetWord.length) {
-                for (let i = 0; i < guess.length - 1; i++) {
-                    if (guess[i] === targetWord[i + 1] && 
-                        guess[i + 1] === targetWord[i]) {
-                        if (!errors.includes('sequence')) errors.push('sequence');
-                    }
-                }
+            const currentErrors = [...new Set(errors)];
+            const previousErrors = errorPatterns.length > 0 ? errorPatterns[errorPatterns.length - 1] : [];
+            const repeatedErrors = currentErrors.filter(e => previousErrors.includes(e));
+            
+            if (repeatedErrors.length >= 2) {
+                currentErrors.push('repetition');
             }
             
-            // Check for repetition (same error as previous guess)
-            if (guessHistory.length > 0) {
-                const prevGuess = guessHistory[guessHistory.length - 1];
-                let sameErrors = 0;
-                for (let i = 0; i < Math.min(guess.length, prevGuess.length); i++) {
-                    if (guess[i] === prevGuess[i] && guess[i] !== targetWord[i]) {
-                        sameErrors++;
-                    }
-                }
-                if (sameErrors >= 2) {
-                    if (!errors.includes('repetition')) errors.push('repetition');
-                }
-            }
-            
-            return errors;
+            return [...new Set(currentErrors)];
         }
 
-        function submitGuess() {
-            if (gameOver) return;
-
-            const guess = currentGuess.toUpperCase();
-            
-            if (guess.length !== currentWord.length) {
-		showError(`Please enter a ${currentWord.length}-letter word!`);
+        async function submitGuess() {
+            if (currentGuess.length !== currentWord.length) {
+                showError('Complete the word first!');
                 return;
             }
-            
-            // NEW: Detect error patterns before adding to history
-            const detectedErrors = detectErrorTypes(guess, currentWord);
-            errorPatterns = [...new Set([...errorPatterns, ...detectedErrors])];
-            
-            guessHistory.push(guess);
-            remainingGuesses--;
-            
-            showGuessFeedback(guess);
-            updateKeyboard(guess);
-            
-            if (guess === currentWord) {
+
+            if (gameOver) return;
+
+            guessCount++;
+            const errors = detectErrorTypes(currentGuess, currentWord);
+            errorPatterns.push(errors);
+
+            if (currentGuess === currentWord) {
+                // Win
                 for (let i = 0; i < currentWord.length; i++) {
-                    const box = document.getElementById(`box-${i}`);
-                    box.textContent = currentWord[i];
-                    box.classList.add('correct');
+                    document.getElementById(`box-${i}`).classList.add('correct');
                 }
-                endGame(true);
-            } else if (remainingGuesses === 0) {
-                endGame(false);
+                
+                updateKeyboardColors();
+                gameOver = true;
+                
+                await recordWordAttempt(true);
+                
+                showGameMessage('🎉 Correct! Moving to next word...', 'win');
+                
+                currentWordIndex++;
+                setTimeout(() => nextWord(), 2000);
+                
+            } else if (guessCount >= maxGuesses) {
+                // Lose
+                gameOver = true;
+                await recordWordAttempt(false);
+                
+                showGameMessage(`❌ Game Over! The word was: ${currentWord}`, 'lose');
+                setTimeout(() => {
+                    currentWordIndex++;
+                    nextWord();
+                }, 3000);
+                
             } else {
-		// Clear guess but preserve hint letters
-                let preservedGuess = '';
-                for (let i = 0; i < currentWord.length; i++) {
-                    const box = document.getElementById(`box-${i}`);
-                    if (box.style.opacity === '0.5') {
-                        preservedGuess += box.textContent;
-                    }
-                }
-                currentGuess = preservedGuess;
+                // Continue
+                updateBoxColors();
+                updateKeyboardColors();
+                currentGuess = '';
                 updateCurrentGuessDisplay();
+                updateGuessCount();
             }
-            
-            updateGuessCount();
         }
 
-        function showGuessFeedback(guess) {
-            const container = document.getElementById('previousGuesses');
-            const guessDiv = document.createElement('div');
-            guessDiv.className = 'previous-guess';
-            
-            const wordCopy = currentWord.split('');
-            const guessCopy = guess.split('');
-            const feedback = new Array(guess.length).fill('absent');
-            
-            for (let i = 0; i < guess.length; i++) {
-                if (guess[i] === currentWord[i]) {
-                    feedback[i] = 'correct';
-                    wordCopy[i] = null;
-                    guessCopy[i] = null;
+        function updateBoxColors() {
+            const letterCounts = {};
+            for (let letter of currentWord) {
+                letterCounts[letter] = (letterCounts[letter] || 0) + 1;
+            }
+
+            for (let i = 0; i < currentGuess.length; i++) {
+                const box = document.getElementById(`box-${i}`);
+                const guessLetter = currentGuess[i];
+                
+                if (guessLetter === currentWord[i]) {
+                    box.classList.add('correct');
+                    letterCounts[guessLetter]--;
                 }
             }
-            
-            for (let i = 0; i < guess.length; i++) {
-                if (guessCopy[i] !== null) {
-                    const index = wordCopy.indexOf(guessCopy[i]);
-                    if (index !== -1) {
-                        feedback[i] = 'present';
-                        wordCopy[index] = null;
+
+            for (let i = 0; i < currentGuess.length; i++) {
+                const box = document.getElementById(`box-${i}`);
+                const guessLetter = currentGuess[i];
+                
+                if (!box.classList.contains('correct')) {
+                    if (currentWord.includes(guessLetter) && letterCounts[guessLetter] > 0) {
+                        box.classList.add('present');
+                        letterCounts[guessLetter]--;
+                    } else {
+                        box.classList.add('absent');
                     }
                 }
             }
-            
-            let fontSizeClass = '';
-            if (currentWord.length > 9) {
-                fontSizeClass = 'tiny-font';
-            } else if (currentWord.length > 6) {
-                fontSizeClass = 'small-font';
-            }
-            
-            for (let i = 0; i < guess.length; i++) {
-                const box = document.createElement('div');
-                box.className = `letter-box ${feedback[i]} ${fontSizeClass}`;
-                box.textContent = guess[i];
-                guessDiv.appendChild(box);
-            }
-            
-            container.appendChild(guessDiv);
         }
 
-        function updateKeyboard(guess) {
-            const wordCopy = currentWord.split('');
-            
-            for (let i = 0; i < guess.length; i++) {
-                const letter = guess[i];
-                const key = Array.from(document.querySelectorAll('.key')).find(k => k.textContent === letter);
-                
-                if (!key) continue;
-                
-                if (guess[i] === currentWord[i]) {
-                    key.classList.add('correct');
-                    key.classList.remove('present', 'used');
-                } else if (wordCopy.includes(letter) && !key.classList.contains('correct')) {
-                    key.classList.add('present');
-                    key.classList.remove('used');
-                } else if (!key.classList.contains('correct') && !key.classList.contains('present')) {
-                    key.classList.add('used');
-                }
+        function updateKeyboardColors() {
+            for (let letter of currentGuess) {
+                const keys = document.querySelectorAll('.key');
+                keys.forEach(key => {
+                    if (key.textContent === letter) {
+                        if (currentWord.includes(letter)) {
+                            if (currentWord.indexOf(letter) === currentGuess.indexOf(letter)) {
+                                key.classList.add('correct');
+                            } else {
+                                key.classList.add('present');
+                            }
+                        } else {
+                            key.classList.add('used');
+                        }
+                    }
+                });
             }
         }
 
         function updateGuessCount() {
-            document.getElementById('guessesRemaining').textContent = remainingGuesses;
+            document.getElementById('guessCount').textContent = 
+                `Guesses: ${guessCount}/${maxGuesses}`;
         }
 
-        // NEW: Record word completion to database
-        async function recordWordAttempt(won) {
-            if (!currentThemeId) {
-                console.warn('No theme ID available, skipping record');
+        function showGameMessage(text, type) {
+            const msg = document.getElementById('gameMessage');
+            msg.textContent = text;
+            msg.className = `message ${type}`;
+            msg.classList.remove('hidden');
+        }
+
+        async function getHint() {
+            if (hintsUsed > 0) {
+                showError('Only one hint per word!');
                 return;
             }
-            
+
+            try {
+                const response = await fetch(`${API_URL}/api/get-hint`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ word: currentWord, theme: selectedThemeWord })
+                });
+
+                const data = await response.json();
+                
+                document.getElementById('hintText').textContent = `💡 ${data.hint}`;
+                document.getElementById('hintText').classList.remove('hidden');
+                document.getElementById('hintButton').classList.add('hidden');
+                
+                hintsUsed++;
+
+            } catch (error) {
+                showError('Failed to get hint');
+            }
+        }
+
+        async function recordWordAttempt(won) {
+            if (!currentThemeId) {
+                console.log('No theme ID available, skipping record');
+                return;
+            }
+
             const timeSeconds = Math.floor((Date.now() - wordStartTime) / 1000);
-            
+
             try {
                 await fetch(`${API_URL}/api/record-word-attempt`, {
                     method: 'POST',
@@ -694,354 +921,44 @@
                     body: JSON.stringify({
                         themeId: currentThemeId,
                         word: currentWord,
-                        guesses: maxGuesses - remainingGuesses,
+                        guesses: guessCount,
                         hintsUsed: hintsUsed,
                         won: won,
                         letterSwaps: letterSwapCount,
-                        errorTypes: errorPatterns,
+                        errorTypes: [...new Set(errorPatterns.flat())],
                         timeSeconds: timeSeconds
                     })
                 });
-                console.log(`✅ Word attempt recorded: ${currentWord} (won: ${won}, errors: ${errorPatterns.join(', ')})`);
+
+                console.log(`✅ Word attempt recorded: ${currentWord} (won: ${won}, errors: ${[...new Set(errorPatterns.flat())].join(', ')})`);
+
             } catch (error) {
                 console.error('Failed to record word attempt:', error);
-                // Non-blocking - game continues even if recording fails
             }
         }
 
-        async function endGame(won) {
-            gameOver = true;
-            
-            // NEW: Record this word attempt
-            await recordWordAttempt(won);
-            
-            const messageDiv = document.getElementById('gameMessage');
-            const submitButton = document.getElementById('submitGuess');
-            const giveUpButton = document.getElementById('giveUpBtn');
-            const resetButton = document.getElementById('resetButton');
-	    const hintDisplay = document.getElementById('hintDisplay');  
-	    const hintBtn = document.getElementById('hintBtn');  
-            
-            giveUpButton.classList.add('hidden');
-            resetButton.classList.remove('hidden');
-            hintDisplay.classList.add('hidden');
-    	    hintBtn.classList.add('hidden');  
-	    submitButton.classList.add('hidden'); 
-
-	    if (won) {
- 	   	celebrateWin();
-		messageDiv.textContent = `🎉 ${winMessage} ${currentWord}`;
-    		messageDiv.className = 'message win';
-	    } else {
-		messageDiv.textContent = `${loseMessage} ${currentWord}`;
-    		messageDiv.className = 'message lose';
-	    }
-
-	    if (currentWordIndex < wordList.length - 1) {
-    		resetButton.textContent = 'Next Word →';
-    		resetButton.classList.remove('hidden');
-	    } else {
-    		resetButton.textContent = 'New Theme';
-    		resetButton.classList.remove('hidden');
-    		
-    		// Show tip about word variety for completed themes
-    		if (currentWord.length <= 4) {
-    		    console.log('💡 Tip: Try different themes or longer words for more variety!');
-    		}
-	    }
-        }
-
-        function celebrateWin() {
-            for (let i = 0; i < currentWord.length; i++) {
-                const box = document.getElementById(`box-${i}`);
-                
-                setTimeout(() => { box.classList.add('flash'); }, i * 150);
-                setTimeout(() => { box.classList.remove('flash'); }, i * 150 + 1000);
-                setTimeout(() => { box.classList.add('flash'); }, i * 150 + 1200);
-                setTimeout(() => { box.classList.remove('flash'); }, i * 150 + 2200);
-            }
-        }
-
-        function giveUp() {
-            if (gameOver) return;
-            endGame(false);
-        }
-
-	async function getHint() {
-            if (gameOver) return;
-            if (hintsUsed >= MAX_HINTS) {
-		showError('You\'ve used all your hints for this puzzle!');
-                return;
-            }
-            
-            const hintBtn = document.getElementById('hintBtn');
-            const hintDisplay = document.getElementById('hintDisplay');
-
-	    if (hintsUsed < 2) {
-        	const emptyBoxes = [];
-        	for (let i = 0; i < currentWord.length; i++) {
-            	    if (!document.getElementById(`box-${i}`).textContent) {
-                	emptyBoxes.push(i);
-            	    }
-        	}
-        
-        	if (emptyBoxes.length > 0) {
-            	    const randomIndex = emptyBoxes[0]; // First empty box
-            	    const box = document.getElementById(`box-${randomIndex}`);
-            	    box.textContent = currentWord[randomIndex];
-            	    box.style.opacity = '0.5';
-            	    currentGuess += currentWord[randomIndex];
-        	}
-        
-            	hintsUsed++;
-            	hintBtn.textContent = `💡 Hint (${3 - hintsUsed} left)`;
-            	return;
-    	    }
-            
-            hintBtn.disabled = true;
-            hintDisplay.textContent = '💡 Generating hint...';
-            hintDisplay.classList.remove('hidden');
-            
-            try {
-                const response = await fetch(`${API_URL}/api/get-hint`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${authToken}`
-                    },
-                    body: JSON.stringify({
-                        word: currentWord,
-                        theme: selectedThemeWord
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.hint) {
-                    hintDisplay.textContent = '💡 ' + data.hint;
-                    hintsUsed++;
-                    
-                    if (hintsUsed >= MAX_HINTS) {
-                        hintBtn.textContent = '💡 No hints left';
-                    } else {
-                        hintBtn.disabled = false;
-                        hintBtn.textContent = `💡 Get Hint (${MAX_HINTS - hintsUsed} left)`;
-                    }
-                } else {
-                    throw new Error('No hint received');
-                }
-                
-            } catch (error) {
-                console.error('Hint error:', error);
-                hintDisplay.textContent = '❌ Failed to generate hint. Try again!';
-                hintBtn.disabled = false;
-            }
-        }
-
-	function resetToTheme() {
-            // Check if moving to next word in set
-            if (currentWordIndex < wordList.length - 1 && wordList.length > 0) {
-                currentWordIndex++;
-                currentWord = wordList[currentWordIndex];
-                maxGuesses = 8;
-                remainingGuesses = maxGuesses;
-                currentGuess = '';
-                guessHistory = [];
-                gameOver = false;
-                hintsUsed = 0;
-                
-                // NEW: Reset tracking for new word
-                wordStartTime = Date.now();
-                letterSwapCount = 0;
-                errorPatterns = [];
-                
-                document.getElementById('selectedTheme').textContent = `${selectedThemeWord} (${currentWordIndex + 1}/${wordList.length})`;
-                document.getElementById('previousGuesses').innerHTML = '';
-                document.getElementById('gameMessage').textContent = '';
-                document.getElementById('resetButton').classList.add('hidden');
-                document.getElementById('giveUpBtn').classList.remove('hidden');
-                document.getElementById('submitGuess').classList.remove('hidden');
-                document.getElementById('submitGuess').disabled = false;
-                document.getElementById('hintBtn').classList.remove('hidden');
-                document.getElementById('hintBtn').disabled = false;
-                document.getElementById('hintBtn').textContent = '💡 Get Hint';
-                document.getElementById('hintDisplay').classList.add('hidden');
-                
-                document.querySelectorAll('.key').forEach(key => {
-                    key.classList.remove('correct', 'present', 'used');
-                });
-                
-                createWordBoxes();
-                updateGuessCount();
-                // Removed checkUpgradePrompt() - only check when actually hitting limit on new theme generation
-                return;
-            }
-            
-            // Reset to theme input
-            currentWord = '';
-            wordList = [];
-            currentWordIndex = 0;
-            maxGuesses = 0;
-            remainingGuesses = 0;
-            currentGuess = '';
-            guessHistory = [];
-            gameOver = false;
-            selectedThemeWord = '';
-            hintsUsed = 0;
-            
-            // NEW: Reset tracking variables
-            currentThemeId = null;
-            wordStartTime = null;
-            letterSwapCount = 0;
-            errorPatterns = [];
-            
-            document.getElementById('hintBtn').disabled = false;
-            document.getElementById('hintBtn').textContent = '💡 Get Hint';
-            document.getElementById('hintDisplay').classList.add('hidden');
-            document.getElementById('themeSelectionScreen').classList.add('hidden');
+        function resetToTheme() {
+            showScreen('themeInputScreen');
             document.getElementById('themeInput').value = '';
-            document.getElementById('gameScreen').classList.add('hidden');
-            document.getElementById('themeInputScreen').classList.remove('hidden');
-            document.getElementById('previousGuesses').innerHTML = '';
-            document.getElementById('gameMessage').textContent = '';
-            document.getElementById('resetButton').classList.add('hidden');
-            document.getElementById('resetButton').textContent = 'Reset';
-            document.getElementById('giveUpBtn').classList.remove('hidden');
-            document.getElementById('submitGuess').disabled = false;
-            document.getElementById('hintBtn').classList.remove('hidden');
-            document.getElementById('submitGuess').classList.remove('hidden');
-            
-            document.querySelectorAll('.key').forEach(key => {
-                key.classList.remove('correct', 'present', 'used');
-            });
+            document.getElementById('optionsContainer').innerHTML = '';
         }
 
-        // Keyboard input
+        function closeUpgradeModal() {
+            document.getElementById('upgradeModal').classList.add('hidden');
+        }
+
+        // Keyboard support
         document.addEventListener('keydown', (e) => {
-            if (gameOver) return;
-            
-            if (e.key === 'Enter') {
-                submitGuess();
-            } else if (e.key === 'Backspace') {
-                deleteLetter();
-            } else if (/^[a-zA-Z]$/.test(e.key)) {
-                addLetter(e.key.toUpperCase());
+            if (document.getElementById('gameScreen').classList.contains('active')) {
+                if (e.key === 'Enter') {
+                    submitGuess();
+                } else if (e.key === 'Backspace') {
+                    deleteLetter();
+                } else if (e.key.length === 1 && e.key.match(/[a-z]/i)) {
+                    addLetter(e.key.toUpperCase());
+                }
             }
         });
-
-        // Drag and drop
-        let draggedLetter = null;
-        let dragSourceIndex = null;
-        let dragSourceType = null;
-
-        document.querySelectorAll('.key[draggable="true"]').forEach(key => {
-            key.addEventListener('dragstart', (e) => {
-                if (gameOver) {
-                    e.preventDefault();
-                    return;
-                }
-                draggedLetter = e.target.textContent;
-                dragSourceType = 'keyboard';
-                e.target.classList.add('dragging');
-                e.dataTransfer.effectAllowed = 'copy';
-                e.dataTransfer.setData('text/plain', draggedLetter);
-            });
-
-            key.addEventListener('dragend', (e) => {
-                e.target.classList.remove('dragging');
-            });
-        });
-
-        document.getElementById('wordBoxes').addEventListener('dragstart', (e) => {
-            if (gameOver) return;
-            if (e.target.classList.contains('letter-box') && e.target.textContent.trim()) {
-                draggedLetter = e.target.textContent;
-                dragSourceType = 'box';
-                dragSourceIndex = parseInt(e.target.id.split('-')[1]);
-                e.dataTransfer.effectAllowed = 'move';
-                e.dataTransfer.setData('text/plain', draggedLetter);
-                e.target.style.opacity = '0.5';
-                e.target.classList.add('dragging');
-            }
-        }, true);
-
-        document.getElementById('wordBoxes').addEventListener('dragend', (e) => {
-            if (e.target.classList.contains('letter-box')) {
-                e.target.style.opacity = '1';
-                e.target.classList.remove('dragging');
-            }
-        }, true);
-
-        document.getElementById('wordBoxes').addEventListener('dragover', (e) => {
-            if (gameOver) return;
-            if (e.target.classList.contains('letter-box')) {
-                e.preventDefault();
-                e.dataTransfer.dropEffect = dragSourceType === 'box' ? 'move' : 'copy';
-                e.target.classList.add('drag-over');
-            }
-        }, true);
-
-        document.getElementById('wordBoxes').addEventListener('dragleave', (e) => {
-            if (e.target.classList.contains('letter-box')) {
-                e.target.classList.remove('drag-over');
-            }
-        }, true);
-
-        document.getElementById('wordBoxes').addEventListener('drop', (e) => {
-            if (gameOver) return;
-            if (!e.target.classList.contains('letter-box')) return;
-            
-            e.preventDefault();
-            e.target.classList.remove('drag-over');
-            
-            const targetIndex = parseInt(e.target.id.split('-')[1]);
-            
-            if (dragSourceType === 'box' && dragSourceIndex !== null) {
-                if (dragSourceIndex !== targetIndex) {
-                    // NEW: Track letter swap
-                    letterSwapCount++;
-                    
-                    let guessArray = currentGuess.split('');
-                    
-                    if (targetIndex < guessArray.length && guessArray[targetIndex]) {
-                        const temp = guessArray[targetIndex];
-                        guessArray[targetIndex] = guessArray[dragSourceIndex];
-                        guessArray[dragSourceIndex] = temp;
-                    } else {
-                        guessArray.splice(dragSourceIndex, 1);
-                        
-                        let adjustedTarget = targetIndex;
-                        if (dragSourceIndex < targetIndex) {
-                            adjustedTarget--;
-                        }
-                        
-                        if (adjustedTarget >= guessArray.length) {
-                            guessArray.push(draggedLetter);
-                        } else {
-                            guessArray.splice(adjustedTarget, 0, draggedLetter);
-                        }
-                    }
-                    
-                    currentGuess = guessArray.join('');
-                    updateCurrentGuessDisplay();
-                }
-            } else if (dragSourceType === 'keyboard') {
-                if (targetIndex === currentGuess.length && currentGuess.length < currentWord.length) {
-                    addLetter(draggedLetter);
-                } else if (targetIndex < currentGuess.length) {
-                    let guessArray = currentGuess.split('');
-                    guessArray[targetIndex] = draggedLetter;
-                    currentGuess = guessArray.join('');
-                    updateCurrentGuessDisplay();
-                } else if (currentGuess.length < currentWord.length) {
-                    addLetter(draggedLetter);
-                }
-            }
-            
-            dragSourceType = null;
-            dragSourceIndex = null;
-            draggedLetter = null;
-        }, true);
     </script>
 </body>
 </html>
