@@ -37,6 +37,67 @@
     z-index: 1000;
 }
 
+/* Warning Modal for Theme Exhaustion */
+.exhausted-warning {
+    padding: 30px;
+    text-align: center;
+    background: linear-gradient(135deg, #fff5f5 0%, #fef5e7 100%);
+    border-radius: 15px;
+    border: 3px solid #f59e0b;
+    margin: 20px 0;
+}
+
+.exhausted-warning p {
+    color: #c53030;
+    font-weight: bold;
+    font-size: 18px;
+    margin-bottom: 25px;
+    line-height: 1.6;
+}
+
+.warning-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.play-anyway-btn {
+    padding: 15px 30px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    transition: all 0.3s;
+}
+
+.play-anyway-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+}
+
+.choose-theme-btn {
+    padding: 15px 30px;
+    background: #718096;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    box-shadow: 0 4px 15px rgba(113, 128, 150, 0.3);
+    transition: all 0.3s;
+}
+
+.choose-theme-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(113, 128, 150, 0.5);
+}
+
 .modal-content {
     background: white;
     padding: 40px;

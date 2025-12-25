@@ -362,41 +362,23 @@
 		}
 
 		// Handle theme pool exhaustion (400 error)
-if (response.status === 400 && data.error === 'Theme exhausted') {
+		if (response.status === 400 && data.error === 'Theme exhausted') {
     optionsContainer.innerHTML = `
-        <div style="padding: 20px; text-align: center;">
-            <p style="color: #e53e3e; font-weight: bold; margin-bottom: 20px;">⚠️ ${data.message}</p>
-            <button onclick="fetchAndStartGame('${theme}', true)" style="margin-right: 10px;">
-                Play Anyway (Repeat Words)
-            </button>
-            <button onclick="resetToTheme()">
-                Choose Different Theme
-            </button>
+        <div class="exhausted-warning">
+            <p>⚠️ ${data.message}</p>
+            <div class="warning-buttons">
+                <button class="play-anyway-btn" onclick="fetchAndStartGameForced('${theme.replace(/'/g, "\\'")}')">
+                    🔄 Play Anyway (Repeat Words)
+                </button>
+                <button class="choose-theme-btn" onclick="resetToTheme()">
+                    🎨 Choose Different Theme
+                </button>
+            </div>
         </div>
     `;
     return;
 }
-/*
-		if (response.status === 429 || response.status === 503) {
-		    optionsContainer.innerHTML = '';
-
-		    showError(data.message || 'Theme limit reached!');
-		    document.getElementById('themeInput').disabled = true;
-
-			optionsContainer.innerHTML = '';
-    
-    			// Hide theme input elements
-    			document.getElementById('themeInput').style.display = 'none';
-    			document.querySelector('.theme-input-screen h2').style.display = 'none';
-			document.querySelector('.theme-input-screen > button').style.display = 'none';
-    
-   			 // Show upgrade modal
-    			document.getElementById('upgradeModal').classList.remove('hidden');
-
-                    resetToTheme();
-        	    return;
-        	}*/
-        	
+       	
         	// Handle theme pool exhaustion (400 error)
         	if (response.status === 400 && data.error === 'Theme exhausted') {
         	    optionsContainer.innerHTML = '';
