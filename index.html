@@ -35,7 +35,7 @@
         </div>
 
         <!-- Screen 1: Theme Input -->
-        <div id="themeInputScreen" class="theme-input-screen hidden">
+        /*<div id="themeInputScreen" class="theme-input-screen hidden">
             <div class="user-info">
 		<div>Signed in as: <span id="userEmail"></span></div>
         	<button class="logout-btn" onclick="logout()">Logout</button>
@@ -44,6 +44,36 @@
 	    <div id="errorMessage" class="error-message hidden"></div>
             <input type="text" id="themeInput" placeholder="Enter a theme (e.g., Italian Renaissance painters)">
             <button onclick="generateThemes()">Generate →</button>
+        </div>*/
+
+	<!-- Screen 1: Theme Input -->
+        <div id="themeInputScreen" class="theme-input-screen hidden">
+            <div class="user-info">
+		<div>Signed in as: <span id="userEmail"></span></div>
+        	<button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+            
+            <!-- Tab Navigation -->
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('newTheme')">New Theme</button>
+                <button class="tab" onclick="switchTab('browseThemes')">Browse Themes</button>
+            </div>
+            
+            <!-- New Theme Tab -->
+            <div id="newThemeTab" class="tab-content active">
+                <h2>What theme would you like?</h2>
+	        <div id="errorMessage" class="error-message hidden"></div>
+                <input type="text" id="themeInput" placeholder="Enter a theme (e.g., Italian Renaissance painters)">
+                <button onclick="generateThemes()">Generate →</button>
+            </div>
+            
+            <!-- Browse Themes Tab -->
+            <div id="browseThemesTab" class="tab-content">
+                <h2>Popular Themes</h2>
+                <div id="themesList" style="max-height: 400px; overflow-y: auto;">
+                    <div style="text-align: center; padding: 40px; color: #718096;">Loading themes...</div>
+                </div>
+            </div>
         </div>
 
         <!-- Screen 2: Theme Selection -->
