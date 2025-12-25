@@ -303,6 +303,118 @@
             color: #666;
         }
 
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            color: #718096;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .tab:hover {
+            color: #667eea;
+        }
+
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Browse Themes */
+        .theme-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .language-section {
+            margin-bottom: 25px;
+        }
+
+        .language-header {
+            background: #667eea;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 10px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .difficulty-section {
+            margin-bottom: 15px;
+            padding-left: 10px;
+        }
+
+        .difficulty-header {
+            color: #667eea;
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+        }
+
+        .theme-item {
+            background: #f7fafc;
+            padding: 12px 15px;
+            margin: 5px 0;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .theme-item:hover {
+            background: #edf2f7;
+            border-color: #667eea;
+            transform: translateX(5px);
+        }
+
+        .theme-name {
+            font-weight: bold;
+            color: #2d3748;
+        }
+
+        .theme-stats {
+            display: flex;
+            gap: 10px;
+            font-size: 0.85em;
+            color: #718096;
+        }
+
+        .theme-badge {
+            background: #667eea;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75em;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #718096;
+        }
+
         /* Hint Button */
         #hintButton {
             background: #f6ad55;
@@ -333,27 +445,34 @@
         <!-- Auth Screen -->
         <div id="authScreen" class="screen active">
             <div id="g_id_onload"
-                 data-client_id="YOUR_GOOGLE_CLIENT_ID"
+                 data-client_id="635584185020-emmqudvevrf1j01lpu6nha4tfneju6t2.apps.googleusercontent.com"
                  data-callback="handleCredentialResponse">
             </div>
-            <button class="google-btn" onclick="loginWithGoogle()">
-                <svg width="18" height="18" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
-                    <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-                    <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-                    <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-                    <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-                    <path fill="none" d="M0 0h48v48H0z"/>
-                </svg>
-                Sign in with Google
-            </button>
+            <div id="g_id_signin"></div>
         </div>
 
         <!-- Theme Input Screen -->
         <div id="themeInputScreen" class="screen">
-            <h2>Enter Your Theme</h2>
-            <input type="text" id="themeInput" placeholder="e.g., 3 letter animals for 5 year old" />
-            <button onclick="generateThemes()">Generate Puzzle</button>
-            <div id="optionsContainer"></div>
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('newTheme')">New Theme</button>
+                <button class="tab" onclick="switchTab('browseThemes')">Browse Themes</button>
+            </div>
+
+            <!-- New Theme Tab -->
+            <div id="newThemeTab" class="tab-content active">
+                <h2>Enter Your Theme</h2>
+                <input type="text" id="themeInput" placeholder="e.g., 3 letter animals for 5 year old" />
+                <button onclick="generateThemes()">Generate Puzzle</button>
+                <div id="optionsContainer"></div>
+            </div>
+
+            <!-- Browse Themes Tab -->
+            <div id="browseThemesTab" class="tab-content">
+                <h2>Popular Themes</h2>
+                <div id="themesList" class="theme-list">
+                    <div class="loading">Loading themes...</div>
+                </div>
+            </div>
         </div>
 
         <!-- Game Screen -->
@@ -391,6 +510,7 @@
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script>
         // Configuration
+        const GOOGLE_CLIENT_ID = '635584185020-emmqudvevrf1j01lpu6nha4tfneju6t2.apps.googleusercontent.com';
         const API_URL = 'https://wizbee-backend-production.up.railway.app';
         
         // State
@@ -415,11 +535,163 @@
         window.onload = function() {
             if (authToken && userEmail) {
                 showScreen('themeInputScreen');
+                loadBrowseThemes();
             } else {
                 showScreen('authScreen');
                 initializeGoogleSignIn();
             }
         };
+
+        function switchTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            
+            if (tabName === 'newTheme') {
+                document.getElementById('newThemeTab').classList.add('active');
+            } else if (tabName === 'browseThemes') {
+                document.getElementById('browseThemesTab').classList.add('active');
+            }
+        }
+
+        async function loadBrowseThemes() {
+            const themesList = document.getElementById('themesList');
+            
+            try {
+                const response = await fetch(`${API_URL}/api/browse-themes`);
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    themesList.innerHTML = '<div class="loading">Failed to load themes</div>';
+                    return;
+                }
+
+                const languageNames = {
+                    en: '🇬🇧 English',
+                    fr: '🇫🇷 French',
+                    es: '🇪🇸 Spanish',
+                    de: '🇩🇪 German',
+                    it: '🇮🇹 Italian',
+                    pt: '🇵🇹 Portuguese',
+                    nl: '🇳🇱 Dutch',
+                    sv: '🇸🇪 Swedish',
+                    pl: '🇵🇱 Polish',
+                    fi: '🇫🇮 Finnish'
+                };
+
+                const difficultyNames = {
+                    easy: '⭐ Easy (Ages 5-7)',
+                    medium: '⭐⭐ Medium (Ages 8-10)',
+                    hard: '⭐⭐⭐ Hard (Ages 11+)'
+                };
+
+                let html = '';
+                
+                // Sort languages alphabetically
+                const sortedLanguages = Object.keys(data.themes).sort();
+                
+                sortedLanguages.forEach(lang => {
+                    const languageName = languageNames[lang] || lang.toUpperCase();
+                    
+                    html += `<div class="language-section">`;
+                    html += `<div class="language-header">${languageName}</div>`;
+                    
+                    ['easy', 'medium', 'hard'].forEach(difficulty => {
+                        const themes = data.themes[lang][difficulty];
+                        
+                        if (themes && themes.length > 0) {
+                            html += `<div class="difficulty-section">`;
+                            html += `<div class="difficulty-header">${difficultyNames[difficulty]}</div>`;
+                            
+                            themes.forEach(theme => {
+                                html += `
+                                    <div class="theme-item" onclick="launchThemeFromBrowser('${theme.cacheKey}', '${theme.displayName}')">
+                                        <span class="theme-name">${theme.displayName}</span>
+                                        <div class="theme-stats">
+                                            <span class="theme-badge">${theme.wordCount} words</span>
+                                            <span style="color: #cbd5e0;">👥 ${theme.useCount}</span>
+                                        </div>
+                                    </div>
+                                `;
+                            });
+                            
+                            html += `</div>`;
+                        }
+                    });
+                    
+                    html += `</div>`;
+                });
+
+                if (html === '') {
+                    html = '<div class="loading">No themes available yet. Be the first to create one!</div>';
+                }
+                
+                themesList.innerHTML = html;
+
+            } catch (error) {
+                console.error('Error loading themes:', error);
+                themesList.innerHTML = '<div class="loading">Failed to load themes</div>';
+            }
+        }
+
+        async function launchThemeFromBrowser(cacheKey, displayName) {
+            // Parse cache key back to theme string
+            // Format: category_length_language_difficulty
+            const parts = cacheKey.split('_');
+            const category = parts[0];
+            const length = parts[1];
+            const difficulty = parts[3];
+            
+            // Map difficulty to age
+            const ageMap = {
+                easy: '5 year old',
+                medium: '9 year old',
+                hard: '12 year old'
+            };
+            
+            const age = ageMap[difficulty] || '';
+            const themeString = `${length} letter ${category} ${age}`.trim();
+            
+            console.log(`Launching theme: ${themeString} (from cache: ${cacheKey})`);
+            
+            // Use the same generate flow
+            try {
+                const response = await fetch(`${API_URL}/api/generate-word`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ theme: themeString })
+                });
+
+                const data = await response.json();
+
+                if (response.status === 429 || response.status === 503) {
+                    showError(data.message || 'Theme limit reached!');
+                    document.getElementById('upgradeModal').classList.remove('hidden');
+                    return;
+                }
+
+                if (response.status === 400) {
+                    showError(data.message);
+                    return;
+                }
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'Failed to generate');
+                }
+
+                console.log('Starting game with words:', data.words);
+                startGame(data);
+
+            } catch (error) {
+                showError(error.message || 'Failed to launch theme');
+            }
+        }
 
         function initializeGoogleSignIn() {
             let attempts = 0;
@@ -430,16 +702,23 @@
                 if (typeof google !== 'undefined' && google.accounts) {
                     clearInterval(checkGoogle);
                     google.accounts.id.initialize({
-                        client_id: 'YOUR_GOOGLE_CLIENT_ID',
+                        client_id: GOOGLE_CLIENT_ID,
                         callback: handleCredentialResponse
                     });
                     google.accounts.id.renderButton(
-                        document.querySelector('.google-btn'),
-                        { theme: 'outline', size: 'large' }
+                        document.getElementById('g_id_signin'),
+                        { 
+                            theme: 'outline', 
+                            size: 'large',
+                            width: 300
+                        }
                     );
+                    // Also prompt if needed
+                    google.accounts.id.prompt();
                 } else if (attempts >= maxAttempts) {
                     clearInterval(checkGoogle);
                     console.error('Google Sign-In failed to load');
+                    showError('Failed to load Google Sign-In. Please refresh the page.');
                 }
             }, 100);
         }
@@ -462,13 +741,10 @@
                 localStorage.setItem('authToken', authToken);
                 
                 showScreen('themeInputScreen');
+                loadBrowseThemes();
             } catch (error) {
                 showError('Authentication failed. Please try again.');
             }
-        }
-
-        function loginWithGoogle() {
-            google.accounts.id.prompt();
         }
 
         function showScreen(screenId) {
