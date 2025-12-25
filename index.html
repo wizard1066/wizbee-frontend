@@ -312,7 +312,7 @@
             optionsContainer.appendChild(button);
         }
 
-        async function fetchAndStartGame(theme) {
+        async function fetchAndStartGame(theme, , forcePlay = false) {
             console.log('fetchAndStartGame called with theme:', theme, 'type:', typeof theme);
             
             if (!theme) {
@@ -325,7 +325,19 @@
             
             try {
                 console.log('Calling API with theme:', theme);
-                
+
+		const response = await fetch(`${API_URL}/api/generate-word`, {
+        method: 'POST',
+        headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
+        },
+        body: JSON.stringify({ 
+            theme: theme,
+            forcePlay: forcePlay  // ADD THIS
+        })
+    	});
+               /* 
                 const response = await fetch(`${API_URL}/api/generate-word`, {
                     method: 'POST',
                     headers: { 
@@ -333,7 +345,7 @@
                         'Authorization': `Bearer ${authToken}`
                     },
                     body: JSON.stringify({ theme: theme })
-                });
+                });*/
                 
                 console.log('API response status:', response.status);
 
@@ -349,6 +361,22 @@
     		    }
 		}
 
+		// Handle theme pool exhaustion (400 error)
+if (response.status === 400 && data.error === 'Theme exhausted') {
+    optionsContainer.innerHTML = `
+        <div style="padding: 20px; text-align: center;">
+            <p style="color: #e53e3e; font-weight: bold; margin-bottom: 20px;">⚠️ ${data.message}</p>
+            <button onclick="fetchAndStartGame('${theme}', true)" style="margin-right: 10px;">
+                Play Anyway (Repeat Words)
+            </button>
+            <button onclick="resetToTheme()">
+                Choose Different Theme
+            </button>
+        </div>
+    `;
+    return;
+}
+/*
 		if (response.status === 429 || response.status === 503) {
 		    optionsContainer.innerHTML = '';
 
@@ -367,7 +395,7 @@
 
                     resetToTheme();
         	    return;
-        	}
+        	}*/
         	
         	// Handle theme pool exhaustion (400 error)
         	if (response.status === 400 && data.error === 'Theme exhausted') {
