@@ -408,6 +408,10 @@
     const themeString = `${category} ${age}`.trim();  // No length!
     
     console.log(`Launching theme: ${themeString} (from cache: ${cacheKey})`);
+
+// Hide theme input screen, show theme selection screen
+    document.getElementById('themeInputScreen').classList.add('hidden');
+    document.getElementById('themeSelectionScreen').classList.remove('hidden');
     
     // Call fetchAndStartGame with the theme string
     fetchAndStartGame(themeString);
