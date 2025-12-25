@@ -462,6 +462,12 @@
 		showError('Error: No theme provided');
                 return;
             }
+
+	    if (response.status === 429 || response.status === 503) {
+    		showError(data.message || 'Theme limit reached!');
+    		document.getElementById('upgradeModal').classList.remove('hidden');
+    		return;
+	     }
             
             const optionsContainer = document.getElementById('themeOptions');
 	    optionsContainer.innerHTML = '<div style="padding: 40px; text-align: center; font-size: 24px;"><img src="bee2.gif" style="height: 80px; vertical-align: middle;"> Generating puzzle...</div>';
@@ -511,14 +517,6 @@
     `;
     return;
 }
-       /*	
-        	// Handle theme pool exhaustion (400 error)
-        	if (response.status === 400 && data.error === 'Theme exhausted') {
-        	    optionsContainer.innerHTML = '';
-        	    showError('⚠️ ' + data.message);
-        	    resetToTheme();
-        	    return;
-        	}*/
 
                 if (data.error) {
 		    showError(data.message || 'Failed to generate puzzle. Please try again.');
