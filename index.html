@@ -464,10 +464,14 @@
             }
 
 	    if (response.status === 429 || response.status === 503) {
-    		showError(data.message || 'Theme limit reached!');
-    		document.getElementById('upgradeModal').classList.remove('hidden');
-    		return;
-	     }
+    // Go back to theme input screen
+    document.getElementById('themeSelectionScreen').classList.add('hidden');
+    document.getElementById('themeInputScreen').classList.remove('hidden');
+    
+    showError(data.message || 'Theme limit reached!');
+    document.getElementById('upgradeModal').classList.remove('hidden');
+    return;
+             }
             
             const optionsContainer = document.getElementById('themeOptions');
 	    optionsContainer.innerHTML = '<div style="padding: 40px; text-align: center; font-size: 24px;"><img src="bee2.gif" style="height: 80px; vertical-align: middle;"> Generating puzzle...</div>';
