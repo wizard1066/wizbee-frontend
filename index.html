@@ -507,14 +507,14 @@
     `;
     return;
 }
-       	
+       /*	
         	// Handle theme pool exhaustion (400 error)
         	if (response.status === 400 && data.error === 'Theme exhausted') {
         	    optionsContainer.innerHTML = '';
         	    showError('⚠️ ' + data.message);
         	    resetToTheme();
         	    return;
-        	}
+        	}*/
 
                 if (data.error) {
 		    showError(data.message || 'Failed to generate puzzle. Please try again.');
