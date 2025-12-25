@@ -299,11 +299,132 @@
     	    setTimeout(() => errorDiv.classList.add('hidden'), duration);
 	}
 
-        function showThemeInput() {
+	function showThemeInput() {
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('themeInputScreen').classList.remove('hidden');
             document.getElementById('userEmail').textContent = userEmail;
+            loadBrowseThemes();  // Load themes when showing theme input screen
         }
+
+	function switchTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            
+            if (tabName === 'newTheme') {
+                document.getElementById('newThemeTab').classList.add('active');
+            } else if (tabName === 'browseThemes') {
+                document.getElementById('browseThemesTab').classList.add('active');
+            }
+        }
+
+        async function loadBrowseThemes() {
+            const themesList = document.getElementById('themesList');
+            
+            try {
+                const response = await fetch(`${API_URL}/api/browse-themes`);
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    themesList.innerHTML = '<div style="text-align: center; padding: 40px; color: #718096;">Failed to load themes</div>';
+                    return;
+                }
+
+                const languageNames = {
+                    en: '🇬🇧 English',
+                    fr: '🇫🇷 French',
+                    es: '🇪🇸 Spanish',
+                    de: '🇩🇪 German',
+                    it: '🇮🇹 Italian',
+                    pt: '🇵🇹 Portuguese',
+                    nl: '🇳🇱 Dutch',
+                    sv: '🇸🇪 Swedish',
+                    pl: '🇵🇱 Polish',
+                    fi: '🇫🇮 Finnish'
+                };
+
+                const difficultyNames = {
+                    easy: '⭐ Easy (Ages 5-7)',
+                    medium: '⭐⭐ Medium (Ages 8-10)',
+                    hard: '⭐⭐⭐ Hard (Ages 11+)'
+                };
+
+                let html = '';
+                
+                // Sort languages alphabetically
+                const sortedLanguages = Object.keys(data.themes).sort();
+                
+                sortedLanguages.forEach(lang => {
+                    const languageName = languageNames[lang] || lang.toUpperCase();
+                    
+                    html += `<div class="language-section">`;
+                    html += `<div class="language-header">${languageName}</div>`;
+                    
+                    ['easy', 'medium', 'hard'].forEach(difficulty => {
+                        const themes = data.themes[lang][difficulty];
+                        
+                        if (themes && themes.length > 0) {
+                            html += `<div class="difficulty-section">`;
+                            html += `<div class="difficulty-header">${difficultyNames[difficulty]}</div>`;
+                            
+                            themes.forEach(theme => {
+                                html += `
+                                    <div class="theme-item" onclick="launchThemeFromBrowser('${theme.cacheKey}', '${theme.displayName}')">
+                                        <span class="theme-name">${theme.displayName}</span>
+                                        <div class="theme-stats">
+                                            <span class="theme-badge">${theme.wordCount} words</span>
+                                            <span style="color: #cbd5e0;">👥 ${theme.useCount}</span>
+                                        </div>
+                                    </div>
+                                `;
+                            });
+                            
+                            html += `</div>`;
+                        }
+                    });
+                    
+                    html += `</div>`;
+                });
+
+                if (html === '') {
+                    html = '<div style="text-align: center; padding: 40px; color: #718096;">No themes available yet. Be the first to create one!</div>';
+                }
+                
+                themesList.innerHTML = html;
+
+            } catch (error) {
+                console.error('Error loading themes:', error);
+                themesList.innerHTML = '<div style="text-align: center; padding: 40px; color: #718096;">Failed to load themes</div>';
+            }
+        }
+
+	async function launchThemeFromBrowser(cacheKey, displayName) {
+    // Parse cache key back to theme string
+    // NEW Format: category_language_difficulty (no length anymore)
+    const parts = cacheKey.split('_');
+    const category = parts[0];
+    const language = parts[1];
+    const difficulty = parts[2];
+    
+    // Map difficulty to age
+    const ageMap = {
+        easy: '5 year old',
+        medium: '9 year old',
+        hard: '12 year old'
+    };
+    
+    const age = ageMap[difficulty] || '';
+    const themeString = `${category} ${age}`.trim();  // No length!
+    
+    console.log(`Launching theme: ${themeString} (from cache: ${cacheKey})`);
+    
+    // Call fetchAndStartGame with the theme string
+    fetchAndStartGame(themeString);
+}
+
 
         function logout() {
             localStorage.removeItem('authToken');
