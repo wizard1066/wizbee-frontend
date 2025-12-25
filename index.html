@@ -423,7 +423,9 @@
         function createWordBoxes() {
             const container = document.getElementById('wordBoxes');
             container.innerHTML = '';
-            
+
+	    console.log('Creating boxes for word:', currentWord, 'length:', currentWord.length); // DEBUG
+    
             let fontSizeClass = '';
             if (currentWord.length > 9) {
                 fontSizeClass = 'tiny-font';
