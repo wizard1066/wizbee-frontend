@@ -20,21 +20,107 @@
     align-items: center;
     padding: 20px;
 }
-/*
-        body {
-            //font-family: 'Arial', sans-serif;
-	    //font-family: 'Poppins', sans-serif;
-	    //font-family: 'Roboto', sans-serif;
-	    font-family: 'Montserrat', sans-serif;
-            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }*/
 
-	.upgrade-modal {
+    .tabs {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        border-bottom: 2px solid #e2e8f0;
+    }
+    
+    .tab {
+        padding: 10px 20px;
+        background: none;
+        border: none;
+        border-bottom: 3px solid transparent;
+        cursor: pointer;
+        color: #718096;
+        font-weight: bold;
+        transition: all 0.3s;
+    }
+    
+    .tab:hover {
+        color: #667eea;
+    }
+    
+    .tab.active {
+        color: #667eea;
+        border-bottom-color: #667eea;
+    }
+    
+    .tab-content {
+        display: none;
+    }
+    
+    .tab-content.active {
+        display: block;
+    }
+    
+    .language-section {
+        margin-bottom: 25px;
+    }
+    
+    .language-header {
+        background: #667eea;
+        color: white;
+        padding: 10px 15px;
+        border-radius: 10px;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+    
+    .difficulty-section {
+        margin-bottom: 15px;
+        padding-left: 10px;
+    }
+    
+    .difficulty-header {
+        color: #667eea;
+        font-weight: bold;
+        margin-bottom: 8px;
+        font-size: 0.9em;
+    }
+    
+    .theme-item {
+        background: #f7fafc;
+        padding: 12px 15px;
+        margin: 5px 0;
+        border-radius: 8px;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: all 0.3s;
+        border: 2px solid transparent;
+    }
+    
+    .theme-item:hover {
+        background: #edf2f7;
+        border-color: #667eea;
+        transform: translateX(5px);
+    }
+    
+    .theme-name {
+        font-weight: bold;
+        color: #2d3748;
+    }
+    
+    .theme-stats {
+        display: flex;
+        gap: 10px;
+        font-size: 0.85em;
+        color: #718096;
+    }
+    
+    .theme-badge {
+        background: #667eea;
+        color: white;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 0.75em;
+    }
+
+.upgrade-modal {
     position: fixed;
     top: 0;
     left: 0;
