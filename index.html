@@ -412,7 +412,7 @@
 // Hide theme input screen, show theme selection screen
     document.getElementById('themeInputScreen').classList.add('hidden');
     document.getElementById('themeSelectionScreen').classList.remove('hidden');
-    
+
     // Call fetchAndStartGame with the theme string
     fetchAndStartGame(themeString);
 }
@@ -455,6 +455,85 @@
             optionsContainer.appendChild(button);
         }
 
+async function fetchAndStartGame(theme, forcePlay = false) {
+    console.log('fetchAndStartGame called with theme:', theme, 'type:', typeof theme);
+    
+    if (!theme) {
+        showError('Error: No theme provided');
+        return;
+    }
+    
+    const optionsContainer = document.getElementById('themeOptions');
+    optionsContainer.innerHTML = '<div style="padding: 40px; text-align: center; font-size: 24px;"><img src="bee2.gif" style="height: 80px; vertical-align: middle;"> Generating puzzle...</div>';
+    
+    try {
+        console.log('Calling API with theme:', theme);
+
+        const response = await fetch(`${API_URL}/api/generate-word`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify({ 
+                theme: theme,
+                forcePlay: forcePlay
+            })
+        });
+        
+        console.log('API response status:', response.status);
+
+        const data = await response.json();
+        console.log('API data:', data);
+
+        // CHECK 429 HERE - AFTER response is defined
+        if (response.status === 429 || response.status === 503) {
+            document.getElementById('themeSelectionScreen').classList.add('hidden');
+            document.getElementById('themeInputScreen').classList.remove('hidden');
+            showError(data.message || 'Theme limit reached!');
+            document.getElementById('upgradeModal').classList.remove('hidden');
+            return;
+        }
+
+        if (data.themesRemaining !== undefined) {
+            themesPlayedCount = data.themesUsed;
+        }
+
+        // Handle theme pool exhaustion (400 error)
+        if (response.status === 400 && data.error === 'Theme exhausted') {
+            optionsContainer.innerHTML = `
+                <div class="exhausted-warning">
+                    <p>⚠️ ${data.message}</p>
+                    <div class="warning-buttons">
+                        <button class="play-anyway-btn" onclick="fetchAndStartGameForced('${theme.replace(/'/g, "\\'")}')">
+                            🔄 Play Anyway (Repeat Words)
+                        </button>
+                        <button class="choose-theme-btn" onclick="resetToTheme()">
+                            🎨 Choose Different Theme
+                        </button>
+                    </div>
+                </div>
+            `;
+            return;
+        }
+
+        if (data.error) {
+            showError(data.message || 'Failed to generate puzzle. Please try again.');
+            resetToTheme();
+            return;
+        }
+
+        console.log('Starting game with words:', data.words);
+        startGame(data);
+        
+    } catch (error) {
+        console.error('API Error:', error);
+        showError('Connection error: ' + error.message);
+        resetToTheme();
+    }
+}
+
+/*
         async function fetchAndStartGame(theme, forcePlay = false) {
             console.log('fetchAndStartGame called with theme:', theme, 'type:', typeof theme);
             
@@ -537,6 +616,7 @@
                 resetToTheme();
             }
         }
+*/
 
         function startGame(gameData) {
 	    wordList = gameData.words;
