@@ -34,18 +34,6 @@
             </div>
         </div>
 
-        <!-- Screen 1: Theme Input -->
-        /*<div id="themeInputScreen" class="theme-input-screen hidden">
-            <div class="user-info">
-		<div>Signed in as: <span id="userEmail"></span></div>
-        	<button class="logout-btn" onclick="logout()">Logout</button>
-            </div>
-            <h2>What theme would you like?</h2>
-	    <div id="errorMessage" class="error-message hidden"></div>
-            <input type="text" id="themeInput" placeholder="Enter a theme (e.g., Italian Renaissance painters)">
-            <button onclick="generateThemes()">Generate →</button>
-        </div>*/
-
 	<!-- Screen 1: Theme Input -->
         <div id="themeInputScreen" class="theme-input-screen hidden">
             <div class="user-info">
@@ -488,16 +476,6 @@
             forcePlay: forcePlay  // ADD THIS
         })
     	});
-               /* 
-                const response = await fetch(`${API_URL}/api/generate-word`, {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${authToken}`
-                    },
-                    body: JSON.stringify({ theme: theme })
-                });*/
-                
                 console.log('API response status:', response.status);
 
 		const data = await response.json();
