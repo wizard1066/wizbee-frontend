@@ -5,8 +5,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wizbee - AI Word Puzzle Game</title>
     
+    <!-- 
+    ============================================================================
+    WIZBEE FRONTEND - v5.1
+    ============================================================================
+    
+    Version: 5.1
+    Last Updated: 2025-12-26
+    
+    NEW in v5.1:
+    - Progress tab with win rate graph and stats
+    
+    Features:
+    - Four tabs: New Theme, Browse Themes, Leaderboard, Progress
+    - Multi-language keyboards (10 languages)
+    - Drag-and-drop letter placement
+    - Theme exhaustion warnings with Play Anyway option
+    - Leaderboard showing fastest theme completions
+    - Progress tracking with Chart.js visualization
+    
+    ============================================================================
+    -->
+    
     <!-- Google Sign-In -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <!-- Chart.js for Progress Tab -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
@@ -46,6 +70,7 @@
                 <button class="tab active" onclick="switchTab('newTheme')">New Theme</button>
                 <button class="tab" onclick="switchTab('browseThemes')">Browse Themes</button>
                 <button class="tab" onclick="switchTab('leaderboard')">🏆 Leaderboard</button>
+                <button class="tab" onclick="switchTab('progress')">📊 Progress</button>
             </div>
             
             <!-- New Theme Tab -->
@@ -70,6 +95,36 @@
                 <div id="leaderboardList" class="leaderboard-container">
                     <div style="text-align: center; padding: 40px; color: #718096;">Loading leaderboard...</div>
                 </div>
+            </div>
+            
+            <!-- Progress Tab -->
+            <div id="progressTab" class="tab-content">
+                <h2>📊 Your Progress</h2>
+                
+                <div class="progress-stats">
+                    <div class="stat-card">
+                        <div class="stat-value" id="statTotalWords">0</div>
+                        <div class="stat-label">Words Played</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="statWinRate">0%</div>
+                        <div class="stat-label">Win Rate</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="statAvgTime">0s</div>
+                        <div class="stat-label">Avg Time</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="statFastest">0s</div>
+                        <div class="stat-label">Fastest Win</div>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <canvas id="progressChart"></canvas>
+                </div>
+                
+                <div id="progressMessage" style="text-align: center; padding: 20px; color: #718096;"></div>
             </div>
         </div>
 
@@ -131,6 +186,9 @@
         let currentThemeId = null;
         let wordStartTime = null;
         let letterSwapCount = 0;
+        
+        // Progress chart
+        let progressChart = null;
 
 	const keyboardLayouts = {
             en: [ //English
@@ -317,6 +375,9 @@
             } else if (tabName === 'leaderboard') {
                 document.getElementById('leaderboardTab').classList.add('active');
                 loadLeaderboard();
+            } else if (tabName === 'progress') {
+                document.getElementById('progressTab').classList.add('active');
+                loadProgress();
             }
         }
 
@@ -467,6 +528,90 @@
             } catch (error) {
                 console.error('Error loading leaderboard:', error);
                 leaderboardList.innerHTML = '<div class="leaderboard-empty">Failed to load leaderboard</div>';
+            }
+        }
+
+        async function loadProgress() {
+            const messageDiv = document.getElementById('progressMessage');
+            messageDiv.textContent = 'Loading your progress...';
+            
+            try {
+                const response = await fetch(`${API_URL}/api/user-stats/${userEmail}`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                const data = await response.json();
+                
+                if (!response.ok || !data.daily || data.daily.length === 0) {
+                    messageDiv.textContent = 'No progress data yet. Play some games to see your stats!';
+                    // Reset stat cards
+                    document.getElementById('statTotalWords').textContent = '0';
+                    document.getElementById('statWinRate').textContent = '0%';
+                    document.getElementById('statAvgTime').textContent = '0s';
+                    document.getElementById('statFastest').textContent = '0s';
+                    return;
+                }
+
+                // Update stat cards
+                document.getElementById('statTotalWords').textContent = data.stats.totalWords;
+                document.getElementById('statWinRate').textContent = data.stats.winRate + '%';
+                document.getElementById('statAvgTime').textContent = data.stats.avgTime + 's';
+                document.getElementById('statFastest').textContent = data.stats.fastestTime + 's';
+
+                // Prepare chart data
+                const dates = data.daily.map(d => new Date(d.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+                const winRates = data.daily.map(d => d.winRate);
+
+                // Destroy existing chart if it exists
+                if (progressChart) {
+                    progressChart.destroy();
+                }
+
+                // Create chart
+                const ctx = document.getElementById('progressChart').getContext('2d');
+                progressChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: dates,
+                        datasets: [{
+                            label: 'Win Rate (%)',
+                            data: winRates,
+                            borderColor: '#667eea',
+                            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                            tension: 0.3,
+                            fill: true,
+                            pointRadius: 4,
+                            pointBackgroundColor: '#667eea'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100,
+                                ticks: {
+                                    callback: function(value) {
+                                        return value + '%';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+
+                messageDiv.textContent = '';
+
+            } catch (error) {
+                console.error('Error loading progress:', error);
+                messageDiv.textContent = 'Failed to load progress data';
             }
         }
 
@@ -832,7 +977,7 @@
                         hintsUsed: hintsUsed,
                         won: won,
                         letterSwaps: letterSwapCount,
-                        guessHistory: guessHistory, // Send guess history, backend calculates error patterns
+                        guessHistory: guessHistory,
                         timeSeconds: timeSeconds
                     })
                 });
