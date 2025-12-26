@@ -7,22 +7,21 @@
     
     <!-- 
     ============================================================================
-    WIZBEE FRONTEND - v5.1
+    WIZBEE FRONTEND - v5.2
     ============================================================================
     
-    Version: 5.1
+    Version: 5.2
     Last Updated: 2025-12-26
     
-    NEW in v5.1:
-    - Progress tab with win rate graph and stats
+    NEW in v5.2:
+    - AI-powered progress analysis (once daily, cost-optimized)
     
     Features:
     - Four tabs: New Theme, Browse Themes, Leaderboard, Progress
+    - AI Coach provides personalized insights (once per day)
     - Multi-language keyboards (10 languages)
-    - Drag-and-drop letter placement
-    - Theme exhaustion warnings with Play Anyway option
-    - Leaderboard showing fastest theme completions
     - Progress tracking with Chart.js visualization
+    - Leaderboard showing fastest theme completions
     
     ============================================================================
     -->
@@ -122,6 +121,23 @@
                 
                 <div class="chart-container">
                     <canvas id="progressChart"></canvas>
+                </div>
+                
+                <!-- AI Analysis Section - NEW IN v5.2 -->
+                <div id="aiAnalysisSection" class="ai-analysis-section hidden">
+                    <div class="ai-analysis-header">
+                        <span class="ai-icon">🤖</span>
+                        <span class="ai-title">AI Coach Insights</span>
+                    </div>
+                    <div id="aiAnalysisText" class="ai-analysis-text">
+                        Analyzing your progress...
+                    </div>
+                    <div class="ai-analysis-footer">
+                        <button id="refreshAnalysisBtn" class="refresh-analysis-btn" onclick="refreshAnalysis()">
+                            🔄 Get Fresh Insights
+                        </button>
+                        <div id="aiAnalysisTimestamp" class="ai-timestamp"></div>
+                    </div>
                 </div>
                 
                 <div id="progressMessage" style="text-align: center; padding: 20px; color: #718096;"></div>
@@ -608,6 +624,9 @@
                 });
 
                 messageDiv.textContent = '';
+                
+                // Load AI analysis - NEW IN v5.2
+                await loadAIAnalysis();
 
             } catch (error) {
                 console.error('Error loading progress:', error);
@@ -1351,6 +1370,80 @@
             dragSourceIndex = null;
             draggedLetter = null;
         }, true);
+        
+        // =====================================================================
+        // AI ANALYSIS FUNCTIONS - NEW IN v5.2
+        // =====================================================================
+        async function loadAIAnalysis() {
+            const aiSection = document.getElementById('aiAnalysisSection');
+            const aiText = document.getElementById('aiAnalysisText');
+            const timestamp = document.getElementById('aiAnalysisTimestamp');
+            const refreshBtn = document.getElementById('refreshAnalysisBtn');
+            
+            aiSection.classList.remove('hidden');
+            aiText.innerHTML = '<span class="loading-dots">Analyzing your progress</span>';
+            timestamp.textContent = '';
+            
+            try {
+                const response = await fetch(`${API_URL}/api/progress-analysis/${userEmail}`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const data = await response.json();
+                
+                if (response.ok && data.analysis) {
+                    // Typewriter effect
+                    aiText.textContent = '';
+                    const text = data.analysis;
+                    let i = 0;
+                    
+                    const typeWriter = setInterval(() => {
+                        if (i < text.length) {
+                            aiText.textContent += text.charAt(i);
+                            i++;
+                        } else {
+                            clearInterval(typeWriter);
+                        }
+                    }, 20);
+                    
+                    // Show timestamp and disable button if cached
+                    if (data.cached) {
+                        const time = new Date(data.generatedAt).toLocaleTimeString('en-US', { 
+                            hour: 'numeric', minute: '2-digit' 
+                        });
+                        timestamp.textContent = `Updated today at ${time} • Fresh insights tomorrow!`;
+                        refreshBtn.disabled = true;
+                        refreshBtn.textContent = '✓ Analysis Complete';
+                    } else {
+                        const time = new Date().toLocaleTimeString('en-US', { 
+                            hour: 'numeric', minute: '2-digit' 
+                        });
+                        timestamp.textContent = `Generated at ${time} • Next update tomorrow`;
+                        refreshBtn.disabled = true;
+                        refreshBtn.textContent = '✓ Analysis Complete';
+                    }
+                } else {
+                    aiText.textContent = data.analysis || 'Keep playing to unlock insights!';
+                    timestamp.textContent = '';
+                }
+            } catch (error) {
+                console.error('Error loading AI analysis:', error);
+                aiText.textContent = 'Unable to generate insights. Keep playing!';
+                timestamp.textContent = '';
+            }
+        }
+
+        async function refreshAnalysis() {
+            const btn = document.getElementById('refreshAnalysisBtn');
+            
+            if (btn.disabled) {
+                return; // Already generated today
+            }
+            
+            btn.textContent = '⏳ Thinking...';
+            btn.disabled = true;
+            
+            await loadAIAnalysis();
+        }
     </script>
 </body>
 </html>
