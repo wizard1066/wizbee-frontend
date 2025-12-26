@@ -66,7 +66,7 @@
             
             <!-- Leaderboard Tab -->
             <div id="leaderboardTab" class="tab-content">
-                <h2>🏆 Top 10 Fastest Times</h2>
+                <h2>🏆 Fastest Theme Completions</h2>
                 <div id="leaderboardList" class="leaderboard-container">
                     <div style="text-align: center; padding: 40px; color: #718096;">Loading leaderboard...</div>
                 </div>
@@ -422,8 +422,9 @@
                             <tr>
                                 <th>Rank</th>
                                 <th>Player</th>
-                                <th>Word</th>
-                                <th>Time</th>
+                                <th>Theme</th>
+                                <th>Words</th>
+                                <th>Total Time</th>
                                 <th>Date</th>
                             </tr>
                         </thead>
@@ -439,13 +440,19 @@
                     const emailParts = entry.user_email.split('@');
                     const maskedEmail = emailParts[0].substring(0, 2) + '***@' + emailParts[1];
                     
+                    // Format time nicely
+                    const minutes = Math.floor(entry.total_time_seconds / 60);
+                    const seconds = entry.total_time_seconds % 60;
+                    const timeDisplay = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
+                    
                     html += `
                         <tr>
                             <td><span class="rank-medal ${rankClass}">${medal}</span>${rank}</td>
                             <td>${maskedEmail}</td>
-                            <td class="leaderboard-word">${entry.word}</td>
-                            <td class="leaderboard-time">${entry.time_seconds}s</td>
-                            <td>${new Date(entry.created_at).toLocaleDateString()}</td>
+                            <td style="color: #667eea; font-weight: 600;">${entry.theme_text}</td>
+                            <td style="text-align: center;">${entry.words_completed}</td>
+                            <td class="leaderboard-time">${timeDisplay}</td>
+                            <td>${new Date(entry.completed_at).toLocaleDateString()}</td>
                         </tr>
                     `;
                 });
