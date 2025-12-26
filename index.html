@@ -45,6 +45,7 @@
             <div class="tabs">
                 <button class="tab active" onclick="switchTab('newTheme')">New Theme</button>
                 <button class="tab" onclick="switchTab('browseThemes')">Browse Themes</button>
+                <button class="tab" onclick="switchTab('leaderboard')">🏆 Leaderboard</button>
             </div>
             
             <!-- New Theme Tab -->
@@ -60,6 +61,14 @@
                 <h2>Popular Themes</h2>
                 <div id="themesList" style="max-height: 400px; overflow-y: auto;">
                     <div style="text-align: center; padding: 40px; color: #718096;">Loading themes...</div>
+                </div>
+            </div>
+            
+            <!-- Leaderboard Tab -->
+            <div id="leaderboardTab" class="tab-content">
+                <h2>🏆 Top 10 Fastest Times</h2>
+                <div id="leaderboardList" class="leaderboard-container">
+                    <div style="text-align: center; padding: 40px; color: #718096;">Loading leaderboard...</div>
                 </div>
             </div>
         </div>
@@ -305,6 +314,9 @@
                 document.getElementById('newThemeTab').classList.add('active');
             } else if (tabName === 'browseThemes') {
                 document.getElementById('browseThemesTab').classList.add('active');
+            } else if (tabName === 'leaderboard') {
+                document.getElementById('leaderboardTab').classList.add('active');
+                loadLeaderboard();
             }
         }
 
@@ -385,6 +397,69 @@
             } catch (error) {
                 console.error('Error loading themes:', error);
                 themesList.innerHTML = '<div style="text-align: center; padding: 40px; color: #718096;">Failed to load themes</div>';
+            }
+        }
+
+        async function loadLeaderboard() {
+            const leaderboardList = document.getElementById('leaderboardList');
+            
+            try {
+                const response = await fetch(`${API_URL}/api/leaderboard`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                const data = await response.json();
+                
+                if (!response.ok || !data.leaderboard || data.leaderboard.length === 0) {
+                    leaderboardList.innerHTML = '<div class="leaderboard-empty">No leaderboard entries yet. Be the first to play!</div>';
+                    return;
+                }
+
+                let html = `
+                    <table class="leaderboard-table">
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Player</th>
+                                <th>Word</th>
+                                <th>Time</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+                
+                data.leaderboard.forEach((entry, index) => {
+                    const rank = index + 1;
+                    const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : '';
+                    const rankClass = rank <= 3 ? `rank-${rank}` : '';
+                    
+                    // Mask email for privacy
+                    const emailParts = entry.user_email.split('@');
+                    const maskedEmail = emailParts[0].substring(0, 2) + '***@' + emailParts[1];
+                    
+                    html += `
+                        <tr>
+                            <td><span class="rank-medal ${rankClass}">${medal}</span>${rank}</td>
+                            <td>${maskedEmail}</td>
+                            <td class="leaderboard-word">${entry.word}</td>
+                            <td class="leaderboard-time">${entry.time_seconds}s</td>
+                            <td>${new Date(entry.created_at).toLocaleDateString()}</td>
+                        </tr>
+                    `;
+                });
+                
+                html += `
+                        </tbody>
+                    </table>
+                `;
+                
+                leaderboardList.innerHTML = html;
+
+            } catch (error) {
+                console.error('Error loading leaderboard:', error);
+                leaderboardList.innerHTML = '<div class="leaderboard-empty">Failed to load leaderboard</div>';
             }
         }
 

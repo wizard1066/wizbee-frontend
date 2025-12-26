@@ -21,6 +21,69 @@
     padding: 20px;
 }
 
+/* ADD THESE LEADERBOARD STYLES TO THE BOTTOM OF YOUR <style> TAG IN INDEX.HTML */
+
+/* Leaderboard Styles */
+.leaderboard-container {
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.leaderboard-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.leaderboard-table thead {
+    background: #667eea;
+    color: white;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.leaderboard-table th {
+    padding: 15px;
+    text-align: left;
+    font-weight: bold;
+}
+
+.leaderboard-table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.leaderboard-table tbody tr:hover {
+    background: #f7fafc;
+}
+
+.rank-medal {
+    font-size: 20px;
+    margin-right: 5px;
+}
+
+.rank-1 { color: #ffd700; } /* Gold */
+.rank-2 { color: #c0c0c0; } /* Silver */
+.rank-3 { color: #cd7f32; } /* Bronze */
+
+.leaderboard-time {
+    font-weight: bold;
+    color: #667eea;
+}
+
+.leaderboard-word {
+    color: #2d3748;
+    font-weight: 600;
+}
+
+.leaderboard-empty {
+    text-align: center;
+    padding: 40px;
+    color: #718096;
+    font-size: 18px;
+}
+
     .tabs {
         display: flex;
         gap: 10px;
