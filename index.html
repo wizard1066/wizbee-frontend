@@ -118,11 +118,10 @@
 	let currentWordIndex = 0;
         let themesPlayedCount = 0;
         
-        // NEW: Tracking variables for database
+        // Tracking variables for database
         let currentThemeId = null;
         let wordStartTime = null;
         let letterSwapCount = 0;
-        let errorPatterns = [];
 
 	const keyboardLayouts = {
             en: [ //English
@@ -158,7 +157,7 @@
 	    pt: [  // Portuguese
     		['Q','W','E','R','T','Y','U','I','O','P'],
     		['A','S','D','F','G','H','J','K','L','Ç'],
-    		['Z','X','C','V','B','N','M','Á','À','Â','Ã','É','Ê','Í','Ó','Ô','Õ','Ú','⌫']
+    		['Z','X','C','V','B','N','M','Á','À','Â','Ã','É','É','Í','Ó','Ô','Õ','Ú','⌫']
 	    ],
 	    nl: [  // Dutch
     		['Q','W','E','R','T','Y','U','I','O','P'],
@@ -291,7 +290,7 @@
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('themeInputScreen').classList.remove('hidden');
             document.getElementById('userEmail').textContent = userEmail;
-            loadBrowseThemes();  // Load themes when showing theme input screen
+            loadBrowseThemes();
         }
 
 	function switchTab(tabName) {
@@ -390,33 +389,27 @@
         }
 
 	async function launchThemeFromBrowser(cacheKey, displayName) {
-    // Parse cache key back to theme string
-    // NEW Format: category_language_difficulty (no length anymore)
-    const parts = cacheKey.split('_');
-    const category = parts[0];
-    const language = parts[1];
-    const difficulty = parts[2];
-    
-    // Map difficulty to age
-    const ageMap = {
-        easy: '5 year old',
-        medium: '9 year old',
-        hard: '12 year old'
-    };
-    
-    const age = ageMap[difficulty] || '';
-    const themeString = `${category} ${age}`.trim();  // No length!
-    
-    console.log(`Launching theme: ${themeString} (from cache: ${cacheKey})`);
+            const parts = cacheKey.split('_');
+            const category = parts[0];
+            const language = parts[1];
+            const difficulty = parts[2];
+            
+            const ageMap = {
+                easy: '5 year old',
+                medium: '9 year old',
+                hard: '12 year old'
+            };
+            
+            const age = ageMap[difficulty] || '';
+            const themeString = `${category} ${age}`.trim();
+            
+            console.log(`Launching theme: ${themeString} (from cache: ${cacheKey})`);
 
-// Hide theme input screen, show theme selection screen
-    document.getElementById('themeInputScreen').classList.add('hidden');
-    document.getElementById('themeSelectionScreen').classList.remove('hidden');
+            document.getElementById('themeInputScreen').classList.add('hidden');
+            document.getElementById('themeSelectionScreen').classList.remove('hidden');
 
-    // Call fetchAndStartGame with the theme string
-    fetchAndStartGame(themeString);
-}
-
+            fetchAndStartGame(themeString);
+        }
 
         function logout() {
             localStorage.removeItem('authToken');
@@ -455,154 +448,68 @@
             optionsContainer.appendChild(button);
         }
 
-async function fetchAndStartGame(theme, forcePlay = false) {
-    console.log('fetchAndStartGame called with theme:', theme, 'type:', typeof theme);
-    
-    if (!theme) {
-        showError('Error: No theme provided');
-        return;
-    }
-    
-    const optionsContainer = document.getElementById('themeOptions');
-    optionsContainer.innerHTML = '<div style="padding: 40px; text-align: center; font-size: 24px;"><img src="bee2.gif" style="height: 80px; vertical-align: middle;"> Generating puzzle...</div>';
-    
-    try {
-        console.log('Calling API with theme:', theme);
-
-        const response = await fetch(`${API_URL}/api/generate-word`, {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${authToken}`
-            },
-            body: JSON.stringify({ 
-                theme: theme,
-                forcePlay: forcePlay
-            })
-        });
-        
-        console.log('API response status:', response.status);
-
-        const data = await response.json();
-        console.log('API data:', data);
-
-        // CHECK 429 HERE - AFTER response is defined
-        if (response.status === 429 || response.status === 503) {
-            document.getElementById('themeSelectionScreen').classList.add('hidden');
-            document.getElementById('themeInputScreen').classList.remove('hidden');
-            showError(data.message || 'Theme limit reached!');
-            document.getElementById('upgradeModal').classList.remove('hidden');
-            return;
-        }
-
-        if (data.themesRemaining !== undefined) {
-            themesPlayedCount = data.themesUsed;
-        }
-
-        // Handle theme pool exhaustion (400 error)
-        if (response.status === 400 && data.error === 'Theme exhausted') {
-            optionsContainer.innerHTML = `
-                <div class="exhausted-warning">
-                    <p>⚠️ ${data.message}</p>
-                    <div class="warning-buttons">
-                        <button class="play-anyway-btn" onclick="fetchAndStartGameForced('${theme.replace(/'/g, "\\'")}')">
-                            🔄 Play Anyway (Repeat Words)
-                        </button>
-                        <button class="choose-theme-btn" onclick="resetToTheme()">
-                            🎨 Choose Different Theme
-                        </button>
-                    </div>
-                </div>
-            `;
-            return;
-        }
-
-        if (data.error) {
-            showError(data.message || 'Failed to generate puzzle. Please try again.');
-            resetToTheme();
-            return;
-        }
-
-        console.log('Starting game with words:', data.words);
-        startGame(data);
-        
-    } catch (error) {
-        console.error('API Error:', error);
-        showError('Connection error: ' + error.message);
-        resetToTheme();
-    }
-}
-
-/*
         async function fetchAndStartGame(theme, forcePlay = false) {
             console.log('fetchAndStartGame called with theme:', theme, 'type:', typeof theme);
             
             if (!theme) {
-		showError('Error: No theme provided');
+                showError('Error: No theme provided');
                 return;
             }
-
-	    if (response.status === 429 || response.status === 503) {
-    // Go back to theme input screen
-    document.getElementById('themeSelectionScreen').classList.add('hidden');
-    document.getElementById('themeInputScreen').classList.remove('hidden');
-    
-    showError(data.message || 'Theme limit reached!');
-    document.getElementById('upgradeModal').classList.remove('hidden');
-    return;
-             }
             
             const optionsContainer = document.getElementById('themeOptions');
-	    optionsContainer.innerHTML = '<div style="padding: 40px; text-align: center; font-size: 24px;"><img src="bee2.gif" style="height: 80px; vertical-align: middle;"> Generating puzzle...</div>';
+            optionsContainer.innerHTML = '<div style="padding: 40px; text-align: center; font-size: 24px;"><img src="bee2.gif" style="height: 80px; vertical-align: middle;"> Generating puzzle...</div>';
             
             try {
                 console.log('Calling API with theme:', theme);
 
-		const response = await fetch(`${API_URL}/api/generate-word`, {
-        method: 'POST',
-        headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${authToken}`
-        },
-        body: JSON.stringify({ 
-            theme: theme,
-            forcePlay: forcePlay  // ADD THIS
-        })
-    	});
+                const response = await fetch(`${API_URL}/api/generate-word`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ 
+                        theme: theme,
+                        forcePlay: forcePlay
+                    })
+                });
+                
                 console.log('API response status:', response.status);
 
-		const data = await response.json();
+                const data = await response.json();
                 console.log('API data:', data);
 
-		if (data.themesRemaining !== undefined) {
- 		    themesPlayedCount = data.themesUsed;
-    
-   		    // Show warning at theme 3
-    		    if (data.themesRemaining === 1) {
-        	//	showError('Warning: Only 1 free theme remaining!');
-    		    }
-		}
+                if (response.status === 429 || response.status === 503) {
+                    document.getElementById('themeSelectionScreen').classList.add('hidden');
+                    document.getElementById('themeInputScreen').classList.remove('hidden');
+                    showError(data.message || 'Theme limit reached!');
+                    document.getElementById('upgradeModal').classList.remove('hidden');
+                    return;
+                }
 
-		// Handle theme pool exhaustion (400 error)
-		if (response.status === 400 && data.error === 'Theme exhausted') {
-    optionsContainer.innerHTML = `
-        <div class="exhausted-warning">
-            <p>⚠️ ${data.message}</p>
-            <div class="warning-buttons">
-                <button class="play-anyway-btn" onclick="fetchAndStartGameForced('${theme.replace(/'/g, "\\'")}')">
-                    🔄 Play Anyway (Repeat Words)
-                </button>
-                <button class="choose-theme-btn" onclick="resetToTheme()">
-                    🎨 Choose Different Theme
-                </button>
-            </div>
-        </div>
-    `;
-    return;
-}
+                if (data.themesRemaining !== undefined) {
+                    themesPlayedCount = data.themesUsed;
+                }
+
+                if (response.status === 400 && data.error === 'Theme exhausted') {
+                    optionsContainer.innerHTML = `
+                        <div class="exhausted-warning">
+                            <p>⚠️ ${data.message}</p>
+                            <div class="warning-buttons">
+                                <button class="play-anyway-btn" onclick="fetchAndStartGameForced('${theme.replace(/'/g, "\\'")}')">
+                                    🔄 Play Anyway (Repeat Words)
+                                </button>
+                                <button class="choose-theme-btn" onclick="resetToTheme()">
+                                    🎨 Choose Different Theme
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    return;
+                }
 
                 if (data.error) {
-		    showError(data.message || 'Failed to generate puzzle. Please try again.');
+                    showError(data.message || 'Failed to generate puzzle. Please try again.');
                     resetToTheme();
                     return;
                 }
@@ -612,11 +519,10 @@ async function fetchAndStartGame(theme, forcePlay = false) {
                 
             } catch (error) {
                 console.error('API Error:', error);
-		showError('Connection error: ' + error.message);
+                showError('Connection error: ' + error.message);
                 resetToTheme();
             }
         }
-*/
 
         function startGame(gameData) {
 	    wordList = gameData.words;
@@ -628,12 +534,10 @@ async function fetchAndStartGame(theme, forcePlay = false) {
 	    currentLanguage = gameData.language || 'en';
 	    winMessage = gameData.winMessage;  
     	    loseMessage = gameData.loseMessage;
-    	    currentThemeId = gameData.themeId || null;  // NEW: Store theme ID (optional for backward compatibility)
+    	    currentThemeId = gameData.themeId || null;
             
-            // NEW: Start timer for first word
             wordStartTime = Date.now();
             letterSwapCount = 0;
-            errorPatterns = [];
     	    
 	    createKeyboard(currentLanguage);
             
@@ -649,7 +553,7 @@ async function fetchAndStartGame(theme, forcePlay = false) {
             const container = document.getElementById('wordBoxes');
             container.innerHTML = '';
 
-	    console.log('Creating boxes for word:', currentWord, 'length:', currentWord.length); // DEBUG
+	    console.log('Creating boxes for word:', currentWord, 'length:', currentWord.length);
     
             let fontSizeClass = '';
             if (currentWord.length > 9) {
@@ -695,97 +599,22 @@ async function fetchAndStartGame(theme, forcePlay = false) {
         function closeUpgradeModal() {
             document.getElementById('upgradeModal').classList.add('hidden');
 
-	   // Show upgrade button on theme screen
-    	    	const upgradeBtn = document.createElement('button');
-    	    	upgradeBtn.textContent = '🎉 Get 128 More Themes - $0.99';
-    		upgradeBtn.className = 'upgrade-btn';
-    		upgradeBtn.style.marginTop = '20px';
-    		upgradeBtn.onclick = upgradeNow;
+    	    const upgradeBtn = document.createElement('button');
+    	    upgradeBtn.textContent = '🎉 Get 128 More Themes - $0.99';
+    	    upgradeBtn.className = 'upgrade-btn';
+    	    upgradeBtn.style.marginTop = '20px';
+    	    upgradeBtn.onclick = upgradeNow;
     
-    		const themeScreen = document.getElementById('themeInputScreen');
-    		if (!document.getElementById('permanentUpgradeBtn')) {
-        		upgradeBtn.id = 'permanentUpgradeBtn';
-        		themeScreen.appendChild(upgradeBtn);
-    		}
+    	    const themeScreen = document.getElementById('themeInputScreen');
+    	    if (!document.getElementById('permanentUpgradeBtn')) {
+        	upgradeBtn.id = 'permanentUpgradeBtn';
+        	themeScreen.appendChild(upgradeBtn);
+    	    }
         }
 
         function upgradeNow() {
             alert('Stripe payment coming soon!');
             closeUpgradeModal();
-        }
-
-        // NEW: Detect dyslexia-related error patterns
-        function detectErrorTypes(guess, targetWord) {
-            const errors = [];
-            
-            // Common reversal pairs
-            const reversalPairs = [
-                ['b', 'd'], ['p', 'q'], ['n', 'u'], ['m', 'w'],
-                ['6', '9'], ['s', 'z']
-            ];
-            
-            for (let i = 0; i < guess.length && i < targetWord.length; i++) {
-                const guessChar = guess[i].toLowerCase();
-                const targetChar = targetWord[i].toLowerCase();
-                
-                // Check for reversals
-                for (const [a, b] of reversalPairs) {
-                    if ((guessChar === a && targetChar === b) || 
-                        (guessChar === b && targetChar === a)) {
-                        if (!errors.includes('reversal')) errors.push('reversal');
-                    }
-                }
-                
-                // Check for visual similarity (common confusions)
-                const visualPairs = [
-                    ['o', '0'], ['l', '1'], ['i', 'l'], ['c', 'e'],
-                    ['a', 'o'], ['h', 'n'], ['f', 't']
-                ];
-                for (const [a, b] of visualPairs) {
-                    if ((guessChar === a && targetChar === b) || 
-                        (guessChar === b && targetChar === a)) {
-                        if (!errors.includes('visual')) errors.push('visual');
-                    }
-                }
-                
-                // Check for phonetic confusion (sound-alike)
-                const phoneticPairs = [
-                    ['c', 'k'], ['s', 'c'], ['f', 'ph'], ['j', 'g'],
-                    ['i', 'y'], ['w', 'v']
-                ];
-                for (const [a, b] of phoneticPairs) {
-                    if ((guessChar === a && targetChar === b) || 
-                        (guessChar === b && targetChar === a)) {
-                        if (!errors.includes('phonetic')) errors.push('phonetic');
-                    }
-                }
-            }
-            
-            // Check for sequence errors (transpositions)
-            if (guess.length === targetWord.length) {
-                for (let i = 0; i < guess.length - 1; i++) {
-                    if (guess[i] === targetWord[i + 1] && 
-                        guess[i + 1] === targetWord[i]) {
-                        if (!errors.includes('sequence')) errors.push('sequence');
-                    }
-                }
-            }
-            
-            // Check for repetition (same error as previous guess)
-            if (guessHistory.length > 0) {
-                const prevGuess = guessHistory[guessHistory.length - 1];
-                let sameErrors = 0;
-                for (let i = 0; i < Math.min(guess.length, prevGuess.length); i++) {
-                    if (guess[i] === prevGuess[i] && guess[i] !== targetWord[i]) {
-                        sameErrors++;
-                    }
-                }
-                if (sameErrors >= 2) {
-                    if (!errors.includes('repetition')) errors.push('repetition');
-                }
-            }
-            
-            return errors;
         }
 
         function submitGuess() {
@@ -797,10 +626,6 @@ async function fetchAndStartGame(theme, forcePlay = false) {
 		showError(`Please enter a ${currentWord.length}-letter word!`);
                 return;
             }
-            
-            // NEW: Detect error patterns before adding to history
-            const detectedErrors = detectErrorTypes(guess, currentWord);
-            errorPatterns = [...new Set([...errorPatterns, ...detectedErrors])];
             
             guessHistory.push(guess);
             remainingGuesses--;
@@ -902,7 +727,7 @@ async function fetchAndStartGame(theme, forcePlay = false) {
             document.getElementById('guessesRemaining').textContent = remainingGuesses;
         }
 
-        // NEW: Record word completion to database
+        // Record word completion to database - backend calculates error patterns
         async function recordWordAttempt(won) {
             if (!currentThemeId) {
                 console.warn('No theme ID available, skipping record');
@@ -925,62 +750,60 @@ async function fetchAndStartGame(theme, forcePlay = false) {
                         hintsUsed: hintsUsed,
                         won: won,
                         letterSwaps: letterSwapCount,
-                        errorTypes: errorPatterns,
+                        guessHistory: guessHistory, // Send guess history, backend calculates error patterns
                         timeSeconds: timeSeconds
                     })
                 });
-                console.log(`✅ Word attempt recorded: ${currentWord} (won: ${won}, errors: ${errorPatterns.join(', ')})`);
+                console.log(`✅ Word attempt recorded: ${currentWord} (won: ${won})`);
             } catch (error) {
                 console.error('Failed to record word attempt:', error);
-                // Non-blocking - game continues even if recording fails
             }
         }
 
 	async function fetchAndStartGameForced(theme) {
-    console.log('Forcing play with theme:', theme);
-    
-    const optionsContainer = document.getElementById('themeOptions');
-    optionsContainer.innerHTML = '<div style="padding: 40px; text-align: center; font-size: 24px;"><img src="bee2.gif" style="height: 80px; vertical-align: middle;"> Generating puzzle...</div>';
-    
-    try {
-        const response = await fetch(`${API_URL}/api/generate-word`, {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${authToken}`
-            },
-            body: JSON.stringify({ 
-                theme: theme,
-                forcePlay: true  // THIS IS THE KEY - bypasses 50% recycling check
-            })
-        });
-        
-        const data = await response.json();
-        
-        if (response.status === 429 || response.status === 503) {
-            showError(data.message || 'Theme limit reached!');
-            document.getElementById('upgradeModal').classList.remove('hidden');
-            return;
+            console.log('Forcing play with theme:', theme);
+            
+            const optionsContainer = document.getElementById('themeOptions');
+            optionsContainer.innerHTML = '<div style="padding: 40px; text-align: center; font-size: 24px;"><img src="bee2.gif" style="height: 80px; vertical-align: middle;"> Generating puzzle...</div>';
+            
+            try {
+                const response = await fetch(`${API_URL}/api/generate-word`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ 
+                        theme: theme,
+                        forcePlay: true
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.status === 429 || response.status === 503) {
+                    showError(data.message || 'Theme limit reached!');
+                    document.getElementById('upgradeModal').classList.remove('hidden');
+                    return;
+                }
+                
+                if (!response.ok) {
+                    throw new Error(data.message || 'Failed to generate');
+                }
+                
+                console.log('Starting game with words:', data.words);
+                startGame(data);
+                
+            } catch (error) {
+                console.error('API Error:', error);
+                showError('Connection error: ' + error.message);
+                resetToTheme();
+            }
         }
-        
-        if (!response.ok) {
-            throw new Error(data.message || 'Failed to generate');
-        }
-        
-        console.log('Starting game with words:', data.words);
-        startGame(data);
-        
-    } catch (error) {
-        console.error('API Error:', error);
-        showError('Connection error: ' + error.message);
-        resetToTheme();
-    }
-}
 
         async function endGame(won) {
             gameOver = true;
             
-            // NEW: Record this word attempt
             await recordWordAttempt(won);
             
             const messageDiv = document.getElementById('gameMessage');
@@ -1012,7 +835,6 @@ async function fetchAndStartGame(theme, forcePlay = false) {
     		resetButton.textContent = 'New Theme';
     		resetButton.classList.remove('hidden');
     		
-    		// Show tip about word variety for completed themes
     		if (currentWord.length <= 4) {
     		    console.log('💡 Tip: Try different themes or longer words for more variety!');
     		}
@@ -1054,7 +876,7 @@ async function fetchAndStartGame(theme, forcePlay = false) {
         	}
         
         	if (emptyBoxes.length > 0) {
-            	    const randomIndex = emptyBoxes[0]; // First empty box
+            	    const randomIndex = emptyBoxes[0];
             	    const box = document.getElementById(`box-${randomIndex}`);
             	    box.textContent = currentWord[randomIndex];
             	    box.style.opacity = '0.5';
@@ -1107,7 +929,6 @@ async function fetchAndStartGame(theme, forcePlay = false) {
         }
 
 	function resetToTheme() {
-            // Check if moving to next word in set
             if (currentWordIndex < wordList.length - 1 && wordList.length > 0) {
                 currentWordIndex++;
                 currentWord = wordList[currentWordIndex];
@@ -1118,10 +939,8 @@ async function fetchAndStartGame(theme, forcePlay = false) {
                 gameOver = false;
                 hintsUsed = 0;
                 
-                // NEW: Reset tracking for new word
                 wordStartTime = Date.now();
                 letterSwapCount = 0;
-                errorPatterns = [];
                 
                 document.getElementById('selectedTheme').textContent = `${selectedThemeWord} (${currentWordIndex + 1}/${wordList.length})`;
                 document.getElementById('previousGuesses').innerHTML = '';
@@ -1141,11 +960,9 @@ async function fetchAndStartGame(theme, forcePlay = false) {
                 
                 createWordBoxes();
                 updateGuessCount();
-                // Removed checkUpgradePrompt() - only check when actually hitting limit on new theme generation
                 return;
             }
             
-            // Reset to theme input
             currentWord = '';
             wordList = [];
             currentWordIndex = 0;
@@ -1157,11 +974,9 @@ async function fetchAndStartGame(theme, forcePlay = false) {
             selectedThemeWord = '';
             hintsUsed = 0;
             
-            // NEW: Reset tracking variables
             currentThemeId = null;
             wordStartTime = null;
             letterSwapCount = 0;
-            errorPatterns = [];
             
             document.getElementById('hintBtn').disabled = false;
             document.getElementById('hintBtn').textContent = '💡 Get Hint';
@@ -1266,7 +1081,6 @@ async function fetchAndStartGame(theme, forcePlay = false) {
             
             if (dragSourceType === 'box' && dragSourceIndex !== null) {
                 if (dragSourceIndex !== targetIndex) {
-                    // NEW: Track letter swap
                     letterSwapCount++;
                     
                     let guessArray = currentGuess.split('');
