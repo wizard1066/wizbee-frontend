@@ -1392,18 +1392,24 @@
                 
                 if (response.ok && data.analysis) {
                     // Typewriter effect
-                    aiText.textContent = '';
-                    const text = data.analysis;
-                    let i = 0;
-                    
-                    const typeWriter = setInterval(() => {
-                        if (i < text.length) {
-                            aiText.textContent += text.charAt(i);
-                            i++;
-                        } else {
-                            clearInterval(typeWriter);
-                        }
-                    }, 20);
+		    aiText.textContent = '';
+const text = data.analysis;
+let i = 0;
+
+// Clear any existing typewriter
+if (window.aiTypewriterInterval) {
+    clearInterval(window.aiTypewriterInterval);
+}
+
+window.aiTypewriterInterval = setInterval(() => {
+    if (i < text.length) {
+        aiText.textContent += text.charAt(i);
+        i++;
+    } else {
+        clearInterval(window.aiTypewriterInterval);
+        window.aiTypewriterInterval = null;
+    }
+}, 20);
                     
                     // Show timestamp and disable button if cached
                     if (data.cached) {
