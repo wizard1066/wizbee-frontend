@@ -169,6 +169,7 @@
     	<div id="previousGuesses" class="previous-guesses"></div>
     	<div id="gameMessage" class="message"></div>
     	<button id="resetButton" class="play-again hidden" onclick="resetToTheme()">Reset</button>
+	<button onclick="buyThemes()" class="upgrade-btn">Buy 4 Themes for $0.99</button>
 	</div>
     </div>
 
@@ -328,7 +329,32 @@
                 return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
             }).join(''));
             return JSON.parse(jsonPayload);
-        }
+        A
+	}
+
+	// Stripe
+	async function buyThemes() {
+  	try {
+    		const response = await fetch(`${API_URL}/api/create-checkout-session`, {
+      		method: 'POST',
+      		headers: { 
+        	'Authorization': `Bearer ${authToken}`,
+        	'Content-Type': 'application/json'
+      		}
+    	});
+    
+    	const { url } = await response.json();
+    
+    	if (url) {
+      		window.location.href = url; // Redirect to Stripe checkout
+    	} else {
+      		alert('Error creating checkout session');
+    	}
+  		} catch (error) {
+    			console.error('Payment error:', error);
+    			alert('Unable to start checkout. Please try again.');
+  		}
+	}
 
 	// Function create keyboard
 	function createKeyboard(language) {
