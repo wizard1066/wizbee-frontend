@@ -333,7 +333,7 @@
 	}
 
 	// Update theme counter display
-	async function updateThemeCounter() {
+/*	async function updateThemeCounter() {
     	try {
         	const response = await fetch(`${API_URL}/api/user-stats/${userEmail}`, {
             		headers: { 'Authorization': `Bearer ${authToken}` }
@@ -385,7 +385,47 @@
         		console.error('Error fetching theme count:', error);
         		document.getElementById('themeCounter').innerHTML = '✨ Loading...';
     		}
-	}
+	} */
+
+async function updateThemeCounter() {
+    try {
+        const response = await fetch(`${API_URL}/api/user-info`, {
+            headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        
+        if (!response.ok) {
+            console.error('Failed to fetch user info');
+            document.getElementById('themeCounter').innerHTML = '✨ Loading...';
+            return;
+        }
+        
+        const data = await response.json();
+        
+        const remaining = data.themesRemaining;
+        const used = data.totalThemesUsed;
+        const total = remaining + used;
+        const counter = document.getElementById('themeCounter');
+        
+        if (remaining > 0) {
+            counter.innerHTML = `✨ <strong>${remaining}</strong> of <strong>${total}</strong> themes remaining`;
+        } else {
+            counter.innerHTML = `🎯 <a href="#" onclick="buyThemes(); return false;" style="color: #667eea; text-decoration: underline;">Buy 4 more themes for $0.99</a>`;
+        }
+        
+        // Show/hide buy button in game screen
+        const buyBtn = document.getElementById('buyButton');
+        if (buyBtn) {
+            if (remaining <= 0) {
+                buyBtn.classList.remove('hidden');
+            } else {
+                buyBtn.classList.add('hidden');
+            }
+        }
+    } catch (error) {
+        console.error('Error fetching theme count:', error);
+        document.getElementById('themeCounter').innerHTML = '✨ Loading...';
+    }
+}
 
 	// Stripe checkout
 	async function buyThemes() {
