@@ -163,6 +163,7 @@
     	<div id="previousGuesses" class="previous-guesses"></div>
     	<div id="gameMessage" class="message"></div>
     	<button id="resetButton" class="play-again hidden" onclick="resetToTheme()">Reset</button>
+	<button id="buyButton" onclick="buyThemes()" class="upgrade-btn hidden">Buy 4 Themes for $0.99</button>
 	</div>
     </div>
 
@@ -370,6 +371,15 @@
             		} else {
                 		counter.innerHTML = `🎯 <a href="#" onclick="buyThemes(); return false;" style="color: #667eea; text-decoration: underline;">Buy 4 more themes for $0.99</a>`;
             		}
+			// Show/hide buy button in game screen
+    			const buyBtn = document.getElementById('buyButton');
+    			if (buyBtn) {
+        			if (remaining <= 0) {
+            			buyBtn.classList.remove('hidden');
+        		} else {
+            			buyBtn.classList.add('hidden');
+        		}
+    			}
         	}
     		} catch (error) {
         		console.error('Error fetching theme count:', error);
