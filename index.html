@@ -7,14 +7,19 @@
     
     <!-- 
     ============================================================================
-    WIZBEE FRONTEND - v5.2
+    WIZBEE FRONTEND - v6.1
     ============================================================================
     
-    Version: 5.2
-    Last Updated: 2025-12-26
+    Version: 6.1
+    Last Updated: 2025-12-28
     
-    NEW in v5.2:
-    - AI-powered progress analysis (once daily, cost-optimized)
+    NEW in v6.1:
+    - Removed intermediate theme selection button
+    - Fixed theme counter display
+    - Updates counter after each theme
+    - Cleaner UX flow
+    
+    v5.2: AI-powered progress analysis (once daily, cost-optimized)
     
     Features:
     - Four tabs: New Theme, Browse Themes, Leaderboard, Progress
@@ -47,16 +52,6 @@
 		</div>
         </div>
 
-        <!-- Upgrade Modal -->
-        <div id="upgradeModal" class="upgrade-modal hidden">
-            <div class="modal-content">
-	        <h2>🎉 You've used all 4 free themes!</h2>
-	        <p>Buy 16 more themes for just $0.99</p>
-                <button class="upgrade-btn" onclick="upgradeNow()">Upgrade Now</button>
-                <button class="maybe-later-btn" onclick="closeUpgradeModal()">Maybe Later</button>
-            </div>
-        </div>
-
 	<!-- Screen 1: Theme Input -->
         <div id="themeInputScreen" class="theme-input-screen hidden">
             <div class="user-info">
@@ -74,10 +69,16 @@
             
             <!-- New Theme Tab -->
             <div id="newThemeTab" class="tab-content active">
+		<div id="themeCounter" style="text-align: center; margin-bottom: 20px; color: #667eea; font-weight: bold; font-size: 18px;">
+        		<!-- Populated by JS -->
+    		</div>
                 <h2>What theme would you like?</h2>
 	        <div id="errorMessage" class="error-message hidden"></div>
-                <input type="text" id="themeInput" placeholder="Enter a theme (e.g., Italian Renaissance painters)">
-                <button onclick="generateThemes()">Generate →</button>
+                <input type="text" id="themeInput" placeholder="Enter a theme (e.g., dog breeds, Italian cities)" autofocus>
+                <button onclick="generateTheme()">Generate →</button>
+                <div id="generatingMessage" class="hidden" style="text-align: center; padding: 20px; font-size: 18px;">
+                    <img src="bee2.gif" style="height: 60px; vertical-align: middle;"> Generating puzzle...
+                </div>
             </div>
             
             <!-- Browse Themes Tab -->
@@ -123,7 +124,7 @@
                     <canvas id="progressChart"></canvas>
                 </div>
                 
-                <!-- AI Analysis Section - NEW IN v5.2 -->
+                <!-- AI Analysis Section -->
                 <div id="aiAnalysisSection" class="ai-analysis-section hidden">
                     <div class="ai-analysis-header">
                         <span class="ai-icon">🤖</span>
@@ -144,13 +145,6 @@
             </div>
         </div>
 
-        <!-- Screen 2: Theme Selection -->
-        <div id="themeSelectionScreen" class="theme-selection-screen hidden">
-            <h2>Choose your theme:</h2>
-            <div id="themeOptions" class="theme-options"></div>
-	    <button class="back-btn" onclick="resetToTheme()" style="margin-top: 20px;">← Back</button>
-        </div>
-
         <!-- Screen 3: Game Board -->
 	<div id="gameScreen" class="game-screen hidden">
     	<div class="theme-display">Theme: <span id="selectedTheme"></span></div>
@@ -169,14 +163,12 @@
     	<div id="previousGuesses" class="previous-guesses"></div>
     	<div id="gameMessage" class="message"></div>
     	<button id="resetButton" class="play-again hidden" onclick="resetToTheme()">Reset</button>
-	<button onclick="buyThemes()" class="upgrade-btn">Buy 4 Themes for $0.99</button>
 	</div>
     </div>
 
     <script>
         // Your Railway backend URL
-        //const API_URL = 'https://wizbee-backend-production.up.railway.app';
-	const API_URL = 'https://api.wizbee.app'
+        const API_URL = 'https://api.wizbee.app'
         
         // Google Client ID
         const GOOGLE_CLIENT_ID = '635584185020-emmqudvevrf1j01lpu6nha4tfneju6t2.apps.googleusercontent.com';
@@ -194,7 +186,6 @@
 	let winMessage = '';
 	let loseMessage = '';
         const MAX_HINTS = 3;
-	const MAX_THEMES = 3;
         let currentLanguage = 'en';
 	let wordList = [];
 	let currentWordIndex = 0;
@@ -329,10 +320,55 @@
                 return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
             }).join(''));
             return JSON.parse(jsonPayload);
-        A
 	}
 
-	// Stripe
+	// Update theme counter display
+	async function updateThemeCounter() {
+    	try {
+        	const response = await fetch(`${API_URL}/api/user-stats/${userEmail}`, {
+            		headers: { 'Authorization': `Bearer ${authToken}` }
+        	});
+        	
+       		if (!response.ok) {
+       		    console.error('Failed to fetch user stats');
+       		    return;
+       		}
+       		
+       		const data = await response.json();
+       		
+       		// Get themes info from another endpoint since user-stats doesn't have it
+       		const userResponse = await fetch(`${API_URL}/api/generate-word`, {
+       		    method: 'POST',
+       		    headers: {
+       		        'Authorization': `Bearer ${authToken}`,
+       		        'Content-Type': 'application/json'
+       		    },
+       		    body: JSON.stringify({ theme: '__check_only__' })
+       		});
+       		
+       		// This will fail but return themes info in error
+       		const userData = await userResponse.json();
+        
+        	const counter = document.getElementById('themeCounter');
+        	
+        	if (userData.themesRemaining !== undefined) {
+        	    const remaining = userData.themesRemaining;
+        	    const used = userData.themesUsed || 0;
+        	    const total = remaining + used;
+        	    
+            		if (remaining > 0) {
+                		counter.innerHTML = `✨ <strong>${remaining}</strong> of <strong>${total}</strong> themes remaining`;
+            		} else {
+                		counter.innerHTML = `🎯 <a href="#" onclick="buyThemes(); return false;" style="color: #667eea; text-decoration: underline;">Buy 4 more themes for $0.99</a>`;
+            		}
+        	}
+    		} catch (error) {
+        		console.error('Error fetching theme count:', error);
+        		document.getElementById('themeCounter').innerHTML = '✨ Loading...';
+    		}
+	}
+
+	// Stripe checkout
 	async function buyThemes() {
   	try {
     		const response = await fetch(`${API_URL}/api/create-checkout-session`, {
@@ -348,11 +384,11 @@
     	if (url) {
       		window.location.href = url; // Redirect to Stripe checkout
     	} else {
-      		alert('Error creating checkout session');
+      		showError('Error creating checkout session');
     	}
   		} catch (error) {
     			console.error('Payment error:', error);
-    			alert('Unable to start checkout. Please try again.');
+    			showError('Unable to start checkout. Please try again.');
   		}
 	}
 
@@ -401,6 +437,7 @@
             document.getElementById('themeInputScreen').classList.remove('hidden');
             document.getElementById('userEmail').textContent = userEmail;
             loadBrowseThemes();
+	    updateThemeCounter();
         }
 
 	function switchTab(tabName) {
@@ -413,6 +450,7 @@
             
             if (tabName === 'newTheme') {
                 document.getElementById('newThemeTab').classList.add('active');
+                updateThemeCounter(); // Refresh counter when switching to new theme tab
             } else if (tabName === 'browseThemes') {
                 document.getElementById('browseThemesTab').classList.add('active');
             } else if (tabName === 'leaderboard') {
@@ -652,7 +690,7 @@
 
                 messageDiv.textContent = '';
                 
-                // Load AI analysis - NEW IN v5.2
+                // Load AI analysis
                 await loadAIAnalysis();
 
             } catch (error) {
@@ -678,9 +716,7 @@
             
             console.log(`Launching theme: ${themeString} (from cache: ${cacheKey})`);
 
-            document.getElementById('themeInputScreen').classList.add('hidden');
-            document.getElementById('themeSelectionScreen').classList.remove('hidden');
-
+            // Go straight to game - no intermediate screen
             fetchAndStartGame(themeString);
         }
 
@@ -692,49 +728,34 @@
             location.reload();
         }
 
-        function generateThemes() {
+        // NEW: Direct generation - no intermediate button
+        function generateTheme() {
             const input = document.getElementById('themeInput').value.trim();
-            console.log('generateThemes called, input value:', input);
             
             if (!input) {
 		showError('Please enter a theme!');
                 return;
             }
             
-            document.getElementById('themeInputScreen').classList.add('hidden');
-            document.getElementById('themeSelectionScreen').classList.remove('hidden');
+            // Show generating message
+            document.getElementById('generatingMessage').classList.remove('hidden');
+            document.getElementById('themeInput').disabled = true;
             
-            const optionsContainer = document.getElementById('themeOptions');
-            
-            optionsContainer.innerHTML = '';
-            const button = document.createElement('div');
-            button.className = 'theme-option';
-            button.textContent = `Generate puzzle for: ${input}`;
-            
-            const capturedTheme = input;
-            console.log('Creating button with capturedTheme:', capturedTheme);
-            
-            button.onclick = function() {
-                console.log('Button clicked! Captured theme:', capturedTheme);
-                fetchAndStartGame(capturedTheme);
-            };
-            optionsContainer.appendChild(button);
+            // Go straight to game
+            fetchAndStartGame(input);
         }
 
         async function fetchAndStartGame(theme, forcePlay = false) {
-            console.log('fetchAndStartGame called with theme:', theme, 'type:', typeof theme);
+            console.log('fetchAndStartGame called with theme:', theme);
             
             if (!theme) {
                 showError('Error: No theme provided');
+                document.getElementById('generatingMessage').classList.add('hidden');
+                document.getElementById('themeInput').disabled = false;
                 return;
             }
             
-            const optionsContainer = document.getElementById('themeOptions');
-            optionsContainer.innerHTML = '<div style="padding: 40px; text-align: center; font-size: 24px;"><img src="bee2.gif" style="height: 80px; vertical-align: middle;"> Generating puzzle...</div>';
-            
             try {
-                console.log('Calling API with theme:', theme);
-
                 const response = await fetch(`${API_URL}/api/generate-word`, {
                     method: 'POST',
                     headers: { 
@@ -747,53 +768,52 @@
                     })
                 });
                 
-                console.log('API response status:', response.status);
-
                 const data = await response.json();
-                console.log('API data:', data);
 
-                if (response.status === 429 || response.status === 503) {
-                    document.getElementById('themeSelectionScreen').classList.add('hidden');
-                    document.getElementById('themeInputScreen').classList.remove('hidden');
-                    showError(data.message || 'Theme limit reached!');
-                    document.getElementById('upgradeModal').classList.remove('hidden');
-                    return;
-                }
+		if (response.status === 429 || response.status === 503) {
+		    document.getElementById('generatingMessage').classList.add('hidden');
+                    document.getElementById('themeInput').disabled = false;
+		    showError(data.message || 'Theme limit reached! Buy more themes to continue.');
+		    
+		    // Show buy option
+		    const counter = document.getElementById('themeCounter');
+		    counter.innerHTML = `🎯 <a href="#" onclick="buyThemes(); return false;" style="color: #667eea; text-decoration: underline;">Buy 4 more themes for $0.99</a>`;
+    			return;
+		}
 
                 if (data.themesRemaining !== undefined) {
                     themesPlayedCount = data.themesUsed;
+                    updateThemeCounter(); // Update counter after each theme
                 }
 
                 if (response.status === 400 && data.error === 'Theme exhausted') {
-                    optionsContainer.innerHTML = `
-                        <div class="exhausted-warning">
-                            <p>⚠️ ${data.message}</p>
-                            <div class="warning-buttons">
-                                <button class="play-anyway-btn" onclick="fetchAndStartGameForced('${theme.replace(/'/g, "\\'")}')">
-                                    🔄 Play Anyway (Repeat Words)
-                                </button>
-                                <button class="choose-theme-btn" onclick="resetToTheme()">
-                                    🎨 Choose Different Theme
-                                </button>
-                            </div>
-                        </div>
-                    `;
+                    document.getElementById('generatingMessage').classList.add('hidden');
+                    document.getElementById('themeInput').disabled = false;
+                    showError(data.message || 'This theme is exhausted. Try a different one!');
                     return;
                 }
 
                 if (data.error) {
+                    document.getElementById('generatingMessage').classList.add('hidden');
+                    document.getElementById('themeInput').disabled = false;
                     showError(data.message || 'Failed to generate puzzle. Please try again.');
-                    resetToTheme();
                     return;
                 }
 
                 console.log('Starting game with words:', data.words);
+                
+                // Hide generating message and re-enable input
+                document.getElementById('generatingMessage').classList.add('hidden');
+                document.getElementById('themeInput').disabled = false;
+                document.getElementById('themeInput').value = '';
+                
                 startGame(data);
                 
             } catch (error) {
                 console.error('API Error:', error);
+                document.getElementById('generatingMessage').classList.add('hidden');
+                document.getElementById('themeInput').disabled = false;
                 showError('Connection error: ' + error.message);
-                resetToTheme();
             }
         }
 
@@ -814,7 +834,7 @@
     	    
 	    createKeyboard(currentLanguage);
             
-            document.getElementById('themeSelectionScreen').classList.add('hidden');
+            document.getElementById('themeInputScreen').classList.add('hidden');
             document.getElementById('gameScreen').classList.remove('hidden');
 	    document.getElementById('selectedTheme').textContent = `${selectedThemeWord} (${currentWordIndex + 1}/${wordList.length})`;
 
@@ -867,27 +887,6 @@
                     box.textContent = '';
                 }
             }
-        }
-
-        function closeUpgradeModal() {
-            document.getElementById('upgradeModal').classList.add('hidden');
-
-    	    const upgradeBtn = document.createElement('button');
-    	    upgradeBtn.textContent = '🎉 Get 16 More Themes - $0.99';
-    	    upgradeBtn.className = 'upgrade-btn';
-    	    upgradeBtn.style.marginTop = '20px';
-    	    upgradeBtn.onclick = upgradeNow;
-    
-    	    const themeScreen = document.getElementById('themeInputScreen');
-    	    if (!document.getElementById('permanentUpgradeBtn')) {
-        	upgradeBtn.id = 'permanentUpgradeBtn';
-        	themeScreen.appendChild(upgradeBtn);
-    	    }
-        }
-
-        function upgradeNow() {
-            alert('Stripe payment coming soon!');
-            closeUpgradeModal();
         }
 
         function submitGuess() {
@@ -1000,7 +999,7 @@
             document.getElementById('guessesRemaining').textContent = remainingGuesses;
         }
 
-        // Record word completion to database - backend calculates error patterns
+        // Record word completion to database
         async function recordWordAttempt(won) {
             if (!currentThemeId) {
                 console.warn('No theme ID available, skipping record');
@@ -1030,47 +1029,6 @@
                 console.log(`✅ Word attempt recorded: ${currentWord} (won: ${won})`);
             } catch (error) {
                 console.error('Failed to record word attempt:', error);
-            }
-        }
-
-	async function fetchAndStartGameForced(theme) {
-            console.log('Forcing play with theme:', theme);
-            
-            const optionsContainer = document.getElementById('themeOptions');
-            optionsContainer.innerHTML = '<div style="padding: 40px; text-align: center; font-size: 24px;"><img src="bee2.gif" style="height: 80px; vertical-align: middle;"> Generating puzzle...</div>';
-            
-            try {
-                const response = await fetch(`${API_URL}/api/generate-word`, {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${authToken}`
-                    },
-                    body: JSON.stringify({ 
-                        theme: theme,
-                        forcePlay: true
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (response.status === 429 || response.status === 503) {
-                    showError(data.message || 'Theme limit reached!');
-                    document.getElementById('upgradeModal').classList.remove('hidden');
-                    return;
-                }
-                
-                if (!response.ok) {
-                    throw new Error(data.message || 'Failed to generate');
-                }
-                
-                console.log('Starting game with words:', data.words);
-                startGame(data);
-                
-            } catch (error) {
-                console.error('API Error:', error);
-                showError('Connection error: ' + error.message);
-                resetToTheme();
             }
         }
 
@@ -1107,10 +1065,6 @@
 	    } else {
     		resetButton.textContent = 'New Theme';
     		resetButton.classList.remove('hidden');
-    		
-    		if (currentWord.length <= 4) {
-    		    console.log('💡 Tip: Try different themes or longer words for more variety!');
-    		}
 	    }
         }
 
@@ -1236,6 +1190,7 @@
                 return;
             }
             
+            // Reset to theme input
             currentWord = '';
             wordList = [];
             currentWordIndex = 0;
@@ -1254,7 +1209,6 @@
             document.getElementById('hintBtn').disabled = false;
             document.getElementById('hintBtn').textContent = '💡 Get Hint';
             document.getElementById('hintDisplay').classList.add('hidden');
-            document.getElementById('themeSelectionScreen').classList.add('hidden');
             document.getElementById('themeInput').value = '';
             document.getElementById('gameScreen').classList.add('hidden');
             document.getElementById('themeInputScreen').classList.remove('hidden');
@@ -1270,6 +1224,9 @@
             document.querySelectorAll('.key').forEach(key => {
                 key.classList.remove('correct', 'present', 'used');
             });
+            
+            // Refresh theme counter
+            updateThemeCounter();
         }
 
         // Keyboard input
@@ -1399,7 +1356,7 @@
         }, true);
         
         // =====================================================================
-        // AI ANALYSIS FUNCTIONS - NEW IN v5.2
+        // AI ANALYSIS FUNCTIONS
         // =====================================================================
         async function loadAIAnalysis() {
             const aiSection = document.getElementById('aiAnalysisSection');
@@ -1420,23 +1377,23 @@
                 if (response.ok && data.analysis) {
                     // Typewriter effect
 		    aiText.textContent = '';
-const text = data.analysis;
-let i = 0;
+                    const text = data.analysis;
+                    let i = 0;
 
-// Clear any existing typewriter
-if (window.aiTypewriterInterval) {
-    clearInterval(window.aiTypewriterInterval);
-}
+                    // Clear any existing typewriter
+                    if (window.aiTypewriterInterval) {
+                        clearInterval(window.aiTypewriterInterval);
+                    }
 
-window.aiTypewriterInterval = setInterval(() => {
-    if (i < text.length) {
-        aiText.textContent += text.charAt(i);
-        i++;
-    } else {
-        clearInterval(window.aiTypewriterInterval);
-        window.aiTypewriterInterval = null;
-    }
-}, 20);
+                    window.aiTypewriterInterval = setInterval(() => {
+                        if (i < text.length) {
+                            aiText.textContent += text.charAt(i);
+                            i++;
+                        } else {
+                            clearInterval(window.aiTypewriterInterval);
+                            window.aiTypewriterInterval = null;
+                        }
+                    }, 20);
                     
                     // Show timestamp and disable button if cached
                     if (data.cached) {
