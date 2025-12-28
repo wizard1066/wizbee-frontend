@@ -273,6 +273,15 @@
         window.onload = function() {
             authToken = localStorage.getItem('authToken');
             userEmail = localStorage.getItem('userEmail');
+
+	// NEW: Check for successful payment
+    	const urlParams = new URLSearchParams(window.location.search);
+    	if (urlParams.get('success') === 'true') {
+        	showError('🎉 Payment successful! 4 more themes added to your account.');
+        	updateThemeCounter();
+        	// Clean URL
+        	window.history.replaceState({}, document.title, window.location.pathname);
+    	}
             
             if (authToken && userEmail) {
                 showThemeInput();
