@@ -364,7 +364,7 @@
         	if (userData.themesRemaining !== undefined) {
         	    const remaining = userData.themesRemaining;
         	    const used = userData.themesUsed || 0;
-        	    const total = remaining + used;
+        	    const total = userData.themesAllowed;  
         	    
             		if (remaining > 0) {
                 		counter.innerHTML = `✨ <strong>${remaining}</strong> of <strong>${total}</strong> themes remaining`;
