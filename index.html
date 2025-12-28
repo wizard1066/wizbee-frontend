@@ -403,7 +403,7 @@ async function updateThemeCounter() {
         
         const remaining = data.themesRemaining;
         const used = data.totalThemesUsed;
-        const total = remaining + used;
+        const total = userData.themesAllowed;
         const counter = document.getElementById('themeCounter');
         
         if (remaining > 0) {
