@@ -23,7 +23,6 @@
     
     Features:
     - Four tabs: New Theme, Browse Themes, Leaderboard, Progress
-    - AI Coach provides personalized insights (once per day)
     - Multi-language keyboards (10 languages)
     - Progress tracking with Chart.js visualization
     - Leaderboard showing fastest theme completions
@@ -83,7 +82,7 @@
             
             <!-- Browse Themes Tab -->
             <div id="browseThemesTab" class="tab-content">
-                <h2>Popular Themes</h2>
+                <h2>Private Themes</h2>
                 <div id="themesList" style="max-height: 400px; overflow-y: auto;">
                     <div style="text-align: center; padding: 40px; color: #718096;">Loading themes...</div>
                 </div>
@@ -600,8 +599,8 @@ async function loadBrowseThemes() {
         }
         
         // "Shared Themes" header
-        html += `<div class="language-section" style="margin-top: 24px;">`;
-        html += `<div class="language-header" style="color: #48bb78;">🌍 Shared Themes</div>`;
+	html += `<div class="language-section" style="margin-top: 24px;">`;
+	html += `<div class="language-header">Public Themes</div>`;
         html += `</div>`;
         
         // Then show all themes grouped by language
