@@ -526,7 +526,11 @@ async function updateThemeCounter() {
             const themesList = document.getElementById('themesList');
             
             try {
-                const response = await fetch(`${API_URL}/api/browse-themes`);
+		const response = await fetch(`${API_URL}/api/browse-themes`, {
+    		headers: {
+        		'Authorization': `Bearer ${authToken}`
+    			}
+			});
                 const data = await response.json();
                 
                 if (!response.ok) {
