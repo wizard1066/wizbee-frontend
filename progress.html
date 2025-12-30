@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wizbee - Progress</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <h1>
+            <a href="index.html" style="text-decoration: none; color: inherit;">
+                <img src="bee3.gif" alt="Wizbee" style="height: 48px; vertical-align: middle;"> Wizbee
+            </a>
+        </h1>
+
+        <div class="user-info">
+            <div>Signed in as: <span id="userEmail"></span></div>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+
+        <!-- Navigation -->
+        <div class="tabs">
+            <button class="tab" onclick="window.location.href='index.html'">Play Game</button>
+            <button class="tab" onclick="window.location.href='leaderboard.html'">🏆 Leaderboard</button>
+            <button class="tab active">📊 Progress</button>
+        </div>
+
+        <div class="tab-content active">
+            <h2>📊 Your Progress</h2>
+            
+            <div class="progress-stats">
+                <div class="stat-card">
+                    <div class="stat-value" id="statTotalWords">0</div>
+                    <div class="stat-label">Words Played</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="statWinRate">0%</div>
+                    <div class="stat-label">Win Rate</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="statAvgTime">0s</div>
+                    <div class="stat-label">Avg Time</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="statFastest">0s</div>
+                    <div class="stat-label">Fastest Win</div>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <canvas id="progressChart"></canvas>
+            </div>
+            
+            <!-- AI Analysis Section -->
+            <div id="aiAnalysisSection" class="ai-analysis-section hidden">
+                <div class="ai-analysis-header">
+                    <span class="ai-icon">🤖</span>
+                    <span class="ai-title">AI Coach Insights</span>
+                </div>
+                <div id="aiAnalysisText" class="ai-analysis-text">
+                    Analyzing your progress...
+                </div>
+                <div class="ai-analysis-footer">
+                    <button id="refreshAnalysisBtn" class="refresh-analysis-btn" onclick="refreshAnalysis()">
+                        🔄 Get Fresh Insights
+                    </button>
+                    <div id="aiAnalysisTimestamp" class="ai-timestamp"></div>
+                </div>
+            </div>
+            
+            <div id="progressMessage" style="text-align: center; padding: 20px; color: #718096;"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://api.wizbee.app';
+        let authToken = null;
+        let userEmail = null;
+        let progressChart = null;
+
+        // Check authentication
+        window.onload = function() {
+            authToken = localStorage.getItem('authToken');
+            userEmail = localStorage.getItem('userEmail');
+            
+            if (!authToken || !userEmail) {
+                window.location.href = 'index.html';
+                return;
+            }
+            
+            document.getElementById('userEmail').textContent = userEmail;
+            loadProgress();
+        };
+
+        function logout() {
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('userEmail');
+            window.location.href = 'index.html';
+        }
+
+        async function loadProgress() {
+            const messageDiv = document.getElementById('progressMessage');
+            messageDiv.textContent = 'Loading your progress...';
+            
+            try {
+                const response = await fetch(`${API_URL}/api/user-stats/${userEmail}`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                const data = await response.json();
+                
+                if (!response.ok || !data.daily || data.daily.length === 0) {
+                    messageDiv.textContent = 'No progress data yet. Play some games to see your stats!';
+                    // Reset stat cards
+                    document.getElementById('statTotalWords').textContent = '0';
+                    document.getElementById('statWinRate').textContent = '0%';
+                    document.getElementById('statAvgTime').textContent = '0s';
+                    document.getElementById('statFastest').textContent = '0s';
+                    return;
+                }
+
+                // Update stat cards
+                document.getElementById('statTotalWords').textContent = data.stats.totalWords;
+                document.getElementById('statWinRate').textContent = data.stats.winRate + '%';
+                document.getElementById('statAvgTime').textContent = data.stats.avgTime + 's';
+                document.getElementById('statFastest').textContent = data.stats.fastestTime + 's';
+
+                // Prepare chart data
+                const dates = data.daily.map(d => new Date(d.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+                const winRates = data.daily.map(d => d.winRate);
+
+                // Destroy existing chart if it exists
+                if (progressChart) {
+                    progressChart.destroy();
+                }
+
+                // Create chart
+                const ctx = document.getElementById('progressChart').getContext('2d');
+                progressChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: dates,
+                        datasets: [{
+                            label: 'Win Rate (%)',
+                            data: winRates,
+                            borderColor: '#667eea',
+                            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                            tension: 0.3,
+                            fill: true,
+                            pointRadius: 4,
+                            pointBackgroundColor: '#667eea'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100,
+                                ticks: {
+                                    callback: function(value) {
+                                        return value + '%';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+
+                messageDiv.textContent = '';
+                
+                // Load AI analysis
+                await loadAIAnalysis();
+
+            } catch (error) {
+                console.error('Error loading progress:', error);
+                messageDiv.textContent = 'Failed to load progress data';
+            }
+        }
+
+        async function loadAIAnalysis() {
+            const aiSection = document.getElementById('aiAnalysisSection');
+            const aiText = document.getElementById('aiAnalysisText');
+            const timestamp = document.getElementById('aiAnalysisTimestamp');
+            const refreshBtn = document.getElementById('refreshAnalysisBtn');
+            
+            aiSection.classList.remove('hidden');
+            aiText.innerHTML = '<span class="loading-dots">Analyzing your progress</span>';
+            timestamp.textContent = '';
+            
+            try {
+                const response = await fetch(`${API_URL}/api/progress-analysis/${userEmail}`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const data = await response.json();
+                
+                if (response.ok && data.analysis) {
+                    // Typewriter effect
+                    aiText.textContent = '';
+                    const text = data.analysis;
+                    let i = 0;
+
+                    // Clear any existing typewriter
+                    if (window.aiTypewriterInterval) {
+                        clearInterval(window.aiTypewriterInterval);
+                    }
+
+                    window.aiTypewriterInterval = setInterval(() => {
+                        if (i < text.length) {
+                            aiText.textContent += text.charAt(i);
+                            i++;
+                        } else {
+                            clearInterval(window.aiTypewriterInterval);
+                            window.aiTypewriterInterval = null;
+                        }
+                    }, 20);
+                    
+                    // Show timestamp and disable button if cached
+                    if (data.cached) {
+                        const time = new Date(data.generatedAt).toLocaleTimeString('en-US', { 
+                            hour: 'numeric', minute: '2-digit' 
+                        });
+                        timestamp.textContent = `Updated today at ${time} • Fresh insights tomorrow!`;
+                        refreshBtn.disabled = true;
+                        refreshBtn.textContent = '✓ Analysis Complete';
+                    } else {
+                        const time = new Date().toLocaleTimeString('en-US', { 
+                            hour: 'numeric', minute: '2-digit' 
+                        });
+                        timestamp.textContent = `Generated at ${time} • Next update tomorrow`;
+                        refreshBtn.disabled = true;
+                        refreshBtn.textContent = '✓ Analysis Complete';
+                    }
+                } else {
+                    aiText.textContent = data.analysis || 'Keep playing to unlock insights!';
+                    timestamp.textContent = '';
+                }
+            } catch (error) {
+                console.error('Error loading AI analysis:', error);
+                aiText.textContent = 'Unable to generate insights. Keep playing!';
+                timestamp.textContent = '';
+            }
+        }
+
+        async function refreshAnalysis() {
+            const btn = document.getElementById('refreshAnalysisBtn');
+            
+            if (btn.disabled) {
+                return; // Already generated today
+            }
+            
+            btn.textContent = '⏳ Thinking...';
+            btn.disabled = true;
+            
+            await loadAIAnalysis();
+        }
+    </script>
+</body>
+</html>

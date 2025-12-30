@@ -64,7 +64,7 @@
                 <button class="tab active" onclick="switchTab('newTheme')">New Theme</button>
                 <button class="tab" onclick="switchTab('browseThemes')">Browse Themes</button>
 		<button class="tab" onclick="window.location.href='leaderboard.html'">🏆 Leaderboard</button>
-                <button class="tab" onclick="switchTab('progress')">📊 Progress</button>
+		<button class="tab" onclick="window.location.href='progress.html'">📊 Progress</button>
             </div>
             
             <!-- New Theme Tab -->
@@ -651,8 +651,7 @@ async function loadBrowseThemes() {
         themesList.innerHTML = '<div style="text-align: center; padding: 40px; color: #718096;">Failed to load themes</div>';
     }
 }
-
-        async function loadProgress() {
+        async function loadProgressD() {
             const messageDiv = document.getElementById('progressMessage');
             messageDiv.textContent = 'Loading your progress...';
             
