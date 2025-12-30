@@ -376,7 +376,33 @@
             }
         }
 
-        function toggleWordSelection(themeIndex, wordIndex) {
+	function toggleWordSelection(themeIndex, wordIndex) {
+    const wordKey = `${themeIndex}-${wordIndex}`;
+    const wordElement = document.getElementById(`word-${index}-${wordIndex}`);
+    const checkbox = document.getElementById(`check-${themeIndex}-${wordIndex}`);
+    const countSpan = document.getElementById(`selected-count-${themeIndex}`);
+    const deleteBtn = document.querySelector(`[onclick="deleteSelectedWords(${themeIndex})"]`);
+    
+    if (selectedWords.has(wordKey)) {
+        selectedWords.delete(wordKey);
+        wordElement.style.background = '';
+        wordElement.style.borderColor = '';
+    } else {
+        selectedWords.add(wordKey);
+        wordElement.style.background = '#fed7d7';
+        wordElement.style.borderColor = '#fc8181';
+    }
+    
+    // Update count
+    const count = Array.from(selectedWords).filter(key => key.startsWith(`${themeIndex}-`)).length;
+    countSpan.textContent = count > 0 ? `${count} selected` : '';
+    
+    // Enable/disable delete button
+    deleteBtn.disabled = count === 0;
+    deleteBtn.textContent = `🗑️ Delete Selected (${count})`;
+}
+
+        function toggleWordSelectionD(themeIndex, wordIndex) {
             const wordKey = `${themeIndex}-${wordIndex}`;
             
             if (selectedWords.has(wordKey)) {
@@ -388,7 +414,28 @@
             renderThemes();
         }
 
-        function selectAll(themeIndex) {
+function selectAll(themeIndex) {
+    const theme = themes[themeIndex];
+    theme.words.forEach((word, wordIndex) => {
+        const wordKey = `${themeIndex}-${wordIndex}`;
+        selectedWords.add(wordKey);
+        const checkbox = document.getElementById(`check-${themeIndex}-${wordIndex}`);
+        const wordElement = document.getElementById(`word-${themeIndex}-${wordIndex}`);
+        if (checkbox) checkbox.checked = true;
+        if (wordElement) {
+            wordElement.style.background = '#fed7d7';
+            wordElement.style.borderColor = '#fc8181';
+        }
+    });
+    
+    const countSpan = document.getElementById(`selected-count-${themeIndex}`);
+    const deleteBtn = document.querySelector(`[onclick="deleteSelectedWords(${themeIndex})"]`);
+    countSpan.textContent = `${theme.words.length} selected`;
+    deleteBtn.disabled = false;
+    deleteBtn.textContent = `🗑️ Delete Selected (${theme.words.length})`;
+}
+
+        function selectAllD(themeIndex) {
             const theme = themes[themeIndex];
             theme.words.forEach((word, wordIndex) => {
                 selectedWords.add(`${themeIndex}-${wordIndex}`);
@@ -396,7 +443,28 @@
             renderThemes();
         }
 
-        function deselectAll(themeIndex) {
+function deselectAll(themeIndex) {
+    const theme = themes[themeIndex];
+    theme.words.forEach((word, wordIndex) => {
+        const wordKey = `${themeIndex}-${wordIndex}`;
+        selectedWords.delete(wordKey);
+        const checkbox = document.getElementById(`check-${themeIndex}-${wordIndex}`);
+        const wordElement = document.getElementById(`word-${themeIndex}-${wordIndex}`);
+        if (checkbox) checkbox.checked = false;
+        if (wordElement) {
+            wordElement.style.background = '';
+            wordElement.style.borderColor = '';
+        }
+    });
+    
+    const countSpan = document.getElementById(`selected-count-${themeIndex}`);
+    const deleteBtn = document.querySelector(`[onclick="deleteSelectedWords(${themeIndex})"]`);
+    countSpan.textContent = '';
+    deleteBtn.disabled = true;
+    deleteBtn.textContent = `🗑️ Delete Selected (0)`;
+}
+
+        function deselectAllD(themeIndex) {
             clearThemeSelections(themeIndex);
             renderThemes();
         }
