@@ -378,7 +378,8 @@
 
 	function toggleWordSelection(themeIndex, wordIndex) {
     const wordKey = `${themeIndex}-${wordIndex}`;
-    const wordElement = document.getElementById(`word-${index}-${wordIndex}`);
+    const wordElementD = document.getElementById(`word-${index}-${wordIndex}`);
+    const wordElement = document.getElementById(`word-${themeIndex}-${wordIndex}`);
     const checkbox = document.getElementById(`check-${themeIndex}-${wordIndex}`);
     const countSpan = document.getElementById(`selected-count-${themeIndex}`);
     const deleteBtn = document.querySelector(`[onclick="deleteSelectedWords(${themeIndex})"]`);
@@ -474,7 +475,62 @@ function deselectAll(themeIndex) {
             keysToDelete.forEach(key => selectedWords.delete(key));
         }
 
-        async function deleteSelectedWords(themeIndex) {
+	async function deleteSelectedWords(themeIndex) {
+    const theme = themes[themeIndex];
+    const selectedIndices = Array.from(selectedWords)
+        .filter(key => key.startsWith(`${themeIndex}-`))
+        .map(key => parseInt(key.split('-')[1]))
+        .sort((a, b) => b - a); // Sort descending
+    
+    if (selectedIndices.length === 0) return;
+    
+    if (!confirm(`Delete ${selectedIndices.length} selected word(s)?`)) return;
+    
+    try {
+        // Delete words from end to start (so indices don't shift)
+        for (const wordIndex of selectedIndices) {
+            const response = await fetch(`${API_URL}/api/delete-word`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${authToken}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    cacheKey: theme.cache_key,
+                    wordIndex: wordIndex
+                })
+            });
+            
+            if (!response.ok) {
+                alert('Failed to delete some words');
+                break;
+            }
+            
+            // Remove from local array
+            themes[themeIndex].words.splice(wordIndex, 1);
+        }
+        
+        // Clear selections and reload this theme only
+        clearThemeSelections(themeIndex);
+        
+        // Full re-render but keep edit state
+        const wasEditing = document.getElementById(`words-${themeIndex}`).style.display === 'block';
+        renderThemes();
+        
+        if (wasEditing) {
+            // Re-open the edit panel
+            document.getElementById(`words-${themeIndex}`).style.display = 'block';
+            document.getElementById(`edit-btn-${themeIndex}`).textContent = '✓ Done';
+            document.getElementById(`theme-${themeIndex}`).classList.add('editing');
+        }
+        
+    } catch (error) {
+        console.error('Error deleting words:', error);
+        alert('Failed to delete words');
+    }
+}
+
+        async function deleteSelectedWordsD(themeIndex) {
             const theme = themes[themeIndex];
             const selectedIndices = Array.from(selectedWords)
                 .filter(key => key.startsWith(`${themeIndex}-`))
