@@ -53,50 +53,58 @@
         </div>
 
 	<!-- Screen 1: Theme Input -->
-        <div id="themeInputScreen" class="theme-input-screen hidden">
-            <div class="user-info">
-		<div>Signed in as: <span id="userEmail"></span></div>
-        	<button class="logout-btn" onclick="logout()">Logout</button>
-            </div>
-            
-            <!-- Tab Navigation -->
-            <div class="tabs">
-                <button class="tab active" onclick="switchTab('newTheme')">New Theme</button>
-                <button class="tab" onclick="switchTab('browseThemes')">Browse Themes</button>
-		<button class="tab" onclick="window.location.href='admin.html'">⚙️ My Themes</button>
-		<button class="tab" onclick="window.location.href='leaderboard.html'">🏆 Leaderboard</button>
-		<button class="tab" onclick="window.location.href='progress.html'">📊 Progress</button>
-            </div>
-            
-            <!-- New Theme Tab -->
-            <div id="newThemeTab" class="tab-content active">
-		<div id="themeCounter" style="text-align: center; margin-bottom: 20px; color: #667eea; font-weight: bold; font-size: 18px;">
-        		<!-- Populated by JS -->
-    		</div>
-                <h2>What theme would you like?</h2>
-	        <div id="errorMessage" class="error-message hidden"></div>
-                <input type="text" id="themeInput" placeholder="Enter a theme (e.g., dog breeds, Italian cities)" autofocus>
-                <button onclick="generateTheme()">Generate →</button>
-                <div id="generatingMessage" class="hidden" style="text-align: center; padding: 20px; font-size: 18px;">
-                    <img src="bee2.gif" style="height: 60px; vertical-align: middle;"> Generating puzzle...
+	    <!-- New Theme Tab -->
+<div id="newThemeTab" class="tab-content active">
+    <div id="themeCounter" style="text-align: center; margin-bottom: 20px; color: #667eea; font-weight: bold; font-size: 18px;">
+        <!-- Populated by JS -->
+    </div>
+    <h2>Create Your Theme</h2>
+    <div id="errorMessage" class="error-message hidden"></div>
+    
+    <input type="text" id="themeInput" placeholder="Enter a theme (e.g., household pets, common colors)" autofocus>
+    <button id="generateBtn" onclick="generateTheme()">Generate</button>
+    
+    <div id="generatingMessage" class="hidden" style="text-align: center; padding: 20px; font-size: 18px;">
+        <img src="bee2.gif" style="height: 60px; vertical-align: middle;"> Generating words...
+    </div>
+    
+    <!-- Preview Section -->
+    <div id="previewSection" class="hidden" style="margin-top: 30px; border: 2px solid #e2e8f0; border-radius: 8px; padding: 20px; background: #f7fafc;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <div>
+                <div style="font-size: 18px; font-weight: 600; color: #2d3748;">
+                    Current Set: <span id="wordCount">0</span> words
+                </div>
+                <div style="font-size: 14px; color: #718096; margin-top: 5px;">
+                    💡 Words are ordered easy→hard. Check the last section for trickiest words.
                 </div>
             </div>
-            
-            <!-- Browse Themes Tab -->
-            <div id="browseThemesTab" class="tab-content">
-                <h2>All Sets</h2>
-                <div id="themesList" style="max-height: 400px; overflow-y: auto;">
-                    <div style="text-align: center; padding: 40px; color: #718096;">Loading themes...</div>
-                </div>
+            <div style="text-align: right;">
+                <div id="refineCounter" style="font-size: 14px; color: #718096;"></div>
             </div>
-            
-            <!-- Leaderboard Tab -->
-            <div id="leaderboardTab" class="tab-content">
-                <h2>🏆 Fastest Theme Completions</h2>
-                <div id="leaderboardList" class="leaderboard-container">
-                    <div style="text-align: center; padding: 40px; color: #718096;">Loading leaderboard...</div>
-                </div>
+        </div>
+        
+        <div style="margin-bottom: 15px;">
+            <div style="font-weight: 600; color: #718096; margin-bottom: 8px;">Last Quartile (Hardest Words):</div>
+            <div id="lastQuartile" style="background: white; padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0; font-family: monospace; color: #2d3748;">
+                <!-- Populated by JS -->
             </div>
+        </div>
+        
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <button id="refineBtn" class="btn btn-secondary" onclick="refineTheme()" disabled>
+                🔄 Refine (0/3)
+            </button>
+            <button id="setBtn" class="btn btn-primary" onclick="acceptAndPlay()" disabled>
+                ✓ Use This Set
+            </button>
+        </div>
+        
+        <div id="refineHint" class="hidden" style="margin-top: 15px; padding: 12px; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px; color: #856404;">
+            ⚠️ These words don't look right? Try rewording your theme for better results!
+        </div>
+    </div>
+</div>
             
             <!-- Progress Tab -->
             <div id="progressTab" class="tab-content">
@@ -174,6 +182,12 @@
         
         // Google Client ID
         const GOOGLE_CLIENT_ID = '635584185020-emmqudvevrf1j01lpu6nha4tfneju6t2.apps.googleusercontent.com';
+
+	// Theme refinement tracking
+	let refineAttempts = 0;
+	let maxRefineAttempts = 3;
+	let currentGeneratedWords = null;
+	let currentThemeText = '';
 
         let authToken = null;
         let userEmail = null;
@@ -683,21 +697,140 @@ async function loadBrowseThemes() {
         }
 
         // NEW: Direct generation - no intermediate button
-        function generateTheme() {
-            const input = document.getElementById('themeInput').value.trim();
-            
-            if (!input) {
-		showError('Please enter a theme!');
-                return;
-            }
-            
-            // Show generating message
-            document.getElementById('generatingMessage').classList.remove('hidden');
-            document.getElementById('themeInput').disabled = true;
-            
-            // Go straight to game
-            fetchAndStartGame(input);
+async function generateTheme() {
+    const input = document.getElementById('themeInput').value.trim();
+    
+    if (!input) {
+        showError('Please enter a theme!');
+        return;
+    }
+    
+    currentThemeText = input;
+    refineAttempts = 0;
+    
+    await generateWordlist();
+}
+
+async function generateWordlist() {
+    document.getElementById('generatingMessage').classList.remove('hidden');
+    document.getElementById('generateBtn').disabled = true;
+    document.getElementById('previewSection').classList.add('hidden');
+    
+    try {
+        const response = await fetch(`${API_URL}/api/generate-preview`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify({ theme: currentThemeText })
+        });
+        
+        const data = await response.json();
+        
+        document.getElementById('generatingMessage').classList.add('hidden');
+        
+        if (!response.ok || data.error) {
+            showError(data.message || 'Failed to generate words');
+            document.getElementById('generateBtn').disabled = false;
+            return;
         }
+        
+        // Store generated words
+        currentGeneratedWords = data.words;
+        
+        // Show preview
+        displayPreview(data.words);
+        
+    } catch (error) {
+        console.error('Generation error:', error);
+        document.getElementById('generatingMessage').classList.add('hidden');
+        document.getElementById('generateBtn').disabled = false;
+        showError('Connection error');
+    }
+}
+
+function displayPreview(words) {
+    document.getElementById('previewSection').classList.remove('hidden');
+    document.getElementById('wordCount').textContent = words.length;
+    
+    // Show last quartile
+    const quartileSize = Math.ceil(words.length / 4);
+    const lastQuartile = words.slice(-quartileSize);
+    document.getElementById('lastQuartile').textContent = '...' + lastQuartile.join(', ');
+    
+    // Update refine counter
+    const refineBtn = document.getElementById('refineBtn');
+    const refineCounter = document.getElementById('refineCounter');
+    const remaining = maxRefineAttempts - refineAttempts;
+    
+    refineCounter.textContent = `Attempt ${refineAttempts + 1} of ${maxRefineAttempts + 1}`;
+    refineBtn.textContent = `🔄 Refine (${remaining}/3)`;
+    refineBtn.disabled = remaining <= 0;
+    
+    // Enable Set button
+    document.getElementById('setBtn').disabled = false;
+    
+    // Show hint if words look questionable
+    document.getElementById('refineHint').classList.remove('hidden');
+}
+
+async function refineTheme() {
+    refineAttempts++;
+    await generateWordlist();
+}
+
+async function acceptAndPlay() {
+    if (!currentGeneratedWords || currentGeneratedWords.length === 0) {
+        showError('No words to use!');
+        return;
+    }
+    
+    // Now create the actual theme and start game
+    document.getElementById('generatingMessage').classList.remove('hidden');
+    
+    try {
+        const response = await fetch(`${API_URL}/api/generate-word`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify({ 
+                theme: currentThemeText,
+                acceptWords: currentGeneratedWords
+            })
+        });
+        
+        const data = await response.json();
+        
+        document.getElementById('generatingMessage').classList.add('hidden');
+        
+        if (!response.ok || data.error) {
+            showError(data.message || 'Failed to create theme');
+            return;
+        }
+        
+        // Reset state
+        currentGeneratedWords = null;
+        refineAttempts = 0;
+        document.getElementById('previewSection').classList.add('hidden');
+        document.getElementById('themeInput').value = '';
+        document.getElementById('generateBtn').disabled = false;
+        
+        // Update counter
+        updateThemeCounter();
+        
+        // Start game
+        startGame(data);
+        
+    } catch (error) {
+        console.error('Error:', error);
+        document.getElementById('generatingMessage').classList.add('hidden');
+        showError('Connection error');
+    }
+}
+
 
         async function fetchAndStartGame(theme, forcePlay = false) {
             console.log('fetchAndStartGame called with theme:', theme);
