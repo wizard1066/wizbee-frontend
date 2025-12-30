@@ -5,32 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wizbee - AI Word Puzzle Game</title>
     
-    <!-- 
-    ============================================================================
-    WIZBEE FRONTEND - v6.1
-    ============================================================================
-    
-    Version: 6.1
-    Last Updated: 2025-12-28
-    
-    NEW in v6.1:
-    - Removed intermediate theme selection button
-    - Fixed theme counter display
-    - Updates counter after each theme
-    - Cleaner UX flow
-    
-    v5.2: AI-powered progress analysis (once daily, cost-optimized)
-    
-    Features:
-    - Four tabs: New Theme, Browse Themes, Leaderboard, Progress
-    - AI Coach provides personalized insights (once per day)
-    - Multi-language keyboards (10 languages)
-    - Progress tracking with Chart.js visualization
-    - Leaderboard showing fastest theme completions
-    
-    ============================================================================
-    -->
-    
     <!-- Google Sign-In -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <!-- Chart.js for Progress Tab -->
@@ -53,104 +27,80 @@
         </div>
 
 	<!-- Screen 1: Theme Input -->
-	    <!-- New Theme Tab -->
-<div id="newThemeTab" class="tab-content active">
-    <div id="themeCounter" style="text-align: center; margin-bottom: 20px; color: #667eea; font-weight: bold; font-size: 18px;">
-        <!-- Populated by JS -->
-    </div>
-    <h2>Create Your Theme</h2>
-    <div id="errorMessage" class="error-message hidden"></div>
-    
-    <input type="text" id="themeInput" placeholder="Enter a theme (e.g., household pets, common colors)" autofocus>
-    <button id="generateBtn" onclick="generateTheme()">Generate</button>
-    
-    <div id="generatingMessage" class="hidden" style="text-align: center; padding: 20px; font-size: 18px;">
-        <img src="bee2.gif" style="height: 60px; vertical-align: middle;"> Generating words...
-    </div>
-    
-    <!-- Preview Section -->
-    <div id="previewSection" class="hidden" style="margin-top: 30px; border: 2px solid #e2e8f0; border-radius: 8px; padding: 20px; background: #f7fafc;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-            <div>
-                <div style="font-size: 18px; font-weight: 600; color: #2d3748;">
-                    Current Set: <span id="wordCount">0</span> words
-                </div>
-                <div style="font-size: 14px; color: #718096; margin-top: 5px;">
-                    💡 Words are ordered easy→hard. Check the last section for trickiest words.
-                </div>
+        <div id="themeInputScreen" class="theme-input-screen hidden">
+            <div class="user-info">
+		<div>Signed in as: <span id="userEmail"></span></div>
+        	<button class="logout-btn" onclick="logout()">Logout</button>
             </div>
-            <div style="text-align: right;">
-                <div id="refineCounter" style="font-size: 14px; color: #718096;"></div>
-            </div>
-        </div>
-        
-        <div style="margin-bottom: 15px;">
-            <div style="font-weight: 600; color: #718096; margin-bottom: 8px;">Last Quartile (Hardest Words):</div>
-            <div id="lastQuartile" style="background: white; padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0; font-family: monospace; color: #2d3748;">
-                <!-- Populated by JS -->
-            </div>
-        </div>
-        
-        <div style="display: flex; gap: 10px; margin-top: 20px;">
-            <button id="refineBtn" class="btn btn-secondary" onclick="refineTheme()" disabled>
-                🔄 Refine (0/3)
-            </button>
-            <button id="setBtn" class="btn btn-primary" onclick="acceptAndPlay()" disabled>
-                ✓ Use This Set
-            </button>
-        </div>
-        
-        <div id="refineHint" class="hidden" style="margin-top: 15px; padding: 12px; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px; color: #856404;">
-            ⚠️ These words don't look right? Try rewording your theme for better results!
-        </div>
-    </div>
-</div>
             
-            <!-- Progress Tab -->
-            <div id="progressTab" class="tab-content">
-                <h2>📊 Your Progress</h2>
+            <!-- Tab Navigation -->
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('newTheme')">New Theme</button>
+                <button class="tab" onclick="switchTab('browseThemes')">Browse Themes</button>
+		<button class="tab" onclick="window.location.href='admin.html'">⚙️ My Themes</button>
+		<button class="tab" onclick="window.location.href='leaderboard.html'">🏆 Leaderboard</button>
+		<button class="tab" onclick="window.location.href='progress.html'">📊 Progress</button>
+            </div>
+            
+            <!-- New Theme Tab WITH REFINE SYSTEM -->
+            <div id="newThemeTab" class="tab-content active">
+		<div id="themeCounter" style="text-align: center; margin-bottom: 20px; color: #667eea; font-weight: bold; font-size: 18px;">
+        		<!-- Populated by JS -->
+    		</div>
+                <h2>Create Your Theme</h2>
+	        <div id="errorMessage" class="error-message hidden"></div>
                 
-                <div class="progress-stats">
-                    <div class="stat-card">
-                        <div class="stat-value" id="statTotalWords">0</div>
-                        <div class="stat-label">Words Played</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="statWinRate">0%</div>
-                        <div class="stat-label">Win Rate</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="statAvgTime">0s</div>
-                        <div class="stat-label">Avg Time</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="statFastest">0s</div>
-                        <div class="stat-label">Fastest Win</div>
-                    </div>
+                <input type="text" id="themeInput" placeholder="Enter a theme (e.g., household pets, common colors)" autofocus>
+                <button id="generateBtn" onclick="generateTheme()">Generate</button>
+                
+                <div id="generatingMessage" class="hidden" style="text-align: center; padding: 20px; font-size: 18px;">
+                    <img src="bee2.gif" style="height: 60px; vertical-align: middle;"> Generating words...
                 </div>
                 
-                <div class="chart-container">
-                    <canvas id="progressChart"></canvas>
-                </div>
-                
-                <!-- AI Analysis Section -->
-                <div id="aiAnalysisSection" class="ai-analysis-section hidden">
-                    <div class="ai-analysis-header">
-                        <span class="ai-icon">🤖</span>
-                        <span class="ai-title">AI Coach Insights</span>
+                <!-- Preview Section -->
+                <div id="previewSection" class="hidden" style="margin-top: 30px; border: 2px solid #e2e8f0; border-radius: 8px; padding: 20px; background: #f7fafc;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <div>
+                            <div style="font-size: 18px; font-weight: 600; color: #2d3748;">
+                                Current Set: <span id="wordCount">0</span> words
+                            </div>
+                            <div style="font-size: 14px; color: #718096; margin-top: 5px;">
+                                💡 Words are ordered easy→hard. Check the last section for trickiest words.
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div id="refineCounter" style="font-size: 14px; color: #718096;"></div>
+                        </div>
                     </div>
-                    <div id="aiAnalysisText" class="ai-analysis-text">
-                        Analyzing your progress...
+                    
+                    <div style="margin-bottom: 15px;">
+                        <div style="font-weight: 600; color: #718096; margin-bottom: 8px;">Last Quartile (Hardest Words):</div>
+                        <div id="lastQuartile" style="background: white; padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0; font-family: monospace; color: #2d3748; word-wrap: break-word;">
+                            <!-- Populated by JS -->
+                        </div>
                     </div>
-                    <div class="ai-analysis-footer">
-                        <button id="refreshAnalysisBtn" class="refresh-analysis-btn" onclick="refreshAnalysis()">
-                            🔄 Get Fresh Insights
+                    
+                    <div id="refineHint" class="hidden" style="margin-bottom: 15px; padding: 12px; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px; color: #856404;">
+                        ⚠️ These words don't look right? Reword your theme above and click Refine for better results!
+                    </div>
+                    
+                    <div style="display: flex; gap: 10px;">
+                        <button id="refineBtn" class="btn btn-secondary" onclick="refineTheme()" disabled style="padding: 12px 24px; border-radius: 6px; font-weight: 600; cursor: pointer; border: none; background: #e2e8f0; color: #2d3748;">
+                            🔄 Refine (0/3)
                         </button>
-                        <div id="aiAnalysisTimestamp" class="ai-timestamp"></div>
+                        <button id="setBtn" class="btn btn-primary" onclick="acceptAndPlay()" disabled style="padding: 12px 24px; border-radius: 6px; font-weight: 600; cursor: pointer; border: none; background: #667eea; color: white;">
+                            ✓ Use This Set
+                        </button>
                     </div>
                 </div>
-                
-                <div id="progressMessage" style="text-align: center; padding: 20px; color: #718096;"></div>
+            </div>
+            
+            <!-- Browse Themes Tab -->
+            <div id="browseThemesTab" class="tab-content">
+                <h2>All Sets</h2>
+                <div id="themesList" style="max-height: 400px; overflow-y: auto;">
+                    <div style="text-align: center; padding: 40px; color: #718096;">Loading themes...</div>
+                </div>
             </div>
         </div>
 
@@ -183,12 +133,6 @@
         // Google Client ID
         const GOOGLE_CLIENT_ID = '635584185020-emmqudvevrf1j01lpu6nha4tfneju6t2.apps.googleusercontent.com';
 
-	// Theme refinement tracking
-	let refineAttempts = 0;
-	let maxRefineAttempts = 3;
-	let currentGeneratedWords = null;
-	let currentThemeText = '';
-
         let authToken = null;
         let userEmail = null;
         let currentWord = '';
@@ -207,13 +151,16 @@
 	let currentWordIndex = 0;
         let themesPlayedCount = 0;
         
+        // Refine system variables
+        let refineAttempts = 0;
+        const maxRefineAttempts = 3;
+        let currentGeneratedWords = null;
+        let currentThemeText = '';
+        
         // Tracking variables for database
         let currentThemeId = null;
         let wordStartTime = null;
         let letterSwapCount = 0;
-        
-        // Progress chart
-        let progressChart = null;
 
 	const keyboardLayouts = {
             en: [ //English
@@ -281,7 +228,6 @@
                     { theme: 'outline', size: 'large', text: 'signin_with' }
                 );
             } else {
-                // Retry after 100ms if Google script not loaded yet
                 setTimeout(initializeGoogleSignIn, 100);
             }
         }
@@ -290,14 +236,12 @@
             authToken = localStorage.getItem('authToken');
             userEmail = localStorage.getItem('userEmail');
 
-	// NEW: Check for successful payment
-    	const urlParams = new URLSearchParams(window.location.search);
-    	if (urlParams.get('success') === 'true') {
-        	showError('🎉 Payment successful! 4 more themes added to your account.');
-        	updateThemeCounter();
-        	// Clean URL
-        	window.history.replaceState({}, document.title, window.location.pathname);
-    	}
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('success') === 'true') {
+                showError('🎉 Payment successful! 4 more themes added to your account.');
+                updateThemeCounter();
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
             
             if (authToken && userEmail) {
                 showThemeInput();
@@ -306,7 +250,6 @@
             }
         };
 
-        // Handle Google Sign-In
         async function handleGoogleSignIn(response) {
             try {
                 const apiResponse = await fetch(`${API_URL}/auth/google`, {
@@ -337,7 +280,6 @@
             }
         }
 
-        // Parse JWT to get email
         function parseJwt(token) {
             const base64Url = token.split('.')[1];
             const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -347,127 +289,67 @@
             return JSON.parse(jsonPayload);
 	}
 
-	// Update theme counter display
-/*	async function updateThemeCounter() {
-    	try {
-        	const response = await fetch(`${API_URL}/api/user-stats/${userEmail}`, {
-            		headers: { 'Authorization': `Bearer ${authToken}` }
-        	});
-        	
-       		if (!response.ok) {
-       		    console.error('Failed to fetch user stats');
-       		    return;
-       		}
-       		
-       		const data = await response.json();
-       		
-       		// Get themes info from another endpoint since user-stats doesn't have it
-       		const userResponse = await fetch(`${API_URL}/api/generate-word`, {
-       		    method: 'POST',
-       		    headers: {
-       		        'Authorization': `Bearer ${authToken}`,
-       		        'Content-Type': 'application/json'
-       		    },
-       		    body: JSON.stringify({ theme: '__check_only__' })
-       		});
-       		
-       		// This will fail but return themes info in error
-       		const userData = await userResponse.json();
-        
-        	const counter = document.getElementById('themeCounter');
-        	
-        	if (userData.themesRemaining !== undefined) {
-        	    const remaining = userData.themesRemaining;
-        	    const used = userData.themesUsed || 0;
-        	    const total = userData.themesAllowed;  
-        	    
-            		if (remaining > 0) {
-                		counter.innerHTML = `✨ <strong>${remaining}</strong> of <strong>${total}</strong> themes remaining`;
-            		} else {
-                		counter.innerHTML = `🎯 <a href="#" onclick="buyThemes(); return false;" style="color: #667eea; text-decoration: underline;">Buy 4 more themes for $0.99</a>`;
-            		}
-			// Show/hide buy button in game screen
-    			const buyBtn = document.getElementById('buyButton');
-    			if (buyBtn) {
-        			if (remaining <= 0) {
-            			buyBtn.classList.remove('hidden');
-        		} else {
-            			buyBtn.classList.add('hidden');
-        		}
-    			}
-        	}
-    		} catch (error) {
-        		console.error('Error fetching theme count:', error);
-        		document.getElementById('themeCounter').innerHTML = '✨ Loading...';
-    		}
-	} */
+        async function updateThemeCounter() {
+            try {
+                const response = await fetch(`${API_URL}/api/user-info`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });     
+                            
+                if (!response.ok) {
+                    console.error('Failed to fetch user info');
+                    document.getElementById('themeCounter').innerHTML = '✨ Loading...';
+                    return; 
+                }           
+                    
+                const data = await response.json();
+                    
+                const remaining = data.themesRemaining;
+                const total = data.themesAllowed;
+                const counter = document.getElementById('themeCounter');
 
-async function updateThemeCounter() {
-    try {
-        const response = await fetch(`${API_URL}/api/user-info`, {  // ← FIXED: Added (
-            headers: { 'Authorization': `Bearer ${authToken}` }
-        });     
-                        
-        if (!response.ok) {
-            console.error('Failed to fetch user info');
-            document.getElementById('themeCounter').innerHTML = '✨ Loading...';
-            return; 
-        }           
-                
-        const data = await response.json();
-                
-        const remaining = data.themesRemaining;
-        const total = data.themesAllowed;  // ← FIXED: Use data.themesAllowed
-        const counter = document.getElementById('themeCounter');
+                if (remaining > 0) {
+                    counter.innerHTML = `✨ <strong>${remaining}</strong> of <strong>${total}</strong> themes remaining`;
+                } else {
+                    counter.innerHTML = `🎯 <a href="#" onclick="buyThemes(); return false;" style="color: #667eea; text-decoration: underline;">Buy 4 more themes for $0.99</a>`;
+                }
 
-        if (remaining > 0) {
-            counter.innerHTML = `✨ <strong>${remaining}</strong> of <strong>${total}</strong> themes remaining`;
-        } else {
-            counter.innerHTML = `🎯 <a href="#" onclick="buyThemes(); return false;" style="color: #667eea; text-decoration: underline;">Buy 4 more themes for $0.99</a>`;
-        }
-
-        // Show/hide buy button in game screen
-        const buyBtn = document.getElementById('buyButton');
-        if (buyBtn) {
-            if (remaining <= 0) {
-                buyBtn.classList.remove('hidden');
-            } else {
-                buyBtn.classList.add('hidden');
+                const buyBtn = document.getElementById('buyButton');
+                if (buyBtn) {
+                    if (remaining <= 0) {
+                        buyBtn.classList.remove('hidden');
+                    } else {
+                        buyBtn.classList.add('hidden');
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching theme count:', error);
+                document.getElementById('themeCounter').innerHTML = '✨ Loading...';
             }
         }
-    } catch (error) {
-        console.error('Error fetching theme count:', error);
-        document.getElementById('themeCounter').innerHTML = '✨ Loading...';
-    }
-}
 
-
-
-	// Stripe checkout
 	async function buyThemes() {
-  	try {
+  	    try {
     		const response = await fetch(`${API_URL}/api/create-checkout-session`, {
-      		method: 'POST',
-      		headers: { 
-        	'Authorization': `Bearer ${authToken}`,
-        	'Content-Type': 'application/json'
-      		}
-    	});
+      		    method: 'POST',
+      		    headers: { 
+        	        'Authorization': `Bearer ${authToken}`,
+        	        'Content-Type': 'application/json'
+      		    }
+    	    });
     
-    	const { url } = await response.json();
+    	    const { url } = await response.json();
     
-    	if (url) {
-      		window.location.href = url; // Redirect to Stripe checkout
-    	} else {
+    	    if (url) {
+      		window.location.href = url;
+    	    } else {
       		showError('Error creating checkout session');
-    	}
-  		} catch (error) {
-    			console.error('Payment error:', error);
-    			showError('Unable to start checkout. Please try again.');
-  		}
+    	    }
+  	    } catch (error) {
+    		console.error('Payment error:', error);
+    		showError('Unable to start checkout. Please try again.');
+  	    }
 	}
 
-	// Function create keyboard
 	function createKeyboard(language) {
     	    const container = document.getElementById('keyboard');
     	    container.innerHTML = '';
@@ -502,7 +384,6 @@ async function updateThemeCounter() {
     	    errorDiv.textContent = message;
     	    errorDiv.classList.remove('hidden');
     	    
-    	    // Longer display for important messages
     	    const duration = message.length > 80 ? 8000 : 5000;
     	    setTimeout(() => errorDiv.classList.add('hidden'), duration);
 	}
@@ -516,128 +397,82 @@ async function updateThemeCounter() {
         }
 
 	function switchTab(tabName) {
-            // Update tab buttons
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             event.target.classList.add('active');
 
-            // Update tab content
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             
             if (tabName === 'newTheme') {
                 document.getElementById('newThemeTab').classList.add('active');
-                updateThemeCounter(); // Refresh counter when switching to new theme tab
+                updateThemeCounter();
             } else if (tabName === 'browseThemes') {
                 document.getElementById('browseThemesTab').classList.add('active');
-            } else if (tabName === 'leaderboard') {
-                document.getElementById('leaderboardTab').classList.add('active');
-                loadLeaderboard();
-            } else if (tabName === 'progress') {
-                document.getElementById('progressTab').classList.add('active');
-                loadProgress();
             }
         }
 
-async function loadBrowseThemes() {
-    const themesList = document.getElementById('themesList');
-    
-    try {
-        const response = await fetch(`${API_URL}/api/browse-themes`, {
-            headers: {
-                'Authorization': `Bearer ${authToken}`
-            }
-        });
-        
-        const data = await response.json();
-        
-        if (!response.ok) {
-            themesList.innerHTML = '<div style="text-align: center; padding: 40px; color: #718096;">Failed to load themes</div>';
-            return;
-        }
-
-        const languageNames = {
-            en: '🇬🇧 English',
-            fr: '🇫🇷 French',
-            es: '🇪🇸 Spanish',
-            de: '🇩🇪 German',
-            it: '🇮🇹 Italian',
-            pt: '🇵🇹 Portuguese',
-            nl: '🇳🇱 Dutch',
-            sv: '🇸🇪 Swedish',
-            pl: '🇵🇱 Polish',
-            fi: '🇫🇮 Finnish'
-        };
-
-        const difficultyNames = {
-            easy: '⭐ Easy (Ages 5-7)',
-            medium: '⭐⭐ Medium (Ages 8-10)',
-            hard: '⭐⭐⭐ Hard (Ages 11+)'
-        };
-
-        let html = '';
-        
-        // Collect "My Themes" (private themes)
-        const myThemes = [];
-        Object.keys(data.themes).forEach(lang => {
-            ['easy', 'medium', 'hard'].forEach(difficulty => {
-                const themes = data.themes[lang][difficulty] || [];
-                themes.forEach(theme => {
-                    if (theme.isMine) {
-                        myThemes.push({...theme, lang, difficulty});
+        async function loadBrowseThemes() {
+            const themesList = document.getElementById('themesList');
+            
+            try {
+                const response = await fetch(`${API_URL}/api/browse-themes`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
                     }
                 });
-            });
-        });
-        
-        // Show "Private Themes" section if any exist
-        if (myThemes.length > 0) {
-            myThemes.sort((a, b) => a.displayName.localeCompare(b.displayName));
-            
-            html += `<div style="max-height: 300px; overflow-y: auto; margin-bottom: 20px; border: 2px solid #667eea; border-radius: 8px; padding: 10px; background: #f7fafc;">`;
-            html += `<div style="font-weight: bold; font-size: 18px; color: #667eea; margin-bottom: 10px; padding: 10px;">👑 Private Themes</div>`;
-            
-            myThemes.forEach(theme => {
-                const langIcon = languageNames[theme.lang]?.split(' ')[0] || '';
-                const diffIcon = theme.difficulty === 'easy' ? '⭐' : theme.difficulty === 'medium' ? '⭐⭐' : '⭐⭐⭐';
                 
-                html += `
-                    <div class="theme-item" onclick="launchThemeFromBrowser('${theme.cacheKey}', '${theme.displayName}')" style="border-left: 3px solid #667eea; margin-bottom: 8px;">
-                        <span class="theme-name">${theme.displayName} ${langIcon} ${diffIcon}</span>
-                        <div class="theme-stats">
-                            <span class="theme-badge">${theme.wordCount} words</span>
-                            <span style="color: #cbd5e0;">👥 ${theme.useCount}</span>
-                        </div>
-                    </div>
-                `;
-            });
-            
-            html += `</div>`;
-        }
-        
-        // "Public Themes" section header
-        html += `<div style="font-weight: bold; font-size: 18px; color: #48bb78; margin-bottom: 10px; padding: 10px;">🌍 Public Themes</div>`;
-        
-        // Public themes in scrollable container
-        html += `<div style="max-height: 400px; overflow-y: auto;">`;
-        
-        const sortedLanguages = Object.keys(data.themes).sort();
-        
-        sortedLanguages.forEach(lang => {
-            const languageName = languageNames[lang] || lang.toUpperCase();
-            
-            html += `<div class="language-section">`;
-            html += `<div class="language-header">${languageName}</div>`;
-            
-            ['easy', 'medium', 'hard'].forEach(difficulty => {
-                const themes = data.themes[lang][difficulty];
+                const data = await response.json();
                 
-                if (themes && themes.length > 0) {
-                    html += `<div class="difficulty-section">`;
-                    html += `<div class="difficulty-header">${difficultyNames[difficulty]}</div>`;
+                if (!response.ok) {
+                    themesList.innerHTML = '<div style="text-align: center; padding: 40px; color: #718096;">Failed to load themes</div>';
+                    return;
+                }
+
+                const languageNames = {
+                    en: '🇬🇧 English',
+                    fr: '🇫🇷 French',
+                    es: '🇪🇸 Spanish',
+                    de: '🇩🇪 German',
+                    it: '🇮🇹 Italian',
+                    pt: '🇵🇹 Portuguese',
+                    nl: '🇳🇱 Dutch',
+                    sv: '🇸🇪 Swedish',
+                    pl: '🇵🇱 Polish',
+                    fi: '🇫🇮 Finnish'
+                };
+
+                const difficultyNames = {
+                    easy: '⭐ Easy (Ages 5-7)',
+                    medium: '⭐⭐ Medium (Ages 8-10)',
+                    hard: '⭐⭐⭐ Hard (Ages 11+)'
+                };
+
+                let html = '';
+                
+                const myThemes = [];
+                Object.keys(data.themes).forEach(lang => {
+                    ['easy', 'medium', 'hard'].forEach(difficulty => {
+                        const themes = data.themes[lang][difficulty] || [];
+                        themes.forEach(theme => {
+                            if (theme.isMine) {
+                                myThemes.push({...theme, lang, difficulty});
+                            }
+                        });
+                    });
+                });
+                
+                if (myThemes.length > 0) {
+                    myThemes.sort((a, b) => a.displayName.localeCompare(b.displayName));
                     
-                    themes.forEach(theme => {
+                    html += `<div style="max-height: 300px; overflow-y: auto; margin-bottom: 20px; border: 2px solid #667eea; border-radius: 8px; padding: 10px; background: #f7fafc;">`;
+                    html += `<div style="font-weight: bold; font-size: 18px; color: #667eea; margin-bottom: 10px; padding: 10px;">👑 Private Themes</div>`;
+                    
+                    myThemes.forEach(theme => {
+                        const langIcon = languageNames[theme.lang]?.split(' ')[0] || '';
+                        const diffIcon = theme.difficulty === 'easy' ? '⭐' : theme.difficulty === 'medium' ? '⭐⭐' : '⭐⭐⭐';
+                        
                         html += `
-                            <div class="theme-item" onclick="launchThemeFromBrowser('${theme.cacheKey}', '${theme.displayName}')">
-                                <span class="theme-name">${theme.displayName}</span>
+                            <div class="theme-item" onclick="launchThemeFromBrowser('${theme.cacheKey}', '${theme.displayName}')" style="border-left: 3px solid #667eea; margin-bottom: 8px;">
+                                <span class="theme-name">${theme.displayName} ${langIcon} ${diffIcon}</span>
                                 <div class="theme-stats">
                                     <span class="theme-badge">${theme.wordCount} words</span>
                                     <span style="color: #cbd5e0;">👥 ${theme.useCount}</span>
@@ -648,24 +483,57 @@ async function loadBrowseThemes() {
                     
                     html += `</div>`;
                 }
-            });
-            
-            html += `</div>`;
-        });
-        
-        html += `</div>`; // Close public themes scroll container
+                
+                html += `<div style="font-weight: bold; font-size: 18px; color: #48bb78; margin-bottom: 10px; padding: 10px;">🌍 Public Themes</div>`;
+                html += `<div style="max-height: 400px; overflow-y: auto;">`;
+                
+                const sortedLanguages = Object.keys(data.themes).sort();
+                
+                sortedLanguages.forEach(lang => {
+                    const languageName = languageNames[lang] || lang.toUpperCase();
+                    
+                    html += `<div class="language-section">`;
+                    html += `<div class="language-header">${languageName}</div>`;
+                    
+                    ['easy', 'medium', 'hard'].forEach(difficulty => {
+                        const themes = data.themes[lang][difficulty];
+                        
+                        if (themes && themes.length > 0) {
+                            html += `<div class="difficulty-section">`;
+                            html += `<div class="difficulty-header">${difficultyNames[difficulty]}</div>`;
+                            
+                            themes.forEach(theme => {
+                                html += `
+                                    <div class="theme-item" onclick="launchThemeFromBrowser('${theme.cacheKey}', '${theme.displayName}')">
+                                        <span class="theme-name">${theme.displayName}</span>
+                                        <div class="theme-stats">
+                                            <span class="theme-badge">${theme.wordCount} words</span>
+                                            <span style="color: #cbd5e0;">👥 ${theme.useCount}</span>
+                                        </div>
+                                    </div>
+                                `;
+                            });
+                            
+                            html += `</div>`;
+                        }
+                    });
+                    
+                    html += `</div>`;
+                });
+                
+                html += `</div>`;
 
-        if (html === '') {
-            html = '<div style="text-align: center; padding: 40px; color: #718096;">No themes available yet. Be the first to create one!</div>';
+                if (html === '') {
+                    html = '<div style="text-align: center; padding: 40px; color: #718096;">No themes available yet. Be the first to create one!</div>';
+                }
+                
+                themesList.innerHTML = html;
+
+            } catch (error) {
+                console.error('Error loading themes:', error);
+                themesList.innerHTML = '<div style="text-align: center; padding: 40px; color: #718096;">Failed to load themes</div>';
+            }
         }
-        
-        themesList.innerHTML = html;
-
-    } catch (error) {
-        console.error('Error loading themes:', error);
-        themesList.innerHTML = '<div style="text-align: center; padding: 40px; color: #718096;">Failed to load themes</div>';
-    }
-}
 
 	async function launchThemeFromBrowser(cacheKey, displayName) {
             const parts = cacheKey.split('_');
@@ -684,7 +552,6 @@ async function loadBrowseThemes() {
             
             console.log(`Launching theme: ${themeString} (from cache: ${cacheKey})`);
 
-            // Go straight to game - no intermediate screen
             fetchAndStartGame(themeString);
         }
 
@@ -696,149 +563,150 @@ async function loadBrowseThemes() {
             location.reload();
         }
 
-        // NEW: Direct generation - no intermediate button
-async function generateTheme() {
-    const input = document.getElementById('themeInput').value.trim();
-    
-    if (!input) {
-        showError('Please enter a theme!');
-        return;
-    }
-    
-    currentThemeText = input;
-    refineAttempts = 0;
-    
-    await generateWordlist();
-}
-
-async function generateWordlist() {
-    document.getElementById('generatingMessage').classList.remove('hidden');
-    document.getElementById('generateBtn').disabled = true;
-    document.getElementById('previewSection').classList.add('hidden');
-    
-    try {
-        const response = await fetch(`${API_URL}/api/generate-preview`, {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${authToken}`
-            },
-            body: JSON.stringify({ theme: currentThemeText })
-        });
-        
-        const data = await response.json();
-        
-        document.getElementById('generatingMessage').classList.add('hidden');
-        
-        if (!response.ok || data.error) {
-            showError(data.message || 'Failed to generate words');
-            document.getElementById('generateBtn').disabled = false;
-            return;
+        // REFINE SYSTEM - Generate theme with preview
+        async function generateTheme() {
+            const input = document.getElementById('themeInput').value.trim();
+            
+            if (!input) {
+                showError('Please enter a theme!');
+                return;
+            }
+            
+            currentThemeText = input;
+            refineAttempts = 0;
+            
+            await generateWordlist();
         }
-        
-        // Store generated words
-        currentGeneratedWords = data.words;
-        
-        // Show preview
-        displayPreview(data.words);
-        
-    } catch (error) {
-        console.error('Generation error:', error);
-        document.getElementById('generatingMessage').classList.add('hidden');
-        document.getElementById('generateBtn').disabled = false;
-        showError('Connection error');
-    }
-}
 
-function displayPreview(words) {
-    document.getElementById('previewSection').classList.remove('hidden');
-    document.getElementById('wordCount').textContent = words.length;
-    
-    // Show last quartile
-    const quartileSize = Math.ceil(words.length / 4);
-    const lastQuartile = words.slice(-quartileSize);
-    document.getElementById('lastQuartile').textContent = '...' + lastQuartile.join(', ');
-    
-    // Update refine counter
-    const refineBtn = document.getElementById('refineBtn');
-    const refineCounter = document.getElementById('refineCounter');
-    const remaining = maxRefineAttempts - refineAttempts;
-    
-    refineCounter.textContent = `Attempt ${refineAttempts + 1} of ${maxRefineAttempts + 1}`;
-    refineBtn.textContent = `🔄 Refine (${remaining}/3)`;
-    refineBtn.disabled = remaining <= 0;
-    
-    // Enable Set button
-    document.getElementById('setBtn').disabled = false;
-    
-    // Show hint if words look questionable
-    document.getElementById('refineHint').classList.remove('hidden');
-}
-
-async function refineTheme() {
-    refineAttempts++;
-    await generateWordlist();
-}
-
-async function acceptAndPlay() {
-    if (!currentGeneratedWords || currentGeneratedWords.length === 0) {
-        showError('No words to use!');
-        return;
-    }
-    
-    // Now create the actual theme and start game
-    document.getElementById('generatingMessage').classList.remove('hidden');
-    
-    try {
-        const response = await fetch(`${API_URL}/api/generate-word`, {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${authToken}`
-            },
-            body: JSON.stringify({ 
-                theme: currentThemeText,
-                acceptWords: currentGeneratedWords
-            })
-        });
-        
-        const data = await response.json();
-        
-        document.getElementById('generatingMessage').classList.add('hidden');
-        
-        if (!response.ok || data.error) {
-            showError(data.message || 'Failed to create theme');
-            return;
+        async function generateWordlist() {
+            document.getElementById('generatingMessage').classList.remove('hidden');
+            document.getElementById('generateBtn').disabled = true;
+            document.getElementById('previewSection').classList.add('hidden');
+            
+            try {
+                const response = await fetch(`${API_URL}/api/generate-word`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ 
+                        theme: currentThemeText,
+                        previewOnly: true
+                    })
+                });
+                
+                const data = await response.json();
+                
+                document.getElementById('generatingMessage').classList.add('hidden');
+                
+                if (response.status === 429 || response.status === 503) {
+                    document.getElementById('generateBtn').disabled = false;
+                    showError(data.message || 'Theme limit reached!');
+                    updateThemeCounter();
+                    return;
+                }
+                
+                if (!response.ok || data.error) {
+                    showError(data.message || 'Failed to generate words');
+                    document.getElementById('generateBtn').disabled = false;
+                    return;
+                }
+                
+                currentGeneratedWords = data.words;
+                displayPreview(data.words);
+                
+            } catch (error) {
+                console.error('Generation error:', error);
+                document.getElementById('generatingMessage').classList.add('hidden');
+                document.getElementById('generateBtn').disabled = false;
+                showError('Connection error');
+            }
         }
-        
-        // Reset state
-        currentGeneratedWords = null;
-        refineAttempts = 0;
-        document.getElementById('previewSection').classList.add('hidden');
-        document.getElementById('themeInput').value = '';
-        document.getElementById('generateBtn').disabled = false;
-        
-        // Update counter
-        updateThemeCounter();
-        
-        // Start game
-        startGame(data);
-        
-    } catch (error) {
-        console.error('Error:', error);
-        document.getElementById('generatingMessage').classList.add('hidden');
-        showError('Connection error');
-    }
-}
 
+        function displayPreview(words) {
+            document.getElementById('previewSection').classList.remove('hidden');
+            document.getElementById('wordCount').textContent = words.length;
+            
+            const quartileSize = Math.ceil(words.length / 4);
+            const lastQuartile = words.slice(-quartileSize);
+            document.getElementById('lastQuartile').textContent = '...' + lastQuartile.join(', ');
+            
+            const refineBtn = document.getElementById('refineBtn');
+            const refineCounter = document.getElementById('refineCounter');
+            const remaining = maxRefineAttempts - refineAttempts;
+            
+            refineCounter.textContent = `Attempt ${refineAttempts + 1} of ${maxRefineAttempts + 1}`;
+            refineBtn.textContent = `🔄 Refine (${remaining}/3)`;
+            refineBtn.disabled = remaining <= 0;
+            
+            document.getElementById('setBtn').disabled = false;
+            document.getElementById('refineHint').classList.remove('hidden');
+        }
+
+        async function refineTheme() {
+            const input = document.getElementById('themeInput').value.trim();
+            
+            if (!input) {
+                showError('Please enter a theme before refining!');
+                return;
+            }
+            
+            currentThemeText = input;
+            refineAttempts++;
+            await generateWordlist();
+        }
+
+        async function acceptAndPlay() {
+            if (!currentGeneratedWords || currentGeneratedWords.length === 0) {
+                showError('No words to use!');
+                return;
+            }
+            
+            document.getElementById('generatingMessage').classList.remove('hidden');
+            
+            try {
+                const response = await fetch(`${API_URL}/api/generate-word`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ 
+                        theme: currentThemeText
+                    })
+                });
+                
+                const data = await response.json();
+                
+                document.getElementById('generatingMessage').classList.add('hidden');
+                
+                if (!response.ok || data.error) {
+                    showError(data.message || 'Failed to create theme');
+                    return;
+                }
+                
+                currentGeneratedWords = null;
+                refineAttempts = 0;
+                document.getElementById('previewSection').classList.add('hidden');
+                document.getElementById('themeInput').value = '';
+                document.getElementById('generateBtn').disabled = false;
+                
+                updateThemeCounter();
+                startGame(data);
+                
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('generatingMessage').classList.add('hidden');
+                showError('Connection error');
+            }
+        }
 
         async function fetchAndStartGame(theme, forcePlay = false) {
             console.log('fetchAndStartGame called with theme:', theme);
             
             if (!theme) {
                 showError('Error: No theme provided');
-                document.getElementById('generatingMessage').classList.add('hidden');
-                document.getElementById('themeInput').disabled = false;
                 return;
             }
             
@@ -858,48 +726,31 @@ async function acceptAndPlay() {
                 const data = await response.json();
 
 		if (response.status === 429 || response.status === 503) {
-		    document.getElementById('generatingMessage').classList.add('hidden');
-                    document.getElementById('themeInput').disabled = false;
 		    showError(data.message || 'Theme limit reached! Buy more themes to continue.');
-		    
-		    // Show buy option
-		    const counter = document.getElementById('themeCounter');
-		    counter.innerHTML = `🎯 <a href="#" onclick="buyThemes(); return false;" style="color: #667eea; text-decoration: underline;">Buy 4 more themes for $0.99</a>`;
-    			return;
+		    updateThemeCounter();
+    		    return;
 		}
 
                 if (data.themesRemaining !== undefined) {
                     themesPlayedCount = data.themesUsed;
-                    updateThemeCounter(); // Update counter after each theme
+                    updateThemeCounter();
                 }
 
                 if (response.status === 400 && data.error === 'Theme exhausted') {
-                    document.getElementById('generatingMessage').classList.add('hidden');
-                    document.getElementById('themeInput').disabled = false;
                     showError(data.message || 'This theme is exhausted. Try a different one!');
                     return;
                 }
 
                 if (data.error) {
-                    document.getElementById('generatingMessage').classList.add('hidden');
-                    document.getElementById('themeInput').disabled = false;
                     showError(data.message || 'Failed to generate puzzle. Please try again.');
                     return;
                 }
 
                 console.log('Starting game with words:', data.words);
-                
-                // Hide generating message and re-enable input
-                document.getElementById('generatingMessage').classList.add('hidden');
-                document.getElementById('themeInput').disabled = false;
-                document.getElementById('themeInput').value = '';
-                
                 startGame(data);
                 
             } catch (error) {
                 console.error('API Error:', error);
-                document.getElementById('generatingMessage').classList.add('hidden');
-                document.getElementById('themeInput').disabled = false;
                 showError('Connection error: ' + error.message);
             }
         }
@@ -1002,7 +853,6 @@ async function acceptAndPlay() {
             } else if (remainingGuesses === 0) {
                 endGame(false);
             } else {
-		// Clear guess but preserve hint letters
                 let preservedGuess = '';
                 for (let i = 0; i < currentWord.length; i++) {
                     const box = document.getElementById(`box-${i}`);
@@ -1086,7 +936,6 @@ async function acceptAndPlay() {
             document.getElementById('guessesRemaining').textContent = remainingGuesses;
         }
 
-        // Record word completion to database
         async function recordWordAttempt(won) {
             if (!currentThemeId) {
                 console.warn('No theme ID available, skipping record');
@@ -1277,7 +1126,6 @@ async function acceptAndPlay() {
                 return;
             }
             
-            // Reset to theme input
             currentWord = '';
             wordList = [];
             currentWordIndex = 0;
@@ -1312,11 +1160,9 @@ async function acceptAndPlay() {
                 key.classList.remove('correct', 'present', 'used');
             });
             
-            // Refresh theme counter
             updateThemeCounter();
         }
 
-        // Keyboard input
         document.addEventListener('keydown', (e) => {
             if (gameOver) return;
             
@@ -1329,7 +1175,6 @@ async function acceptAndPlay() {
             }
         });
 
-        // Drag and drop
         let draggedLetter = null;
         let dragSourceIndex = null;
         let dragSourceType = null;
@@ -1441,19 +1286,6 @@ async function acceptAndPlay() {
             dragSourceIndex = null;
             draggedLetter = null;
         }, true);
-        
-        async function refreshAnalysisD() {
-            const btn = document.getElementById('refreshAnalysisBtn');
-            
-            if (btn.disabled) {
-                return; // Already generated today
-            }
-            
-            btn.textContent = '⏳ Thinking...';
-            btn.disabled = true;
-            
-            await loadAIAnalysis();
-        }
     </script>
 </body>
 </html>
