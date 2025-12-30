@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wizbee - Leaderboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <h1>
+            <a href="index.html" style="text-decoration: none; color: inherit;">
+                <img src="bee3.gif" alt="Wizbee" style="height: 48px; vertical-align: middle;"> Wizbee
+            </a>
+        </h1>
+
+        <div class="user-info">
+            <div>Signed in as: <span id="userEmail"></span></div>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+
+        <!-- Navigation -->
+        <div class="tabs">
+            <button class="tab" onclick="window.location.href='index.html'">Play Game</button>
+            <button class="tab active">🏆 Leaderboard</button>
+            <button class="tab" onclick="window.location.href='progress.html'">📊 Progress</button>
+        </div>
+
+        <div class="tab-content active">
+            <h2>🏆 Fastest Theme Completions</h2>
+            <div id="leaderboardList" class="leaderboard-container">
+                <div style="text-align: center; padding: 40px; color: #718096;">Loading leaderboard...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://api.wizbee.app';
+        let authToken = null;
+        let userEmail = null;
+
+        // Check authentication
+        window.onload = function() {
+            authToken = localStorage.getItem('authToken');
+            userEmail = localStorage.getItem('userEmail');
+            
+            if (!authToken || !userEmail) {
+                window.location.href = 'index.html';
+                return;
+            }
+            
+            document.getElementById('userEmail').textContent = userEmail;
+            loadLeaderboard();
+        };
+
+        function logout() {
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('userEmail');
+            window.location.href = 'index.html';
+        }
+
+        async function loadLeaderboard() {
+            const leaderboardList = document.getElementById('leaderboardList');
+            
+            try {
+                const response = await fetch(`${API_URL}/api/leaderboard`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                const data = await response.json();
+                
+                if (!response.ok || !data.leaderboard || data.leaderboard.length === 0) {
+                    leaderboardList.innerHTML = '<div class="leaderboard-empty">No leaderboard entries yet. Be the first to play!</div>';
+                    return;
+                }
+
+                let html = `
+                    <table class="leaderboard-table">
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Player</th>
+                                <th>Theme</th>
+                                <th>Words</th>
+                                <th>Total Time</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+                
+                data.leaderboard.forEach((entry, index) => {
+                    const rank = index + 1;
+                    const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : '';
+                    const rankClass = rank <= 3 ? `rank-${rank}` : '';
+                    
+                    // Mask email for privacy
+                    const emailParts = entry.user_email.split('@');
+                    const maskedEmail = emailParts[0].substring(0, 2) + '***@' + emailParts[1];
+                    
+                    // Format time nicely
+                    const minutes = Math.floor(entry.total_time_seconds / 60);
+                    const seconds = entry.total_time_seconds % 60;
+                    const timeDisplay = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
+                    
+                    html += `
+                        <tr>
+                            <td><span class="rank-medal ${rankClass}">${medal}</span>${rank}</td>
+                            <td>${maskedEmail}</td>
+                            <td style="color: #667eea; font-weight: 600;">${entry.theme_text}</td>
+                            <td style="text-align: center;">${entry.words_completed}</td>
+                            <td class="leaderboard-time">${timeDisplay}</td>
+                            <td>${new Date(entry.completed_at).toLocaleDateString()}</td>
+                        </tr>
+                    `;
+                });
+                
+                html += `
+                        </tbody>
+                    </table>
+                `;
+                
+                leaderboardList.innerHTML = html;
+
+            } catch (error) {
+                console.error('Error loading leaderboard:', error);
+                leaderboardList.innerHTML = '<div class="leaderboard-empty">Failed to load leaderboard</div>';
+            }
+        }
+    </script>
+</body>
+</html>
