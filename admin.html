@@ -195,11 +195,12 @@
         </div>
     </div>
 
-    <script>
+<script>
         const API_URL = 'https://api.wizbee.app';
         let authToken = null;
         let userEmail = null;
         let themes = [];
+        let selectedWords = new Set(); // Track selected words
 
         window.onload = function() {
             authToken = localStorage.getItem('authToken');
@@ -271,6 +272,7 @@
                 
                 const wordCount = theme.words.length;
                 const quartileSize = Math.ceil(wordCount / 4);
+                const selectedCount = Array.from(selectedWords).filter(key => key.startsWith(`${index}-`)).length;
                 
                 html += `
                     <div class="theme-card" id="theme-${index}">
@@ -306,6 +308,21 @@
                                     <span>Q4 (Expert)</span>
                                 </div>
                             </div>
+                            
+                            <div style="margin-bottom: 10px;">
+                                <button class="btn btn-secondary" onclick="selectAll(${index})" style="margin-right: 10px;">Select All</button>
+                                <button class="btn btn-secondary" onclick="deselectAll(${index})">Deselect All</button>
+                                <span style="margin-left: 20px; color: #718096;" id="selected-count-${index}">
+                                    ${selectedCount > 0 ? `${selectedCount} selected` : ''}
+                                </span>
+                            </div>
+                            
+                            <div style="margin-bottom: 15px;">
+                                <button class="btn btn-danger" onclick="deleteSelectedWords(${index})" ${selectedCount === 0 ? 'disabled' : ''}>
+                                    🗑️ Delete Selected (${selectedCount})
+                                </button>
+                            </div>
+                            
                             <div class="word-grid">
                 `;
                 
@@ -315,10 +332,17 @@
                     else if (wordIndex >= quartileSize * 2) quartileClass = 'q3';
                     else if (wordIndex >= quartileSize) quartileClass = 'q2';
                     
+                    const wordKey = `${index}-${wordIndex}`;
+                    const isSelected = selectedWords.has(wordKey);
+                    
                     html += `
-                        <div class="word-item ${quartileClass}" id="word-${index}-${wordIndex}">
+                        <div class="word-item ${quartileClass}" id="word-${index}-${wordIndex}" style="${isSelected ? 'background: #fed7d7; border-color: #fc8181;' : ''}">
+                            <input type="checkbox" 
+                                   id="check-${index}-${wordIndex}" 
+                                   ${isSelected ? 'checked' : ''}
+                                   onchange="toggleWordSelection(${index}, ${wordIndex})"
+                                   style="cursor: pointer;">
                             <span class="word-text">${word}</span>
-                            <button class="delete-word-btn" onclick="deleteWord(${index}, ${wordIndex}, '${word}')" title="Delete word">×</button>
                         </div>
                     `;
                 });
@@ -347,45 +371,85 @@
                 wordsDiv.style.display = 'none';
                 editBtn.textContent = '✏️ Edit';
                 card.classList.remove('editing');
+                // Clear selections when closing
+                clearThemeSelections(index);
             }
         }
 
-        async function deleteWord(themeIndex, wordIndex, word) {
-            if (!confirm(`Delete "${word}" from this theme?`)) return;
+        function toggleWordSelection(themeIndex, wordIndex) {
+            const wordKey = `${themeIndex}-${wordIndex}`;
             
+            if (selectedWords.has(wordKey)) {
+                selectedWords.delete(wordKey);
+            } else {
+                selectedWords.add(wordKey);
+            }
+            
+            renderThemes();
+        }
+
+        function selectAll(themeIndex) {
             const theme = themes[themeIndex];
+            theme.words.forEach((word, wordIndex) => {
+                selectedWords.add(`${themeIndex}-${wordIndex}`);
+            });
+            renderThemes();
+        }
+
+        function deselectAll(themeIndex) {
+            clearThemeSelections(themeIndex);
+            renderThemes();
+        }
+
+        function clearThemeSelections(themeIndex) {
+            const keysToDelete = Array.from(selectedWords).filter(key => key.startsWith(`${themeIndex}-`));
+            keysToDelete.forEach(key => selectedWords.delete(key));
+        }
+
+        async function deleteSelectedWords(themeIndex) {
+            const theme = themes[themeIndex];
+            const selectedIndices = Array.from(selectedWords)
+                .filter(key => key.startsWith(`${themeIndex}-`))
+                .map(key => parseInt(key.split('-')[1]))
+                .sort((a, b) => b - a); // Sort descending so we delete from end first
+            
+            if (selectedIndices.length === 0) return;
+            
+            if (!confirm(`Delete ${selectedIndices.length} selected word(s)?`)) return;
             
             try {
-                const response = await fetch(`${API_URL}/api/delete-word`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${authToken}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        cacheKey: theme.cache_key,
-                        wordIndex: wordIndex
-                    })
-                });
-                
-                if (!response.ok) {
-                    alert('Failed to delete word');
-                    return;
+                // Delete words one by one from the end (so indices don't shift)
+                for (const wordIndex of selectedIndices) {
+                    const response = await fetch(`${API_URL}/api/delete-word`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${authToken}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            cacheKey: theme.cache_key,
+                            wordIndex: wordIndex
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        alert('Failed to delete some words');
+                        break;
+                    }
+                    
+                    // Remove from local array
+                    themes[themeIndex].words.splice(wordIndex, 1);
                 }
                 
-                // Remove from local array
-                themes[themeIndex].words.splice(wordIndex, 1);
+                // Clear selections for this theme
+                clearThemeSelections(themeIndex);
                 
-                // Remove from DOM
-                const wordElement = document.getElementById(`word-${themeIndex}-${wordIndex}`);
-                wordElement.style.opacity = '0';
-                setTimeout(() => {
-                    renderThemes();
-                }, 300);
+                // Re-render
+                renderThemes();
                 
             } catch (error) {
-                console.error('Error deleting word:', error);
-                alert('Failed to delete word');
+                console.error('Error deleting words:', error);
+                alert('Failed to delete words');
             }
         }
 
@@ -413,6 +477,9 @@
                     return;
                 }
                 
+                // Clear selections for this theme
+                clearThemeSelections(index);
+                
                 // Remove from local array
                 themes.splice(index, 1);
                 
@@ -429,5 +496,6 @@
             }
         }
     </script>
+
 </body>
 </html>
