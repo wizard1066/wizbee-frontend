@@ -568,7 +568,11 @@ function displayPreview(words) {
     
     // Transform Generate button into Refine button
     const generateBtn = document.getElementById('generateBtn');
-    generateBtn.textContent = `🔄 Refine (${remaining}/3)`;
+
+const used = refineAttempts;
+const total = maxRefineAttempts;
+generateBtn.textContent = `🔄 Refine (${used}/${total} used)`;
+
     generateBtn.onclick = refineTheme;
     generateBtn.disabled = remaining <= 0;
     
