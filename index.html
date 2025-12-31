@@ -592,7 +592,72 @@ function displayPreviewD(words) {
             await generateWordlist();
         }
 
-        async function acceptAndPlay() {
+async function acceptAndPlay() {
+    if (!currentGeneratedWords || currentGeneratedWords.length === 0) {
+        showError('No words to use!');
+        return;
+    }
+    
+    if (!currentCacheKey) {
+        showError('Cache key missing!');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${API_URL}/api/create-theme-from-preview`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify({ 
+                cacheKey: currentCacheKey,
+                words: currentGeneratedWords
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok || data.error) {
+            showError(data.message || 'Failed to create theme');
+            return;
+        }
+        
+        // Reset state
+        currentGeneratedWords = null;
+        currentCacheKey = null;
+        refineAttempts = 0;
+        document.getElementById('previewSection').classList.add('hidden');
+        document.getElementById('themeInput').value = '';
+        
+        // Reset Generate button
+        const generateBtn = document.getElementById('generateBtn');
+        generateBtn.textContent = 'Generate';
+        generateBtn.onclick = generateTheme;
+        generateBtn.disabled = false;
+        
+        document.getElementById('editWordsBtn').disabled = true;
+        document.getElementById('playBtn').disabled = true;
+        
+        updateThemeCounter();
+        startGame(data);
+        
+    } catch (error) {
+        console.error('Error:', error);
+        showError('Connection error');
+    }
+}
+
+
+
+
+
+
+
+
+
+
+        async function acceptAndPlayD() {
             if (!currentGeneratedWords || currentGeneratedWords.length === 0) {
                 showError('No words to use!');
                 return;
