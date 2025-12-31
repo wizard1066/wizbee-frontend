@@ -451,9 +451,15 @@
                 }
                 
                 if (!response.ok || data.error) {
-                    showError(data.message || 'Failed to generate words');
-                    document.getElementById('generateBtn').disabled = false;
-                    return;
+			let errorMsg = data.message || 'Failed to generate words';
+    
+    if (errorMsg.includes('Insufficient words')) {
+        errorMsg = `😔 Only found ${data.message.match(/\d+/)?.[0] || 'a few'} valid words. Try:\n• Remove word length limits\n• Use a broader theme\n• Click Refine with a different prompt`;
+    }
+    
+    showError(errorMsg);
+    document.getElementById('generateBtn').disabled = false;
+    return;
                 }
                 
                 currentGeneratedWords = data.preview || data.words;
