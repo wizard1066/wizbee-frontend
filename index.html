@@ -583,6 +583,47 @@ function displayPreview(words) {
             }
         }
 
+	async function editWords() {
+    if (!currentGeneratedWords || currentGeneratedWords.length === 0) {
+        showError('No words to edit!');
+        return;
+    }
+    
+    if (!currentThemeText) {
+        showError('No theme specified!');
+        return;
+    }
+    
+    try {
+        // Save as draft theme
+        const response = await fetch(`${API_URL}/api/save-draft-theme`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify({
+                theme: currentThemeText,
+                words: currentGeneratedWords
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok || data.error) {
+            showError(data.message || 'Failed to save draft');
+            return;
+        }
+        
+        // Redirect to admin page with edit parameter
+        window.location.href = `admin.html?edit=${data.cacheKey}`;
+        
+    } catch (error) {
+        console.error('Error saving draft:', error);
+        showError('Failed to save draft');
+    }
+}
+
         // ========================================================================
         // END REFINE SYSTEM
         // ========================================================================
