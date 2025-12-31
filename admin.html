@@ -213,6 +213,17 @@
             
             document.getElementById('userEmail').textContent = userEmail;
             loadMyThemes();
+
+		// Check if we're editing a specific theme
+    const urlParams = new URLSearchParams(window.location.search);
+    const editCacheKey = urlParams.get('edit');
+    
+    if (editCacheKey) {
+        // Wait for themes to load, then auto-open the specified theme
+        setTimeout(() => {
+            autoOpenTheme(editCacheKey);
+        }, 500);
+    }
         };
 
         function logout() {
@@ -220,6 +231,25 @@
             localStorage.removeItem('userEmail');
             window.location.href = 'index.html';
         }
+
+	function autoOpenTheme(cacheKey) {
+    // Find the theme in our loaded themes array
+    const themeIndex = themes.findIndex(t => t.cache_key === cacheKey);
+    
+    if (themeIndex === -1) {
+        showError('Theme not found. It may not be saved yet.');
+        return;
+    }
+    
+    // Auto-open it for editing
+    toggleEdit(themeIndex);
+    
+    // Scroll to it
+    const themeCard = document.getElementById(`theme-${themeIndex}`);
+    if (themeCard) {
+        themeCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+	}
 
         async function loadMyThemes() {
             const container = document.getElementById('themesContainer');
