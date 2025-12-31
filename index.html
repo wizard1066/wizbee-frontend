@@ -467,7 +467,33 @@
             }
         }
 
-        function displayPreview(words) {
+function displayPreview(words) {
+    document.getElementById('previewSection').classList.remove('hidden');
+    document.getElementById('wordCount').textContent = words.length;
+    
+    const quartileSize = Math.ceil(words.length / 4);
+    const lastQuartile = words.slice(-quartileSize);
+    document.getElementById('lastQuartile').textContent = '...' + lastQuartile.join(', ');
+    
+    // Update button states
+    const refineBtn = document.getElementById('refineBtn');
+    const refineCounter = document.getElementById('refineCounter');
+    const remaining = maxRefineAttempts - refineAttempts;
+    
+    refineCounter.textContent = `Attempt ${refineAttempts + 1}/${maxRefineAttempts + 1}`;
+    
+    // After first generation, disable Generate, enable others
+    document.getElementById('generateBtn').disabled = true;
+    
+    refineBtn.disabled = remaining <= 0;
+    refineBtn.textContent = `🔄 Refine (${remaining}/3)`;
+    
+    document.getElementById('editWordsBtn').disabled = false;
+    document.getElementById('playBtn').disabled = false;
+}
+
+
+        function displayPreviewD(words) {
             document.getElementById('previewSection').classList.remove('hidden');
             document.getElementById('wordCount').textContent = words.length;
             
