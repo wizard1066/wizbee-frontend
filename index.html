@@ -901,6 +901,45 @@ async function acceptAndPlay() {
         }
 
 	async function launchThemeFromBrowser(cacheKey, displayName) {
+    console.log(`Launching cached theme: ${cacheKey}`);
+    
+    try {
+        const response = await fetch(`${API_URL}/api/play-cached-theme`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify({ cacheKey })
+        });
+        
+        const data = await response.json();
+
+        if (response.status === 429 || response.status === 503) {
+            showError(data.message || 'Theme limit reached!');
+            updateThemeCounter();
+            return;
+        }
+
+        if (response.status === 400 && data.error === 'Theme exhausted') {
+            showError(data.message || 'Theme exhausted!');
+            return;
+        }
+
+        if (data.error) {
+            showError(data.message || 'Failed to load theme');
+            return;
+        }
+
+        startGame(data);
+        
+    } catch (error) {
+        console.error('Error loading cached theme:', error);
+        showError('Connection error');
+    }
+}
+
+	async function launchThemeFromBrowserD(cacheKey, displayName) {
             const parts = cacheKey.split('_');
             const ageMap = { easy: '5 year old', medium: '9 year old', hard: '12 year old' };
             const themeString = `${parts[0]} ${ageMap[parts[2]] || ''}`.trim();
