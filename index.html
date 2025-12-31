@@ -295,6 +295,41 @@
             return JSON.parse(jsonPayload);
 	}
 
+	async function resumeFromEdit(cacheKey) {
+    try {
+        // Fetch the edited theme from database
+        const response = await fetch(`${API_URL}/api/get-draft-theme/${cacheKey}`, {
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok || data.error) {
+            showError('Failed to load edited theme');
+            return;
+        }
+        
+        // Load the edited words into preview
+        currentGeneratedWords = data.words;
+        currentThemeText = data.theme;
+        refineAttempts = maxRefineAttempts; // Mark as fully refined (can't refine more)
+        
+        document.getElementById('themeInput').value = data.theme;
+        displayPreview(data.words);
+        
+        showError('✅ Theme loaded! Your edits are ready. Click Play when ready.');
+        
+        // Clean URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+        
+    } catch (error) {
+        console.error('Error resuming:', error);
+        showError('Failed to load edited theme');
+    }
+}
+
         async function updateThemeCounter() {
             try {
                 const response = await fetch(`${API_URL}/api/user-info`, {
@@ -474,6 +509,29 @@
         }
 
 function displayPreview(words) {
+    document.getElementById('previewSection').classList.remove('hidden');
+    document.getElementById('wordCount').textContent = words.length;
+    
+    const quartileSize = Math.ceil(words.length / 4);
+    const lastQuartile = words.slice(-quartileSize);
+    document.getElementById('lastQuartile').textContent = '...' + lastQuartile.join(', ');
+    
+    const refineCounter = document.getElementById('refineCounter');
+    const remaining = maxRefineAttempts - refineAttempts;
+    
+    refineCounter.textContent = `Attempt ${refineAttempts + 1}/${maxRefineAttempts + 1}`;
+    
+    // Transform Generate button into Refine button
+    const generateBtn = document.getElementById('generateBtn');
+    generateBtn.textContent = `🔄 Refine (${remaining}/3)`;
+    generateBtn.onclick = refineTheme;
+    generateBtn.disabled = remaining <= 0;
+    
+    document.getElementById('editWordsBtn').disabled = false;
+    document.getElementById('playBtn').disabled = false;
+}
+
+function displayPreviewD(words) {
     document.getElementById('previewSection').classList.remove('hidden');
     document.getElementById('wordCount').textContent = words.length;
     
