@@ -311,13 +311,20 @@
                                 <div class="theme-title">${themeName}</div>
                                 <div class="theme-meta">${language} • ${difficulty} • ${wordCount} words</div>
                             </div>
-                            <div class="action-buttons">
-                                <button class="btn btn-secondary" onclick="toggleEdit(${index})">
-                                    <span id="edit-btn-${index}">✏️ Edit</span>
-                                </button>
-                                <button class="btn btn-danger" onclick="deleteTheme('${theme.cache_key}', ${index})">🗑️ Delete Theme</button>
-                            </div>
-                        </div>
+
+<div class="action-buttons">
+    <button class="btn btn-secondary" onclick="toggleEdit(${index})">
+        <span id="edit-btn-${index}">✏️ Edit</span>
+    </button>
+    <button id="done-btn-${index}" class="btn btn-primary hidden" onclick="doneEditing('${theme.cache_key}')">
+        ✓ Done Editing
+    </button>
+    <button class="btn btn-danger" onclick="deleteTheme('${theme.cache_key}', ${index})">🗑️ Delete Theme</button>
+</div>
+
+
+
+
                         
                         <div id="words-${index}" style="display: none;">
                             <div class="quartile-legend">
@@ -388,23 +395,31 @@
             container.innerHTML = html;
         }
 
-        function toggleEdit(index) {
-            const wordsDiv = document.getElementById(`words-${index}`);
-            const editBtn = document.getElementById(`edit-btn-${index}`);
-            const card = document.getElementById(`theme-${index}`);
-            
-            if (wordsDiv.style.display === 'none') {
-                wordsDiv.style.display = 'block';
-                editBtn.textContent = '✓ Done';
-                card.classList.add('editing');
-            } else {
-                wordsDiv.style.display = 'none';
-                editBtn.textContent = '✏️ Edit';
-                card.classList.remove('editing');
-                // Clear selections when closing
-                clearThemeSelections(index);
-            }
-        }
+
+	function toggleEdit(index) {
+    const wordsDiv = document.getElementById(`words-${index}`);
+    const editBtn = document.getElementById(`edit-btn-${index}`);
+    const doneBtn = document.getElementById(`done-btn-${index}`);
+    const card = document.getElementById(`theme-${index}`);
+    
+    if (wordsDiv.style.display === 'none') {
+        wordsDiv.style.display = 'block';
+        editBtn.textContent = '✓ Close';
+        doneBtn.classList.remove('hidden');
+        card.classList.add('editing');
+    } else {
+        wordsDiv.style.display = 'none';
+        editBtn.textContent = '✏️ Edit';
+        doneBtn.classList.add('hidden');
+        card.classList.remove('editing');
+        clearThemeSelections(index);
+    }
+}
+
+function doneEditing(cacheKey) {
+    // Redirect back to index.html with resume parameter
+    window.location.href = `index.html?resume=${cacheKey}`;
+}
 
 function toggleWordSelection(themeIndex, wordIndex) {
     const wordKey = `${themeIndex}-${wordIndex}`;
