@@ -160,6 +160,10 @@
             font-size: 48px;
             margin-bottom: 20px;
         }
+        
+        .hidden {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -195,12 +199,12 @@
         </div>
     </div>
 
-<script>
+    <script>
         const API_URL = 'https://api.wizbee.app';
         let authToken = null;
         let userEmail = null;
         let themes = [];
-        let selectedWords = new Set(); // Track selected words
+        let selectedWords = new Set();
 
         window.onload = function() {
             authToken = localStorage.getItem('authToken');
@@ -213,17 +217,17 @@
             
             document.getElementById('userEmail').textContent = userEmail;
             loadMyThemes();
-
-		// Check if we're editing a specific theme
-    const urlParams = new URLSearchParams(window.location.search);
-    const editCacheKey = urlParams.get('edit');
-    
-    if (editCacheKey) {
-        // Wait for themes to load, then auto-open the specified theme
-        setTimeout(() => {
-            autoOpenTheme(editCacheKey);
-        }, 500);
-    }
+            
+            // Check if we're editing a specific theme
+            const urlParams = new URLSearchParams(window.location.search);
+            const editCacheKey = urlParams.get('edit');
+            
+            if (editCacheKey) {
+                // Wait for themes to load, then auto-open the specified theme
+                setTimeout(() => {
+                    autoOpenTheme(editCacheKey);
+                }, 500);
+            }
         };
 
         function logout() {
@@ -231,25 +235,6 @@
             localStorage.removeItem('userEmail');
             window.location.href = 'index.html';
         }
-
-	function autoOpenTheme(cacheKey) {
-    // Find the theme in our loaded themes array
-    const themeIndex = themes.findIndex(t => t.cache_key === cacheKey);
-    
-    if (themeIndex === -1) {
-        showError('Theme not found. It may not be saved yet.');
-        return;
-    }
-    
-    // Auto-open it for editing
-    toggleEdit(themeIndex);
-    
-    // Scroll to it
-    const themeCard = document.getElementById(`theme-${themeIndex}`);
-    if (themeCard) {
-        themeCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-	}
 
         async function loadMyThemes() {
             const container = document.getElementById('themesContainer');
@@ -311,20 +296,16 @@
                                 <div class="theme-title">${themeName}</div>
                                 <div class="theme-meta">${language} • ${difficulty} • ${wordCount} words</div>
                             </div>
-
-<div class="action-buttons">
-    <button class="btn btn-secondary" onclick="toggleEdit(${index})">
-        <span id="edit-btn-${index}">✏️ Edit</span>
-    </button>
-    <button id="done-btn-${index}" class="btn btn-primary hidden" onclick="doneEditing('${theme.cache_key}')">
-        ✓ Done Editing
-    </button>
-    <button class="btn btn-danger" onclick="deleteTheme('${theme.cache_key}', ${index})">🗑️ Delete Theme</button>
-</div>
-
-
-
-
+                            <div class="action-buttons">
+                                <button class="btn btn-secondary" onclick="toggleEdit(${index})">
+                                    <span id="edit-btn-${index}">✏️ Edit</span>
+                                </button>
+                                <button id="done-btn-${index}" class="btn btn-primary hidden" onclick="doneEditing('${theme.cache_key}')">
+                                    ✓ Done Editing
+                                </button>
+                                <button class="btn btn-danger" onclick="deleteTheme('${theme.cache_key}', ${index})">🗑️ Delete Theme</button>
+                            </div>
+                        </div>
                         
                         <div id="words-${index}" style="display: none;">
                             <div class="quartile-legend">
@@ -395,156 +376,126 @@
             container.innerHTML = html;
         }
 
-
-	function toggleEdit(index) {
-    const wordsDiv = document.getElementById(`words-${index}`);
-    const editBtn = document.getElementById(`edit-btn-${index}`);
-    const doneBtn = document.getElementById(`done-btn-${index}`);
-    const card = document.getElementById(`theme-${index}`);
-    
-    if (wordsDiv.style.display === 'none') {
-        wordsDiv.style.display = 'block';
-        editBtn.textContent = '✓ Close';
-        doneBtn.classList.remove('hidden');
-        card.classList.add('editing');
-    } else {
-        wordsDiv.style.display = 'none';
-        editBtn.textContent = '✏️ Edit';
-        doneBtn.classList.add('hidden');
-        card.classList.remove('editing');
-        clearThemeSelections(index);
-    }
-}
-
-function doneEditing(cacheKey) {
-    // Redirect back to index.html with resume parameter
-    window.location.href = `index.html?resume=${cacheKey}`;
-}
-
-function toggleWordSelection(themeIndex, wordIndex) {
-    const wordKey = `${themeIndex}-${wordIndex}`;
-    const wordElement = document.getElementById(`word-${themeIndex}-${wordIndex}`);
-    const checkbox = document.getElementById(`check-${themeIndex}-${wordIndex}`);
-    const countSpan = document.getElementById(`selected-count-${themeIndex}`);
-    const deleteBtn = document.querySelector(`[onclick="deleteSelectedWords(${themeIndex})"]`);
-    
-    if (selectedWords.has(wordKey)) {
-        selectedWords.delete(wordKey);
-        if (wordElement) {
-            wordElement.style.background = '';
-            wordElement.style.borderColor = '';
+        function toggleEdit(index) {
+            const wordsDiv = document.getElementById(`words-${index}`);
+            const editBtn = document.getElementById(`edit-btn-${index}`);
+            const doneBtn = document.getElementById(`done-btn-${index}`);
+            const card = document.getElementById(`theme-${index}`);
+            
+            if (wordsDiv.style.display === 'none') {
+                wordsDiv.style.display = 'block';
+                editBtn.textContent = '✓ Close';
+                doneBtn.classList.remove('hidden');
+                card.classList.add('editing');
+            } else {
+                wordsDiv.style.display = 'none';
+                editBtn.textContent = '✏️ Edit';
+                doneBtn.classList.add('hidden');
+                card.classList.remove('editing');
+                clearThemeSelections(index);
+            }
         }
-    } else {
-        selectedWords.add(wordKey);
-        if (wordElement) {
-            wordElement.style.background = '#fed7d7';
-            wordElement.style.borderColor = '#fc8181';
+
+        function doneEditing(cacheKey) {
+            // Redirect back to index.html with resume parameter
+            window.location.href = `index.html?resume=${cacheKey}`;
         }
-    }
-    
-    // Update count
-    const count = Array.from(selectedWords).filter(key => key.startsWith(`${themeIndex}-`)).length;
-    if (countSpan) countSpan.textContent = count > 0 ? `${count} selected` : '';
-    
-    // Enable/disable delete button
-    if (deleteBtn) {
-        deleteBtn.disabled = count === 0;
-        deleteBtn.textContent = `🗑️ Delete Selected (${count})`;
-    }
-}
 
-	function toggleWordSelectionD(themeIndex, wordIndex) {
-    const wordKey = `${themeIndex}-${wordIndex}`;
-    const wordElementD = document.getElementById(`word-${index}-${wordIndex}`);
-    const wordElement = document.getElementById(`word-${themeIndex}-${wordIndex}`);
-    const checkbox = document.getElementById(`check-${themeIndex}-${wordIndex}`);
-    const countSpan = document.getElementById(`selected-count-${themeIndex}`);
-    const deleteBtn = document.querySelector(`[onclick="deleteSelectedWords(${themeIndex})"]`);
-    
-    if (selectedWords.has(wordKey)) {
-        selectedWords.delete(wordKey);
-        wordElement.style.background = '';
-        wordElement.style.borderColor = '';
-    } else {
-        selectedWords.add(wordKey);
-        wordElement.style.background = '#fed7d7';
-        wordElement.style.borderColor = '#fc8181';
-    }
-    
-    // Update count
-    const count = Array.from(selectedWords).filter(key => key.startsWith(`${themeIndex}-`)).length;
-    countSpan.textContent = count > 0 ? `${count} selected` : '';
-    
-    // Enable/disable delete button
-    deleteBtn.disabled = count === 0;
-    deleteBtn.textContent = `🗑️ Delete Selected (${count})`;
-}
+        function autoOpenTheme(cacheKey) {
+            // Find the theme in our loaded themes array
+            const themeIndex = themes.findIndex(t => t.cache_key === cacheKey);
+            
+            if (themeIndex === -1) {
+                console.log('Theme not found:', cacheKey);
+                return;
+            }
+            
+            // Auto-open it for editing
+            toggleEdit(themeIndex);
+            
+            // Scroll to it
+            setTimeout(() => {
+                const themeCard = document.getElementById(`theme-${themeIndex}`);
+                if (themeCard) {
+                    themeCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }, 100);
+        }
 
-        function toggleWordSelectionD(themeIndex, wordIndex) {
+        function toggleWordSelection(themeIndex, wordIndex) {
             const wordKey = `${themeIndex}-${wordIndex}`;
+            const wordElement = document.getElementById(`word-${themeIndex}-${wordIndex}`);
+            const checkbox = document.getElementById(`check-${themeIndex}-${wordIndex}`);
+            const countSpan = document.getElementById(`selected-count-${themeIndex}`);
+            const deleteBtn = document.querySelector(`[onclick="deleteSelectedWords(${themeIndex})"]`);
             
             if (selectedWords.has(wordKey)) {
                 selectedWords.delete(wordKey);
+                if (wordElement) {
+                    wordElement.style.background = '';
+                    wordElement.style.borderColor = '';
+                }
             } else {
                 selectedWords.add(wordKey);
+                if (wordElement) {
+                    wordElement.style.background = '#fed7d7';
+                    wordElement.style.borderColor = '#fc8181';
+                }
             }
             
-            renderThemes();
+            const count = Array.from(selectedWords).filter(key => key.startsWith(`${themeIndex}-`)).length;
+            if (countSpan) countSpan.textContent = count > 0 ? `${count} selected` : '';
+            
+            if (deleteBtn) {
+                deleteBtn.disabled = count === 0;
+                deleteBtn.textContent = `🗑️ Delete Selected (${count})`;
+            }
         }
 
-function selectAll(themeIndex) {
-    const theme = themes[themeIndex];
-    theme.words.forEach((word, wordIndex) => {
-        const wordKey = `${themeIndex}-${wordIndex}`;
-        selectedWords.add(wordKey);
-        const checkbox = document.getElementById(`check-${themeIndex}-${wordIndex}`);
-        const wordElement = document.getElementById(`word-${themeIndex}-${wordIndex}`);
-        if (checkbox) checkbox.checked = true;
-        if (wordElement) {
-            wordElement.style.background = '#fed7d7';
-            wordElement.style.borderColor = '#fc8181';
-        }
-    });
-    
-    const countSpan = document.getElementById(`selected-count-${themeIndex}`);
-    const deleteBtn = document.querySelector(`[onclick="deleteSelectedWords(${themeIndex})"]`);
-    countSpan.textContent = `${theme.words.length} selected`;
-    deleteBtn.disabled = false;
-    deleteBtn.textContent = `🗑️ Delete Selected (${theme.words.length})`;
-}
-
-        function selectAllD(themeIndex) {
+        function selectAll(themeIndex) {
             const theme = themes[themeIndex];
             theme.words.forEach((word, wordIndex) => {
-                selectedWords.add(`${themeIndex}-${wordIndex}`);
+                const wordKey = `${themeIndex}-${wordIndex}`;
+                selectedWords.add(wordKey);
+                const checkbox = document.getElementById(`check-${themeIndex}-${wordIndex}`);
+                const wordElement = document.getElementById(`word-${themeIndex}-${wordIndex}`);
+                if (checkbox) checkbox.checked = true;
+                if (wordElement) {
+                    wordElement.style.background = '#fed7d7';
+                    wordElement.style.borderColor = '#fc8181';
+                }
             });
-            renderThemes();
+            
+            const countSpan = document.getElementById(`selected-count-${themeIndex}`);
+            const deleteBtn = document.querySelector(`[onclick="deleteSelectedWords(${themeIndex})"]`);
+            if (countSpan) countSpan.textContent = `${theme.words.length} selected`;
+            if (deleteBtn) {
+                deleteBtn.disabled = false;
+                deleteBtn.textContent = `🗑️ Delete Selected (${theme.words.length})`;
+            }
         }
 
-function deselectAll(themeIndex) {
-    const theme = themes[themeIndex];
-    theme.words.forEach((word, wordIndex) => {
-        const wordKey = `${themeIndex}-${wordIndex}`;
-        selectedWords.delete(wordKey);
-        const checkbox = document.getElementById(`check-${themeIndex}-${wordIndex}`);
-        const wordElement = document.getElementById(`word-${themeIndex}-${wordIndex}`);
-        if (checkbox) checkbox.checked = false;
-        if (wordElement) {
-            wordElement.style.background = '';
-            wordElement.style.borderColor = '';
-        }
-    });
-    
-    const countSpan = document.getElementById(`selected-count-${themeIndex}`);
-    const deleteBtn = document.querySelector(`[onclick="deleteSelectedWords(${themeIndex})"]`);
-    countSpan.textContent = '';
-    deleteBtn.disabled = true;
-    deleteBtn.textContent = `🗑️ Delete Selected (0)`;
-}
-
-        function deselectAllD(themeIndex) {
-            clearThemeSelections(themeIndex);
-            renderThemes();
+        function deselectAll(themeIndex) {
+            const theme = themes[themeIndex];
+            theme.words.forEach((word, wordIndex) => {
+                const wordKey = `${themeIndex}-${wordIndex}`;
+                selectedWords.delete(wordKey);
+                const checkbox = document.getElementById(`check-${themeIndex}-${wordIndex}`);
+                const wordElement = document.getElementById(`word-${themeIndex}-${wordIndex}`);
+                if (checkbox) checkbox.checked = false;
+                if (wordElement) {
+                    wordElement.style.background = '';
+                    wordElement.style.borderColor = '';
+                }
+            });
+            
+            const countSpan = document.getElementById(`selected-count-${themeIndex}`);
+            const deleteBtn = document.querySelector(`[onclick="deleteSelectedWords(${themeIndex})"]`);
+            if (countSpan) countSpan.textContent = '';
+            if (deleteBtn) {
+                deleteBtn.disabled = true;
+                deleteBtn.textContent = `🗑️ Delete Selected (0)`;
+            }
         }
 
         function clearThemeSelections(themeIndex) {
@@ -552,74 +503,18 @@ function deselectAll(themeIndex) {
             keysToDelete.forEach(key => selectedWords.delete(key));
         }
 
-	async function deleteSelectedWords(themeIndex) {
-    const theme = themes[themeIndex];
-    const selectedIndices = Array.from(selectedWords)
-        .filter(key => key.startsWith(`${themeIndex}-`))
-        .map(key => parseInt(key.split('-')[1]))
-        .sort((a, b) => b - a); // Sort descending
-    
-    if (selectedIndices.length === 0) return;
-    
-    if (!confirm(`Delete ${selectedIndices.length} selected word(s)?`)) return;
-    
-    try {
-        // Delete words from end to start (so indices don't shift)
-        for (const wordIndex of selectedIndices) {
-            const response = await fetch(`${API_URL}/api/delete-word`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${authToken}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    cacheKey: theme.cache_key,
-                    wordIndex: wordIndex
-                })
-            });
-            
-            if (!response.ok) {
-                alert('Failed to delete some words');
-                break;
-            }
-            
-            // Remove from local array
-            themes[themeIndex].words.splice(wordIndex, 1);
-        }
-        
-        // Clear selections and reload this theme only
-        clearThemeSelections(themeIndex);
-        
-        // Full re-render but keep edit state
-        const wasEditing = document.getElementById(`words-${themeIndex}`).style.display === 'block';
-        renderThemes();
-        
-        if (wasEditing) {
-            // Re-open the edit panel
-            document.getElementById(`words-${themeIndex}`).style.display = 'block';
-            document.getElementById(`edit-btn-${themeIndex}`).textContent = '✓ Done';
-            document.getElementById(`theme-${themeIndex}`).classList.add('editing');
-        }
-        
-    } catch (error) {
-        console.error('Error deleting words:', error);
-        alert('Failed to delete words');
-    }
-}
-
-        async function deleteSelectedWordsD(themeIndex) {
+        async function deleteSelectedWords(themeIndex) {
             const theme = themes[themeIndex];
             const selectedIndices = Array.from(selectedWords)
                 .filter(key => key.startsWith(`${themeIndex}-`))
                 .map(key => parseInt(key.split('-')[1]))
-                .sort((a, b) => b - a); // Sort descending so we delete from end first
+                .sort((a, b) => b - a);
             
             if (selectedIndices.length === 0) return;
             
             if (!confirm(`Delete ${selectedIndices.length} selected word(s)?`)) return;
             
             try {
-                // Delete words one by one from the end (so indices don't shift)
                 for (const wordIndex of selectedIndices) {
                     const response = await fetch(`${API_URL}/api/delete-word`, {
                         method: 'POST',
@@ -638,15 +533,20 @@ function deselectAll(themeIndex) {
                         break;
                     }
                     
-                    // Remove from local array
                     themes[themeIndex].words.splice(wordIndex, 1);
                 }
                 
-                // Clear selections for this theme
                 clearThemeSelections(themeIndex);
                 
-                // Re-render
+                const wasEditing = document.getElementById(`words-${themeIndex}`).style.display === 'block';
                 renderThemes();
+                
+                if (wasEditing) {
+                    document.getElementById(`words-${themeIndex}`).style.display = 'block';
+                    document.getElementById(`edit-btn-${themeIndex}`).textContent = '✓ Close';
+                    document.getElementById(`done-btn-${themeIndex}`).classList.remove('hidden');
+                    document.getElementById(`theme-${themeIndex}`).classList.add('editing');
+                }
                 
             } catch (error) {
                 console.error('Error deleting words:', error);
@@ -678,13 +578,9 @@ function deselectAll(themeIndex) {
                     return;
                 }
                 
-                // Clear selections for this theme
                 clearThemeSelections(index);
-                
-                // Remove from local array
                 themes.splice(index, 1);
                 
-                // Re-render
                 if (themes.length === 0) {
                     loadMyThemes();
                 } else {
@@ -697,6 +593,5 @@ function deselectAll(themeIndex) {
             }
         }
     </script>
-
 </body>
 </html>
