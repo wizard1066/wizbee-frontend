@@ -407,6 +407,9 @@
         }
 
         async function generateWordlist() {
+	    	console.log('generateWordlist called');
+    		console.log('currentThemeText:', currentThemeText);
+    		console.log('authToken exists:', !!authToken);
             document.getElementById('generatingMessage').classList.remove('hidden');
             document.getElementById('generateBtn').disabled = true;
             document.getElementById('previewSection').classList.add('hidden');
