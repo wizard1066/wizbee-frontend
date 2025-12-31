@@ -54,9 +54,6 @@
     <button id="generateBtn" onclick="generateTheme()" style="flex: 1; padding: 12px 24px; border-radius: 8px; font-weight: 600; cursor: pointer; border: none; background: #667eea; color: white; font-size: 16px;">
         Generate
     </button>
-    <button id="refineBtn" onclick="refineTheme()" disabled style="flex: 1; padding: 12px 24px; border-radius: 8px; font-weight: 600; cursor: pointer; border: none; background: #e2e8f0; color: #2d3748; font-size: 16px;">
-        🔄 Refine (3/3)
-    </button>
     <button id="editWordsBtn" onclick="editWords()" disabled style="flex: 1; padding: 12px 24px; border-radius: 8px; font-weight: 600; cursor: pointer; border: none; background: #e2e8f0; color: #2d3748; font-size: 16px;">
         ✏️ Edit Words
     </button>
@@ -1187,6 +1184,10 @@ function displayPreviewD(words) {
             currentThemeId = null;
             wordStartTime = null;
             letterSwapCount = 0;
+
+		document.getElementById('generateBtn').textContent = 'Generate';
+document.getElementById('generateBtn').onclick = generateTheme;
+document.getElementById('generateBtn').disabled = false;
             
             document.getElementById('hintBtn').disabled = false;
             document.getElementById('hintBtn').textContent = '💡 Get Hint';
