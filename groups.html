@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wizbee - Groups</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        .groups-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .group-card {
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background: white;
+        }
+
+        .group-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .group-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .group-meta {
+            color: #718096;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .share-code-badge {
+            background: #667eea;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            cursor: pointer;
+        }
+
+        .share-code-badge:hover {
+            background: #5a67d8;
+        }
+
+        .theme-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .theme-item {
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: white;
+        }
+
+        .theme-item:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 6px rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .theme-name {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 8px;
+        }
+
+        .theme-stats {
+            font-size: 12px;
+            color: #718096;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a67d8;
+        }
+
+        .btn-success {
+            background: #48bb78;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #38a169;
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #2d3748;
+        }
+
+        .btn-secondary:hover {
+            background: #cbd5e0;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #718096;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 30px;
+            border-radius: 8px;
+            max-width: 500px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .modal-header {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #2d3748;
+        }
+
+        .modal-body {
+            margin-bottom: 20px;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 14px;
+            text-transform: uppercase;
+            font-family: monospace;
+            letter-spacing: 1px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .owner-badge {
+            background: #ffd700;
+            color: #744210;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #718096;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>
+            <a href="index.html" style="text-decoration: none; color: inherit;">
+                <img src="bee3.gif" alt="Wizbee" style="height: 48px; vertical-align: middle;"> Wizbee
+            </a>
+        </h1>
+
+        <div class="user-info">
+            <div>Signed in as: <span id="userEmail"></span></div>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+
+        <!-- Navigation -->
+        <div class="tabs">
+            <button class="tab" onclick="window.location.href='index.html'">Play Game</button>
+            <button class="tab active">🤝 Groups</button>
+            <button class="tab" onclick="window.location.href='admin.html'">⚙️ My Themes</button>
+            <button class="tab" onclick="window.location.href='leaderboard.html'">🏆 Leaderboard</button>
+            <button class="tab" onclick="window.location.href='progress.html'">📊 Progress</button>
+        </div>
+
+        <div class="tab-content active">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="margin: 0;">🤝 My Groups</h2>
+                <button class="btn btn-success" onclick="showJoinGroupModal()">
+                    ➕ Join Group
+                </button>
+            </div>
+            <p style="color: #718096; margin-bottom: 30px;">
+                Browse themes shared in your groups. Join a group using a share code or create one in My Themes.
+            </p>
+            
+            <div id="groupsContainer" class="groups-container">
+                <div class="loading">Loading your groups...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Join Group Modal -->
+    <div id="joinGroupModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">➕ Join a Group</div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Share Code</label>
+                    <input type="text" id="shareCodeInput" class="form-input" placeholder="XXXX-XXXX" maxlength="9">
+                    <p style="color: #718096; font-size: 12px; margin-top: 5px;">
+                        Enter the share code provided by the group owner
+                    </p>
+                </div>
+                <div id="joinGroupError" style="color: #e53e3e; font-size: 14px; margin-top: 10px;" class="hidden"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeJoinGroupModal()">Cancel</button>
+                <button class="btn btn-success" onclick="joinGroup()">Join Group</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://api.wizbee.app';
+        let authToken = null;
+        let userEmail = null;
+        let groups = [];
+
+        window.onload = function() {
+            authToken = localStorage.getItem('authToken');
+            userEmail = localStorage.getItem('userEmail');
+            
+            if (!authToken || !userEmail) {
+                window.location.href = 'index.html';
+                return;
+            }
+            
+            document.getElementById('userEmail').textContent = userEmail;
+            loadGroups();
+        };
+
+        function logout() {
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('userEmail');
+            window.location.href = 'index.html';
+        }
+
+        async function loadGroups() {
+            const container = document.getElementById('groupsContainer');
+            
+            try {
+                const response = await fetch(`${API_URL}/api/my-groups`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><p>Failed to load groups</p></div>';
+                    return;
+                }
+                
+                const data = await response.json();
+                groups = data.groups || [];
+                
+                if (groups.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">🤝</div>
+                            <h3>No groups yet</h3>
+                            <p>Join a group using a share code, or create one in My Themes.</p>
+                            <button class="btn btn-success" onclick="showJoinGroupModal()">Join a Group</button>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Load themes for each group
+                for (let group of groups) {
+                    await loadGroupThemes(group);
+                }
+                
+                renderGroups();
+                
+            } catch (error) {
+                console.error('Error loading groups:', error);
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><p>Failed to load groups</p></div>';
+            }
+        }
+
+        async function loadGroupThemes(group) {
+            try {
+                const response = await fetch(`${API_URL}/api/group-themes/${group.id}`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    group.themes = data.themes || [];
+                } else {
+                    group.themes = [];
+                }
+            } catch (error) {
+                console.error(`Error loading themes for group ${group.id}:`, error);
+                group.themes = [];
+            }
+        }
+
+        function renderGroups() {
+            const container = document.getElementById('groupsContainer');
+            
+            let html = '';
+            
+            groups.forEach(group => {
+                const isOwner = group.isOwner;
+                
+                html += `
+                    <div class="group-card">
+                        <div class="group-header">
+                            <div>
+                                <div class="group-title">
+                                    ${group.name}
+                                    ${isOwner ? '<span class="owner-badge">👑 OWNER</span>' : ''}
+                                </div>
+                                <div class="group-meta">
+                                    ${group.memberCount} member${group.memberCount !== 1 ? 's' : ''} • 
+                                    ${group.themeCount} theme${group.themeCount !== 1 ? 's' : ''}
+                                </div>
+                            </div>
+                            <div>
+                                <div class="share-code-badge" onclick="copyShareCode('${group.shareCode}')" title="Click to copy">
+                                    📋 ${group.shareCode}
+                                </div>
+                            </div>
+                        </div>
+                `;
+                
+                if (group.themes && group.themes.length > 0) {
+                    html += '<div class="theme-grid">';
+                    
+                    group.themes.forEach(theme => {
+                        const langIcon = theme.language === 'en' ? '🇬🇧' : 
+                                       theme.language === 'fr' ? '🇫🇷' : 
+                                       theme.language === 'de' ? '🇩🇪' : 
+                                       theme.language === 'es' ? '🇪🇸' : '🌍';
+                        
+                        html += `
+                            <div class="theme-item" onclick="playGroupTheme('${theme.cacheKey}', '${theme.displayName}')">
+                                <div class="theme-name">${theme.displayName}</div>
+                                <div class="theme-stats">
+                                    ${langIcon} ${theme.wordCount} words
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    html += '</div>';
+                } else {
+                    html += '<p style="color: #718096; text-align: center; padding: 20px;">No themes shared yet</p>';
+                }
+                
+                html += '</div>';
+            });
+            
+            container.innerHTML = html;
+        }
+
+        function copyShareCode(shareCode) {
+            navigator.clipboard.writeText(shareCode).then(() => {
+                alert('✅ Share code copied to clipboard!');
+            }).catch(() => {
+                alert('Share code: ' + shareCode);
+            });
+        }
+
+        function playGroupTheme(cacheKey, displayName) {
+            // Store the theme to play and redirect to main game page
+            localStorage.setItem('playTheme', cacheKey);
+            window.location.href = `index.html?play=${cacheKey}`;
+        }
+
+        function showJoinGroupModal() {
+            document.getElementById('shareCodeInput').value = '';
+            document.getElementById('joinGroupError').classList.add('hidden');
+            document.getElementById('joinGroupModal').style.display = 'block';
+        }
+
+        function closeJoinGroupModal() {
+            document.getElementById('joinGroupModal').style.display = 'none';
+        }
+
+        async function joinGroup() {
+            const shareCode = document.getElementById('shareCodeInput').value.trim().toUpperCase();
+            const errorDiv = document.getElementById('joinGroupError');
+            
+            if (!shareCode) {
+                errorDiv.textContent = 'Please enter a share code';
+                errorDiv.classList.remove('hidden');
+                return;
+            }
+            
+            if (shareCode.length < 8) {
+                errorDiv.textContent = 'Invalid share code format';
+                errorDiv.classList.remove('hidden');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/api/join-group`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ shareCode })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    closeJoinGroupModal();
+                    alert(`✅ Successfully joined "${data.group.name}"!`);
+                    loadGroups();
+                } else {
+                    errorDiv.textContent = data.message || 'Failed to join group';
+                    errorDiv.classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error('Error joining group:', error);
+                errorDiv.textContent = 'Failed to join group. Please try again.';
+                errorDiv.classList.remove('hidden');
+            }
+        }
+
+        // Format share code input as user types
+        document.addEventListener('DOMContentLoaded', function() {
+            const shareCodeInput = document.getElementById('shareCodeInput');
+            if (shareCodeInput) {
+                shareCodeInput.addEventListener('input', function(e) {
+                    let value = e.target.value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+                    if (value.length > 4) {
+                        value = value.substring(0, 4) + '-' + value.substring(4, 8);
+                    }
+                    e.target.value = value;
+                });
+            }
+        });
+    </script>
+</body>
+</html>
