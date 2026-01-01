@@ -345,7 +345,7 @@
                 const counter = document.getElementById('themeCounter');
 
                 if (remaining > 0) {
-                    counter.innerHTML = `✨ <strong>${remaining}</strong> of <strong>${total}</strong> themes purchased`;
+                    counter.innerHTML = `✨ <strong>${remaining}</strong> of <strong>${total}</strong> themes purchasedi left`;
                 } else {
                     counter.innerHTML = `🎯 <a href="#" onclick="buyThemes(); return false;" style="color: #667eea; text-decoration: underline;">Buy 4 more themes for $0.99</a>`;
                 }
@@ -865,7 +865,13 @@ async function acceptAndPlay() {
                 html += `<div style="font-weight: bold; font-size: 18px; color: #48bb78; margin-bottom: 10px; padding: 10px;">🌍 Public Themes</div>`;
                 html += `<div style="max-height: 400px; overflow-y: auto;">`;
                 
-                const sortedLanguages = Object.keys(data.themes).sort();
+		const sortedLanguages = Object.keys(data.themes).sort((a, b) => {
+  			if (a === 'en') return -1;  // English first
+  			if (b === 'en') return 1;
+  		return a.localeCompare(b);  // Others alphabetically
+		});
+
+
                 sortedLanguages.forEach(lang => {
                     const languageName = languageNames[lang] || lang.toUpperCase();
                     html += `<div class="language-section"><div class="language-header">${languageName}</div>`;
