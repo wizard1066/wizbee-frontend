@@ -45,6 +45,12 @@
             margin-bottom: 10px;
         }
         
+        .shared-groups {
+            color: #667eea;
+            font-size: 13px;
+            margin-top: 5px;
+        }
+        
         .word-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
@@ -75,6 +81,7 @@
         .action-buttons {
             display: flex;
             gap: 10px;
+            flex-wrap: wrap;
         }
         
         .btn {
@@ -265,6 +272,7 @@
         <div class="tabs">
             <button class="tab" onclick="window.location.href='index.html'">Play Game</button>
             <button class="tab active">⚙️ My Themes</button>
+            <button class="tab" onclick="window.location.href='groups.html'">🤝 Groups</button>
             <button class="tab" onclick="window.location.href='leaderboard.html'">🏆 Leaderboard</button>
             <button class="tab" onclick="window.location.href='progress.html'">📊 Progress</button>
         </div>
@@ -452,12 +460,22 @@
                 const quartileSize = Math.ceil(wordCount / 4);
                 const selectedCount = Array.from(selectedWords).filter(key => key.startsWith(`${index}-`)).length;
                 
+                // Format shared groups display
+                let sharedGroupsHtml = '';
+                if (theme.sharedGroups && theme.sharedGroups.length > 0) {
+                    const groupNames = theme.sharedGroups.map(g => '🤝 ' + g.name).join(', ');
+                    sharedGroupsHtml = `<div class="shared-groups">Shared with: ${groupNames}</div>`;
+                }
+                
                 html += `
                     <div class="theme-card" id="theme-${index}">
                         <div class="theme-header">
-                            <div>
+                            <div style="flex: 1;">
                                 <div class="theme-title">${themeName}</div>
-                                <div class="theme-meta">${language} • ${difficulty} • ${wordCount} words</div>
+                                <div class="theme-meta">
+                                    ${language} • ${difficulty} • ${wordCount} words
+                                    ${sharedGroupsHtml}
+                                </div>
                             </div>
                             <div class="action-buttons">
                                 <button class="btn btn-success" onclick="showShareModal('${theme.cache_key}', '${themeName}')">
@@ -607,6 +625,7 @@
                     alert('✅ Theme shared to group!');
                     closeShareModal();
                     loadMyGroups();
+                    loadMyThemes(); // Reload to show updated shared groups
                 } else {
                     alert(data.message || 'Failed to share theme');
                 }
