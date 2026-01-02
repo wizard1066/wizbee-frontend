@@ -683,6 +683,12 @@ async function acceptAndPlay() {
         document.getElementById('playBtn').disabled = true;
         
         updateThemeCounter();
+        
+        // Reload browse themes to show newly created theme
+        if (typeof loadBrowseThemes === 'function') {
+            loadBrowseThemes();
+        }
+        
         startGame(data);
         
     } catch (error) {
@@ -696,77 +702,26 @@ async function acceptAndPlay() {
 
 
 
-
-
-
-
-        async function acceptAndPlayD() {
-            if (!currentGeneratedWords || currentGeneratedWords.length === 0) {
-                showError('No words to use!');
-                return;
-            }
-            
-            document.getElementById('generatingMessage').classList.remove('hidden');
-            
-            try {
-                const response = await fetch(`${API_URL}/api/generate-word`, {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${authToken}`
-                    },
-                    body: JSON.stringify({ 
-                        theme: currentThemeText,
-                        acceptWords: currentGeneratedWords
-                    })
-                });
-                
-                const data = await response.json();
-                document.getElementById('generatingMessage').classList.add('hidden');
-                
-                if (!response.ok || data.error) {
-                    showError(data.message || 'Failed to create theme');
-                    return;
-                }
-                
-                // Reset refine state
-                currentGeneratedWords = null;
-                refineAttempts = 0;
-                document.getElementById('previewSection').classList.add('hidden');
-                document.getElementById('themeInput').value = '';
-                document.getElementById('generateBtn').disabled = false;
-                
-                updateThemeCounter();
-                startGame(data);
-                
-            } catch (error) {
-                console.error('Error:', error);
-                document.getElementById('generatingMessage').classList.add('hidden');
-                showError('Connection error');
-            }
-        }
-
-	async function editWords() {
+async function acceptAndPlayD() {
     if (!currentGeneratedWords || currentGeneratedWords.length === 0) {
-        showError('No words to edit!');
+        showError('No words to use!');
         return;
     }
     
-    if (!currentThemeText) {
-        showError('No theme specified!');
+    if (!currentCacheKey) {
+        showError('Cache key missing!');
         return;
     }
     
     try {
-        // Save as draft theme
-        const response = await fetch(`${API_URL}/api/save-draft-theme`, {
+        const response = await fetch(`${API_URL}/api/create-theme-from-preview`, {
             method: 'POST',
-            headers: {
+            headers: { 
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${authToken}`
             },
-            body: JSON.stringify({
-                theme: currentThemeText,
+            body: JSON.stringify({ 
+                cacheKey: currentCacheKey,
                 words: currentGeneratedWords
             })
         });
@@ -774,18 +729,35 @@ async function acceptAndPlay() {
         const data = await response.json();
         
         if (!response.ok || data.error) {
-            showError(data.message || 'Failed to save draft');
+            showError(data.message || 'Failed to create theme');
             return;
         }
         
-        // Redirect to admin page with edit parameter
-        window.location.href = `admin.html?edit=${data.cacheKey}`;
+        // Reset state
+        currentGeneratedWords = null;
+        currentCacheKey = null;
+        refineAttempts = 0;
+        document.getElementById('previewSection').classList.add('hidden');
+        document.getElementById('themeInput').value = '';
+        
+        // Reset Generate button
+        const generateBtn = document.getElementById('generateBtn');
+        generateBtn.textContent = 'Generate';
+        generateBtn.onclick = generateTheme;
+        generateBtn.disabled = false;
+        
+        document.getElementById('editWordsBtn').disabled = true;
+        document.getElementById('playBtn').disabled = true;
+        
+        updateThemeCounter();
+        startGame(data);
         
     } catch (error) {
-        console.error('Error saving draft:', error);
-        showError('Failed to save draft');
+        console.error('Error:', error);
+        showError('Connection error');
     }
 }
+
 
         // ========================================================================
         // END REFINE SYSTEM
