@@ -146,9 +146,9 @@
     	border: none;
     	cursor: pointer;
     	font-weight: 300;      /* ← Change text weight */
-    	font-size: 12px;       /* ← Change text size */
+    	font-size: 16px;       /* ← Change text size */
     	color: #2d3748;        /* ← Change text color */
-    	text-transform: full-width ;  /* ← Change capitalization */
+    	text-transform: uppercase ;  /* ← Change capitalization */
     }
 
     /* 
