@@ -1019,7 +1019,89 @@ async function generateWordlist() {
 // ============================================================================
 // 2. REPLACE: async function acceptAndPlay()
 // ============================================================================
+// ============================================================================
+// COMPLETE REPLACEMENT: async function acceptAndPlay()
+// Replace your entire acceptAndPlay function with this
+// ============================================================================
+
 async function acceptAndPlay() {
+    // Validate BEFORE clearing anything
+    if (!currentGeneratedWords || currentGeneratedWords.length === 0) {
+        showError('No words to use!');
+        return;
+    }
+    
+    if (!currentCacheKey) {
+        showError('Cache key missing!');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${API_URL}/api/accept-theme`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify({ 
+                cacheKey: currentCacheKey
+            })
+        });
+        
+        const data = await response.json();
+        
+        // Check for errors BEFORE resetting state
+        if (!response.ok || data.error) {
+            showError(data.message || 'Failed to create theme');
+            return;  // Keep state so user can retry
+        }
+        
+        // ONLY reset state AFTER successful response
+        currentGeneratedWords = null;
+        currentCacheKey = null;
+        refineAttempts = 0;
+        baseTheme = '';
+        refinements = [];
+        document.getElementById('promptDisplayContainer').style.display = 'none';
+        document.getElementById('previewSection').classList.add('hidden');
+        document.getElementById('themeInput').value = '';
+        
+        // Reset Generate button
+        const generateBtn = document.getElementById('generateBtn');
+        generateBtn.textContent = 'Generate';
+        generateBtn.onclick = generateTheme;
+        generateBtn.disabled = false;
+        
+        document.getElementById('editWordsBtn').disabled = true;
+        document.getElementById('playBtn').disabled = true;
+        
+        updateThemeCounter();
+        
+        // Reload browse themes to show newly created theme
+        if (typeof loadBrowseThemes === 'function') {
+            loadBrowseThemes();
+        }
+        
+        startGame(data);
+        
+    } catch (error) {
+        console.error('Error:', error);
+        showError('Connection error');
+        // Don't reset state on error - user can retry
+    }
+}
+
+// ============================================================================
+// END: Complete acceptAndPlay function
+// ============================================================================
+
+
+
+
+
+
+
+async function acceptAndPlayD2() {
     if (!currentGeneratedWords || currentGeneratedWords.length === 0) {
         showError('No words to use!');
         return;
