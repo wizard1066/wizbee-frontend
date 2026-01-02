@@ -45,6 +45,15 @@
         		<!-- Populated by JS -->
     		</div>
                 <h2>Create Your Theme</h2>
+		<p style="color: #718096; margin-bottom: 20px;">
+    Enter a theme and we'll generate word puzzles for you...
+</p>
+
+<!-- Prompt Display - shows refinement progression -->
+<div id="promptDisplayContainer" style="display: none; background: #f7fafc; border-left: 4px solid #667eea; border-radius: 6px; padding: 15px; margin-bottom: 20px; font-family: monospace; font-size: 14px; color: #2d3748;">
+    <div style="font-weight: 600; margin-bottom: 8px; color: #667eea;">Current Prompt:</div>
+    <div id="promptDisplay" style="white-space: pre-line;"></div>
+</div>
 	        <div id="errorMessage" class="error-message hidden"></div>
                 
                 <div style="margin-bottom: 20px;">
@@ -699,6 +708,20 @@ async function refineTheme() {
         }
 
 function updatePromptDisplay() {
+    const displayElement = document.getElementById('promptDisplay');
+    const container = document.getElementById('promptDisplayContainer');
+    if (!displayElement || !container) return;
+    
+    let html = baseTheme;
+    refinements.forEach(r => {
+        html += '\n+ ' + r;
+    });
+    
+    displayElement.textContent = html;
+    container.style.display = 'block';  // Show it
+}
+
+function updatePromptDisplayD() {
     const displayElement = document.getElementById('promptDisplay');
     if (!displayElement) return;
     
