@@ -148,8 +148,17 @@
     	font-weight: 600;      /* ← Change text weight */
     	font-size: 16px;       /* ← Change text size */
     	color: #2d3748;        /* ← Change text color */
-    	text-transform: none;  /* ← Change capitalization */
+    	text-transform: capitalize;  /* ← Change capitalization */
     }
+
+    /* 
+	text-transform: none;          /* Default - no change */
+	text-transform: uppercase;     /* ALL CAPS */
+	text-transform: lowercase;     /* all lowercase */
+	text-transform: capitalize;    /* First Letter Of Each Word */
+	text-transform: full-width;    /* Full-width characters (rare) */
+	text-transform: inherit;       /* Inherit from parent */
+	*/
     
     .tab:hover {
         color: #667eea;
