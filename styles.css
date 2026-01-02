@@ -148,7 +148,7 @@
     	font-weight: 900;      /* ← Change text weight */
     	font-size: 16px;       /* ← Change text size */
     	color: #2d3748;        /* ← Change text color */
-    	text-transform: lowercase ;  /* ← Change capitalization */
+    	text-transform:none ;  /* ← Change capitalization */
     }
 
     /* 
