@@ -443,7 +443,7 @@
             await generateWordlist();
         }
 
-	async function generateWordlist() {
+	async function generateWordlistD() {
     document.getElementById('generatingMessage').classList.remove('hidden');
     document.getElementById('generateBtn').disabled = true;
     document.getElementById('previewSection').classList.add('hidden');
@@ -635,7 +635,7 @@ function displayPreviewD(words) {
             await generateWordlist();
         }
 
-async function acceptAndPlay() {
+async function acceptAndPlayD() {
     if (!currentGeneratedWords || currentGeneratedWords.length === 0) {
         showError('No words to use!');
         return;
@@ -658,7 +658,7 @@ async function acceptAndPlay() {
                 words: currentGeneratedWords
             })
         });
-        
+
         const data = await response.json();
         
         if (!response.ok || data.error) {
@@ -869,7 +869,164 @@ async function acceptAndPlayD() {
             }
         }
 
-	async function launchThemeFromBrowser(cacheKey, displayName) {
+// ============================================================================
+// COMPLETE FUNCTIONS TO REPLACE IN INDEX.HTML
+// Find and replace these 3 functions completely
+// ============================================================================
+
+// ============================================================================
+// 1. REPLACE: async function generateWordlist()
+// ============================================================================
+async function generateWordlist() {
+    document.getElementById('generatingMessage').classList.remove('hidden');
+    document.getElementById('generateBtn').disabled = true;
+    document.getElementById('previewSection').classList.add('hidden');
+    
+    try {
+        const response = await fetch(`${API_URL}/api/preview-theme`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify({ 
+                theme: currentThemeText
+            })
+        });
+        
+        const data = await response.json();
+        document.getElementById('generatingMessage').classList.add('hidden');
+        
+        if (response.status === 429 || response.status === 503) {
+            document.getElementById('generateBtn').disabled = false;
+            showError(data.message || 'Theme limit reached!');
+            updateThemeCounter();
+            return;
+        }
+        
+        if (!response.ok || data.error) {
+            showError(data.message || 'Failed to generate words');
+            document.getElementById('generateBtn').disabled = false;
+            return;
+        }
+        
+        currentGeneratedWords = data.preview;
+        currentCacheKey = data.cacheKey;
+        
+        displayPreview(currentGeneratedWords);
+        
+    } catch (error) {
+        console.error('Generation error:', error);
+        document.getElementById('generatingMessage').classList.add('hidden');
+        document.getElementById('generateBtn').disabled = false;
+        showError('Connection error');
+    }
+}
+
+// ============================================================================
+// 2. REPLACE: async function acceptAndPlay()
+// ============================================================================
+async function acceptAndPlay() {
+    if (!currentGeneratedWords || currentGeneratedWords.length === 0) {
+        showError('No words to use!');
+        return;
+    }
+    
+    if (!currentCacheKey) {
+        showError('Cache key missing!');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${API_URL}/api/accept-theme`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify({ 
+                cacheKey: currentCacheKey
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok || data.error) {
+            showError(data.message || 'Failed to create theme');
+            return;
+        }
+        
+        // Reset state
+        currentGeneratedWords = null;
+        currentCacheKey = null;
+        refineAttempts = 0;
+        document.getElementById('previewSection').classList.add('hidden');
+        document.getElementById('themeInput').value = '';
+        
+        // Reset Generate button
+        const generateBtn = document.getElementById('generateBtn');
+        generateBtn.textContent = 'Generate';
+        generateBtn.onclick = generateTheme;
+        generateBtn.disabled = false;
+        
+        document.getElementById('editWordsBtn').disabled = true;
+        document.getElementById('playBtn').disabled = true;
+        
+        updateThemeCounter();
+        
+        // Reload browse themes to show newly created theme
+        if (typeof loadBrowseThemes === 'function') {
+            loadBrowseThemes();
+        }
+        
+        startGame(data);
+        
+    } catch (error) {
+        console.error('Error:', error);
+        showError('Connection error');
+    }
+}
+
+// ============================================================================
+// 3. REPLACE: async function launchThemeFromBrowser(cacheKey)
+// ============================================================================
+async function launchThemeFromBrowser(cacheKey) {
+    try {
+        const response = await fetch(`${API_URL}/api/play-theme`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify({ 
+                cacheKey: cacheKey
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok || data.error) {
+            showError(data.message || 'Failed to launch theme');
+            return;
+        }
+        
+        // Switch to game tab
+        switchTab('newTheme');
+        
+        // Start the game
+        startGame(data);
+        
+    } catch (error) {
+        console.error('Error launching theme:', error);
+        showError('Connection error');
+    }
+}
+
+// ============================================================================
+// END: Complete function replacements
+// ============================================================================
+
+	async function launchThemeFromBrowserD(cacheKey, displayName) {
     console.log(`Launching cached theme: ${cacheKey}`);
     
     try {
