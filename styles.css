@@ -141,14 +141,14 @@
     }
     
     .tab {
-        padding: 10px 20px;
-        background: none;
-        border: none;
-        border-bottom: 3px solid transparent;
-        cursor: pointer;
-        color: #718096;
-        font-weight: bold;
-        transition: all 0.3s;
+	padding: 10px 20px;
+        background: white;
+    	border: none;
+    	cursor: pointer;
+    	font-weight: 600;      /* ← Change text weight */
+    	font-size: 16px;       /* ← Change text size */
+    	color: #2d3748;        /* ← Change text color */
+    	text-transform: none;  /* ← Change capitalization */
     }
     
     .tab:hover {
