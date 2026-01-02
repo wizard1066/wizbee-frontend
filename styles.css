@@ -148,7 +148,7 @@
     font-weight: 400;           /* ← Changed from 900 to 400 (normal) */
     font-size: 20px;            /* ← Changed from 16px to 20px (larger) */
     color: #667eea;             /* ← Changed from #2d3748 to purple */
-    text-transform: none;
+    text-transform: lowercase;
 }
 
 .tab:hover {
