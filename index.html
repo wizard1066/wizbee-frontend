@@ -213,6 +213,14 @@
 	    ]
         };
 
+        function editWords() {
+    if (!currentCacheKey) {
+        showError('No theme to edit');
+        return;
+    }
+    window.location.href = `admin.html?edit=${currentCacheKey}`;
+}
+
         function initializeGoogleSignIn() {
             if (typeof google !== 'undefined' && google.accounts) {
                 google.accounts.id.initialize({
