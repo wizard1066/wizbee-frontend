@@ -139,18 +139,28 @@
         border-bottom: 2px solid #e2e8f0;
 	justify-content: center;  /* ADD THIS LINE */
     }
-    
-    .tab {
-	padding: 10px 20px;
-        background: white;
-    	border: none;
-    	cursor: pointer;
-    	font-weight: 900;      /* ← Change text weight */
-    	font-size: 16px;       /* ← Change text size */
-    	color: #2d3748;        /* ← Change text color */
-    	text-transform:none ;  /* ← Change capitalization */
-    }
 
+    .tab {
+    padding: 10px 20px;
+    background: white;
+    border: none;
+    cursor: pointer;
+    font-weight: 400;           /* ← Changed from 900 to 400 (normal) */
+    font-size: 20px;            /* ← Changed from 16px to 20px (larger) */
+    color: #667eea;             /* ← Changed from #2d3748 to purple */
+    text-transform: none;
+}
+
+.tab:hover {
+    color: #5a67d8;             /* ← Darker purple on hover */
+}
+
+.tab.active {
+    color: #667eea;
+    border-bottom: 3px solid #667eea;
+    font-weight: 600;           /* ← Bold when active */
+}
+    
     /* 
 /*	text-transform: none;          /* Default - no change */
 /*	text-transform: uppercase;     /* ALL CAPS */
@@ -159,15 +169,6 @@
 /*	text-transform: full-width;    /* Full-width characters (rare) */
 /*	text-transform: inherit;       /* Inherit from parent */
 	*/
-    
-    .tab:hover {
-        color: #667eea;
-    }
-    
-    .tab.active {
-        color: #667eea;
-        border-bottom-color: #667eea;
-    }
     
     .tab-content {
         display: none;
