@@ -453,6 +453,8 @@
         // ========================================================================
 
 async function generateTheme() {
+    // Change placeholder text
+    document.getElementById('themeInput').placeholder = "If the set is wrong, try and refine it here";
     const input = document.getElementById('themeInput').value.trim();
     
     if (!input) {
@@ -464,8 +466,6 @@ async function generateTheme() {
     document.querySelector('.theme-input-screen h2').style.display = 'none';
     document.querySelector('.theme-input-screen p').style.display = 'none';
 
-    // Change placeholder text
-    document.getElementById('themeInput').placeholder = "If the set is wrong, try and refine it here";
     
 
     
