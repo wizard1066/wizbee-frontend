@@ -479,66 +479,6 @@ async function generateTheme() {
     await generateWordlist();
 }
         
-        async function generateThemeD() {
-            const input = document.getElementById('themeInput').value.trim();
-            
-            if (!input) {
-                showError('Please enter a theme!');
-                return;
-            }
-            
-            currentThemeText = input;
-            refineAttempts = 0;
-            await generateWordlist();
-        }
-
-	async function generateWordlistD() {
-    document.getElementById('generatingMessage').classList.remove('hidden');
-    document.getElementById('generateBtn').disabled = true;
-    document.getElementById('previewSection').classList.add('hidden');
-    
-    try {
-        const response = await fetch(`${API_URL}/api/generate-word`, {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${authToken}`
-            },
-            body: JSON.stringify({ 
-                theme: currentThemeText,
-                previewOnly: true
-            })
-        });
-        
-        const data = await response.json();
-        document.getElementById('generatingMessage').classList.add('hidden');
-        
-        if (response.status === 429 || response.status === 503) {
-            document.getElementById('generateBtn').disabled = false;
-            showError(data.message || 'Theme limit reached!');
-            updateThemeCounter();
-            return;
-        }
-        
-        if (!response.ok || data.error) {
-            showError(data.message || 'Failed to generate words');
-            document.getElementById('generateBtn').disabled = false;
-            return;
-        }
-        
-        currentGeneratedWords = data.preview || data.words;
-        currentCacheKey = data.cacheKey;  // ← ADD THIS LINE
-        
-        displayPreview(currentGeneratedWords);
-        
-    } catch (error) {
-        console.error('Generation error:', error);
-        document.getElementById('generatingMessage').classList.add('hidden');
-        document.getElementById('generateBtn').disabled = false;
-        showError('Connection error');
-    }
-}
-
         async function generateWordlistD2() {
 	    	console.log('generateWordlist called');
     		console.log('currentThemeText:', currentThemeText);
