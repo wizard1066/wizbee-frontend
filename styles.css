@@ -458,7 +458,6 @@
 	    margin: 0 auto 20px auto;  /* CHANGE THIS */
             text-align: center;
 	    display: block;  /* ADD */
- 	    background: yellow;  /* ← ADD THIS LINE */
         }
 
 	.theme-input-screen button:not(.tab) {
