@@ -459,6 +459,9 @@ async function generateTheme() {
         showError('Please enter a theme!');
         return;
     }
+
+    document.querySelector('.theme-input-screen h2').style.display = 'none';
+    document.querySelector('.theme-input-screen p').style.display = 'none';
     
     // Set base theme and reset refinements
     baseTheme = input;
@@ -763,6 +766,9 @@ async function acceptAndPlayD() {
         currentGeneratedWords = null;
         currentCacheKey = null;
         refineAttempts = 0;
+	// Show heading again when game starts
+        document.querySelector('.theme-input-screen h2').style.display = 'block';
+        document.querySelector('.theme-input-screen p').style.display = 'block';
         document.getElementById('previewSection').classList.add('hidden');
         document.getElementById('themeInput').value = '';
         
