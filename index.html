@@ -1047,8 +1047,17 @@ async function acceptAndPlay() {
                 cacheKey: currentCacheKey
             })
         });
+
+	console.log('=== ACCEPT-THEME REQUEST ===');
         
         const data = await response.json();
+
+	console.log('=== ACCEPT-THEME RESPONSE ===');
+	console.log('Response OK:', response.ok);
+	console.log('Response status:', response.status);
+	console.log('Data:', data);
+	console.log('Has words:', !!data.words);
+	console.log('Words array:', data.words);
         
         // Check for errors BEFORE resetting state
         if (!response.ok || data.error) {
