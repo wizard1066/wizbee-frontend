@@ -559,12 +559,12 @@ generateBtn.textContent = `🔄 Refine (${used}/${total} used)`;
     document.getElementById('editWordsBtn').disabled = false;
     document.getElementById('playBtn').disabled = false;
 
-// Test this
-    const inputBox = document.getElementById('themeInput');
-    console.log('Input box found:', inputBox);
-    console.log('Current placeholder:', inputBox.placeholder);
-    inputBox.placeholder = "If the set is wrong, try and refine it here";
-    console.log('New placeholder:', inputBox.placeholder);
+	const inputBox = document.getElementById('themeInput');
+	console.log('Input box found:', inputBox);
+	console.log('Current placeholder:', inputBox.placeholder);
+	inputBox.placeholder = "If the set is wrong, try and refine it here";
+	inputBox.value = '';  // ← ADD THIS LINE to clear the text
+	console.log('New placeholder:', inputBox.placeholder);
 
 }
 
