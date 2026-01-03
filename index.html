@@ -1026,6 +1026,9 @@ async function generateWordlist() {
 
 async function acceptAndPlay() {
     // Validate BEFORE clearing anything
+    const playBtn = document.getElementById('playBtn');
+    if (playBtn.disabled) return;  // Already processing
+    playBtn.disabled = true;  // Disable IMMEDIATELY
     if (!currentGeneratedWords || currentGeneratedWords.length === 0) {
         showError('No words to use!');
         return;
