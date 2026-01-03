@@ -459,9 +459,15 @@ async function generateTheme() {
         showError('Please enter a theme!');
         return;
     }
-
+	
+    // Hide the heading and description
     document.querySelector('.theme-input-screen h2').style.display = 'none';
     document.querySelector('.theme-input-screen p').style.display = 'none';
+
+    // Change placeholder text
+    document.getElementById('themeInput').placeholder = "If the set is wrong, try and refine it here";
+    
+
     
     // Set base theme and reset refinements
     baseTheme = input;
@@ -770,7 +776,7 @@ async function acceptAndPlayD() {
         document.querySelector('.theme-input-screen h2').style.display = 'block';
         document.querySelector('.theme-input-screen p').style.display = 'block';
         document.getElementById('previewSection').classList.add('hidden');
-        document.getElementById('themeInput').value = '';
+	document.getElementById('themeInput').placeholder = "Enter a theme (e.g., 'animals', 'colors', 'countries')";
         
         // Reset Generate button
         const generateBtn = document.getElementById('generateBtn');
