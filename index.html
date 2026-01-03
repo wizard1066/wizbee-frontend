@@ -44,13 +44,13 @@
 		<div id="themeCounter" style="text-align: center; margin-bottom: 20px; color: #667eea; font-weight: bold; font-size: 18px;">
         		<!-- Populated by JS -->
     		</div>
-                <h2>Create Your Own Puzzle</h2>
+                <h2>Create Your Theme</h2>
 		<p style="color: #718096; margin-bottom: 20px;">
     Enter a theme and we'll generate word puzzles for you...
 </p>
 
 <!-- Prompt Display - shows refinement progression -->
-<div id="promptDisplayContainer">
+<div id="promptDisplayContainer" style="display: none; background: #f7fafc; border-left: 4px solid #667eea; border-radius: 6px; padding: 15px; margin-bottom: 20px; font-family: monospace; font-size: 14px; color: #2d3748;">
     <div style="font-weight: 600; margin-bottom: 8px; color: #667eea;">Current Prompt:</div>
     <div id="promptDisplay" style="white-space: pre-line;"></div>
 </div>
@@ -453,21 +453,12 @@
         // ========================================================================
 
 async function generateTheme() {
-    // Change placeholder text
-    document.getElementById('themeInput').placeholder = "If the set is wrong, try and refine it here";
     const input = document.getElementById('themeInput').value.trim();
     
     if (!input) {
         showError('Please enter a theme!');
         return;
     }
-	
-    // Hide the heading and description
-    document.querySelector('.theme-input-screen h2').style.display = 'none';
-    document.querySelector('.theme-input-screen p').style.display = 'none';
-
-    
-
     
     // Set base theme and reset refinements
     baseTheme = input;
@@ -479,6 +470,66 @@ async function generateTheme() {
     await generateWordlist();
 }
         
+        async function generateThemeD() {
+            const input = document.getElementById('themeInput').value.trim();
+            
+            if (!input) {
+                showError('Please enter a theme!');
+                return;
+            }
+            
+            currentThemeText = input;
+            refineAttempts = 0;
+            await generateWordlist();
+        }
+
+	async function generateWordlistD() {
+    document.getElementById('generatingMessage').classList.remove('hidden');
+    document.getElementById('generateBtn').disabled = true;
+    document.getElementById('previewSection').classList.add('hidden');
+    
+    try {
+        const response = await fetch(`${API_URL}/api/generate-word`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify({ 
+                theme: currentThemeText,
+                previewOnly: true
+            })
+        });
+        
+        const data = await response.json();
+        document.getElementById('generatingMessage').classList.add('hidden');
+        
+        if (response.status === 429 || response.status === 503) {
+            document.getElementById('generateBtn').disabled = false;
+            showError(data.message || 'Theme limit reached!');
+            updateThemeCounter();
+            return;
+        }
+        
+        if (!response.ok || data.error) {
+            showError(data.message || 'Failed to generate words');
+            document.getElementById('generateBtn').disabled = false;
+            return;
+        }
+        
+        currentGeneratedWords = data.preview || data.words;
+        currentCacheKey = data.cacheKey;  // ← ADD THIS LINE
+        
+        displayPreview(currentGeneratedWords);
+        
+    } catch (error) {
+        console.error('Generation error:', error);
+        document.getElementById('generatingMessage').classList.add('hidden');
+        document.getElementById('generateBtn').disabled = false;
+        showError('Connection error');
+    }
+}
+
         async function generateWordlistD2() {
 	    	console.log('generateWordlist called');
     		console.log('currentThemeText:', currentThemeText);
@@ -558,15 +609,53 @@ generateBtn.textContent = `🔄 Refine (${used}/${total} used)`;
     
     document.getElementById('editWordsBtn').disabled = false;
     document.getElementById('playBtn').disabled = false;
-
-	const inputBox = document.getElementById('themeInput');
-	console.log('Input box found:', inputBox);
-	console.log('Current placeholder:', inputBox.placeholder);
-	inputBox.placeholder = "If the set is wrong, try and refine it here";
-	inputBox.value = '';  // ← ADD THIS LINE to clear the text
-	console.log('New placeholder:', inputBox.placeholder);
-
 }
+
+function displayPreviewD(words) {
+    document.getElementById('previewSection').classList.remove('hidden');
+    document.getElementById('wordCount').textContent = words.length;
+    
+    const quartileSize = Math.ceil(words.length / 4);
+    const lastQuartile = words.slice(-quartileSize);
+    document.getElementById('lastQuartile').textContent = '...' + lastQuartile.join(', ');
+    
+    // Update button states
+    const refineBtn = document.getElementById('refineBtn');
+    const refineCounter = document.getElementById('refineCounter');
+    const remaining = maxRefineAttempts - refineAttempts;
+    
+    refineCounter.textContent = `Attempt ${refineAttempts + 1}/${maxRefineAttempts + 1}`;
+    
+    // After first generation, disable Generate, enable others
+    document.getElementById('generateBtn').disabled = true;
+    
+    refineBtn.disabled = remaining <= 0;
+    refineBtn.textContent = `🔄 Refine (${remaining}/3)`;
+    
+    document.getElementById('editWordsBtn').disabled = false;
+    document.getElementById('playBtn').disabled = false;
+}
+
+
+        function displayPreviewD(words) {
+            document.getElementById('previewSection').classList.remove('hidden');
+            document.getElementById('wordCount').textContent = words.length;
+            
+            const quartileSize = Math.ceil(words.length / 4);
+            const lastQuartile = words.slice(-quartileSize);
+            document.getElementById('lastQuartile').textContent = '...' + lastQuartile.join(', ');
+            
+            const refineBtn = document.getElementById('refineBtn');
+            const refineCounter = document.getElementById('refineCounter');
+            const remaining = maxRefineAttempts - refineAttempts;
+            
+            refineCounter.textContent = `Attempt ${refineAttempts + 1}/${maxRefineAttempts + 1}`;
+            refineBtn.textContent = `🔄 Refine (${remaining}/3)`;
+            refineBtn.disabled = remaining <= 0;
+            
+            document.getElementById('playBtn').disabled = false;
+            document.getElementById('generateBtn').disabled = false;
+        }
 
 async function refineTheme() {
     const input = document.getElementById('themeInput').value.trim();
@@ -627,8 +716,307 @@ function updatePromptDisplay() {
     container.style.display = 'block';  // Show it
 }
 
+function updatePromptDisplayD() {
+    const displayElement = document.getElementById('promptDisplay');
+    if (!displayElement) return;
+    
+    let html = baseTheme;
+    refinements.forEach(r => {
+        html += '\n+ ' + r;
+    });
+    
+    displayElement.textContent = html;
+}
+
+async function acceptAndPlayD() {
+    if (!currentGeneratedWords || currentGeneratedWords.length === 0) {
+        showError('No words to use!');
+        return;
+    }
+    
+    if (!currentCacheKey) {
+        showError('Cache key missing!');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${API_URL}/api/create-theme-from-preview`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify({ 
+                cacheKey: currentCacheKey,
+                words: currentGeneratedWords
+            })
+        });
+
+        const data = await response.json();
+        
+        if (!response.ok || data.error) {
+            showError(data.message || 'Failed to create theme');
+            return;
+        }
+        
+        // Reset state
+        currentGeneratedWords = null;
+        currentCacheKey = null;
+        refineAttempts = 0;
+        document.getElementById('previewSection').classList.add('hidden');
+        document.getElementById('themeInput').value = '';
+        
+        // Reset Generate button
+        const generateBtn = document.getElementById('generateBtn');
+        generateBtn.textContent = 'Generate';
+        generateBtn.onclick = generateTheme;
+        generateBtn.disabled = false;
+        
+        document.getElementById('editWordsBtn').disabled = true;
+        document.getElementById('playBtn').disabled = true;
+        
+        updateThemeCounter();
+        
+        // Reload browse themes to show newly created theme
+        if (typeof loadBrowseThemes === 'function') {
+            loadBrowseThemes();
+        }
+        
+        startGame(data);
+        
+    } catch (error) {
+        console.error('Error:', error);
+        showError('Connection error');
+    }
+}
 
 
+
+
+
+
+async function acceptAndPlayD() {
+    if (!currentGeneratedWords || currentGeneratedWords.length === 0) {
+        showError('No words to use!');
+        return;
+    }
+    
+    if (!currentCacheKey) {
+        showError('Cache key missing!');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${API_URL}/api/create-theme-from-preview`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify({ 
+                cacheKey: currentCacheKey,
+                words: currentGeneratedWords
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok || data.error) {
+            showError(data.message || 'Failed to create theme');
+            return;
+        }
+        
+        // Reset state
+        currentGeneratedWords = null;
+        currentCacheKey = null;
+        refineAttempts = 0;
+        document.getElementById('previewSection').classList.add('hidden');
+        document.getElementById('themeInput').value = '';
+        
+        // Reset Generate button
+        const generateBtn = document.getElementById('generateBtn');
+        generateBtn.textContent = 'Generate';
+        generateBtn.onclick = generateTheme;
+        generateBtn.disabled = false;
+        
+        document.getElementById('editWordsBtn').disabled = true;
+        document.getElementById('playBtn').disabled = true;
+        
+        updateThemeCounter();
+        startGame(data);
+        
+    } catch (error) {
+        console.error('Error:', error);
+        showError('Connection error');
+    }
+}
+
+
+        // ========================================================================
+        // END REFINE SYSTEM
+        // ========================================================================
+
+        async function loadBrowseThemes() {
+            const themesList = document.getElementById('themesList');
+            
+            try {
+                const response = await fetch(`${API_URL}/api/browse-themes`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    themesList.innerHTML = '<div style="text-align: center; padding: 40px; color: #718096;">Failed to load themes</div>';
+                    return;
+                }
+
+                const languageNames = {
+                    en: '🇬🇧 English', fr: '🇫🇷 French', es: '🇪🇸 Spanish',
+                    de: '🇩🇪 German', it: '🇮🇹 Italian', pt: '🇵🇹 Portuguese',
+                    nl: '🇳🇱 Dutch', sv: '🇸🇪 Swedish', pl: '🇵🇱 Polish', fi: '🇫🇮 Finnish'
+                };
+
+                const difficultyNames = {
+                    easy: '⭐ Easy (Ages 5-7)',
+                    medium: '⭐⭐ Medium (Ages 8-10)',
+                    hard: '⭐⭐⭐ Hard (Ages 11+)'
+                };
+
+                let html = '';
+                const myThemes = [];
+                
+                Object.keys(data.themes).forEach(lang => {
+                    ['easy', 'medium', 'hard'].forEach(difficulty => {
+                        const themes = data.themes[lang][difficulty] || [];
+                        themes.forEach(theme => {
+                            if (theme.isMine) {
+                                myThemes.push({...theme, lang, difficulty});
+                            }
+                        });
+                    });
+                });
+                
+                if (myThemes.length > 0) {
+                    myThemes.sort((a, b) => a.displayName.localeCompare(b.displayName));
+                    html += `<div style="max-height: 300px; overflow-y: auto; margin-bottom: 20px; border: 2px solid #667eea; border-radius: 8px; padding: 10px; background: #f7fafc;">`;
+                    html += `<div style="font-weight: bold; font-size: 18px; color: #667eea; margin-bottom: 10px; padding: 10px;">👑 Private Themes</div>`;
+                    
+                    myThemes.forEach(theme => {
+                        const langIcon = languageNames[theme.lang]?.split(' ')[0] || '';
+                        const diffIcon = theme.difficulty === 'easy' ? '⭐' : theme.difficulty === 'medium' ? '⭐⭐' : '⭐⭐⭐';
+                        html += `
+                            <div class="theme-item" onclick="launchThemeFromBrowser('${theme.cacheKey}', '${theme.displayName}')" style="border-left: 3px solid #667eea; margin-bottom: 8px;">
+                                <span class="theme-name">${theme.displayName} ${langIcon} ${diffIcon}</span>
+                                <div class="theme-stats">
+                                    <span class="theme-badge">${theme.wordCount} words</span>
+                                    <span style="color: #cbd5e0;">👥 ${theme.useCount}</span>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    html += `</div>`;
+                }
+                
+                html += `<div style="font-weight: bold; font-size: 18px; color: #48bb78; margin-bottom: 10px; padding: 10px;">🌍 Public Themes</div>`;
+                html += `<div style="max-height: 400px; overflow-y: auto;">`;
+                
+		const sortedLanguages = Object.keys(data.themes).sort((a, b) => {
+  			if (a === 'en') return -1;  // English first
+  			if (b === 'en') return 1;
+  		return a.localeCompare(b);  // Others alphabetically
+		});
+
+
+                sortedLanguages.forEach(lang => {
+                    const languageName = languageNames[lang] || lang.toUpperCase();
+                    html += `<div class="language-section"><div class="language-header">${languageName}</div>`;
+                    
+                    ['easy', 'medium', 'hard'].forEach(difficulty => {
+                        const themes = data.themes[lang][difficulty];
+                        if (themes && themes.length > 0) {
+                            html += `<div class="difficulty-section"><div class="difficulty-header">${difficultyNames[difficulty]}</div>`;
+                            themes.forEach(theme => {
+                                html += `
+                                    <div class="theme-item" onclick="launchThemeFromBrowser('${theme.cacheKey}', '${theme.displayName}')">
+                                        <span class="theme-name">${theme.displayName}</span>
+                                        <div class="theme-stats">
+                                            <span class="theme-badge">${theme.wordCount} words</span>
+                                            <span style="color: #cbd5e0;">👥 ${theme.useCount}</span>
+                                        </div>
+                                    </div>
+                                `;
+                            });
+                            html += `</div>`;
+                        }
+                    });
+                    html += `</div>`;
+                });
+                html += `</div>`;
+
+                themesList.innerHTML = html || '<div style="text-align: center; padding: 40px; color: #718096;">No themes available yet.</div>';
+
+            } catch (error) {
+                console.error('Error loading themes:', error);
+                themesList.innerHTML = '<div style="text-align: center; padding: 40px; color: #718096;">Failed to load themes</div>';
+            }
+        }
+
+// ============================================================================
+// COMPLETE FUNCTIONS TO REPLACE IN INDEX.HTML
+// Find and replace these 3 functions completely
+// ============================================================================
+
+// ============================================================================
+// 1. REPLACE: async function generateWordlist()
+// ============================================================================
+async function generateWordlist() {
+    document.getElementById('generatingMessage').classList.remove('hidden');
+    document.getElementById('generateBtn').disabled = true;
+    document.getElementById('previewSection').classList.add('hidden');
+    
+    try {
+        const response = await fetch(`${API_URL}/api/preview-theme`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify({ 
+                theme: currentThemeText
+            })
+        });
+        
+        const data = await response.json();
+        document.getElementById('generatingMessage').classList.add('hidden');
+        
+        if (response.status === 429 || response.status === 503) {
+            document.getElementById('generateBtn').disabled = false;
+            showError(data.message || 'Theme limit reached!');
+            updateThemeCounter();
+            return;
+        }
+        
+        if (!response.ok || data.error) {
+            showError(data.message || 'Failed to generate words');
+            document.getElementById('generateBtn').disabled = false;
+            return;
+        }
+        
+        currentGeneratedWords = data.preview;
+        currentCacheKey = data.cacheKey;
+        
+        displayPreview(currentGeneratedWords);
+        
+    } catch (error) {
+        console.error('Generation error:', error);
+        document.getElementById('generatingMessage').classList.add('hidden');
+        document.getElementById('generateBtn').disabled = false;
+        showError('Connection error');
+    }
+}
+
+// ============================================================================
 // 2. REPLACE: async function acceptAndPlay()
 // ============================================================================
 // ============================================================================
@@ -637,8 +1025,6 @@ function updatePromptDisplay() {
 // ============================================================================
 
 async function acceptAndPlay() {
-    console.log('=== acceptAndPlay ===');
-
     // Validate BEFORE clearing anything
     if (!currentGeneratedWords || currentGeneratedWords.length === 0) {
         showError('No words to use!');
@@ -663,13 +1049,6 @@ async function acceptAndPlay() {
         });
         
         const data = await response.json();
-
-        console.log('=== ACCEPT-THEME RESPONSE ===');
-        console.log('Response OK:', response.ok);
-        console.log('Response status:', response.status);
-        console.log('Data:', data);
-        console.log('Has words:', !!data.words);
-        console.log('Words array:', data.words);
         
         // Check for errors BEFORE resetting state
         if (!response.ok || data.error) {
