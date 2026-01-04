@@ -1354,9 +1354,15 @@ async function launchThemeFromBrowser(cacheKey) {
             }
         }
 
-        function showClueAuto(duration = 5000) {
+        function showClueAuto(duration = 20000) {
             if (!wordClues || wordClues.length === 0 || currentWordIndex >= wordClues.length) {
                 return;
+            }
+
+            // CRITICAL: Clear any existing timeout FIRST
+            if (currentClueTimeout) {
+                clearTimeout(currentClueTimeout);
+                currentClueTimeout = null;
             }
             
             const clueDisplay = document.getElementById('clueDisplay');
