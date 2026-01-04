@@ -118,59 +118,45 @@
         </div>
 
         <!-- Game Board -->
-	<div id="gameScreen" class="game-screen hidden">
-    	<div class="theme-display">Theme: <span id="selectedTheme"></span></div>
-    	<div id="wordBoxes" class="word-boxes"></div>
-    	<div class="guesses-remaining">Guesses remaining: <span id="guessesRemaining"></span></div>
-    	<div id="keyboard" class="keyboard"></div>
+<!-- Game Board -->
+<div id="gameScreen" class="game-screen hidden">
+    <div class="theme-display">Theme: <span id="selectedTheme"></span></div>
     
-    	<div class="guess-input-container">
+    <!-- CLUE DISPLAY -->
+    <div id="clueDisplay" class="clue-display hidden" style="
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 12px;
+        margin: 20px 0;
+        text-align: center;
+        font-size: 18px;
+        font-weight: 600;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+    ">
+        <div style="font-size: 14px; opacity: 0.9; margin-bottom: 8px;">💡 Clue</div>
+        <div id="clueText"></div>
+    </div>
+    
+    <div id="wordBoxes" class="word-boxes"></div>
+    <div class="guesses-remaining">Guesses remaining: <span id="guessesRemaining"></span></div>
+    <div id="keyboard" class="keyboard"></div>
+
+    <div class="guess-input-container">
         <button id="submitGuess" class="submit-guess" onclick="submitGuess()">Submit Word</button>
         <button id="showClueBtn" class="hint-btn" onclick="showClue()">💡 Show Clue</button>
         <button id="giveUpBtn" class="give-up-btn" onclick="giveUp()">Give Up</button>
-        </div>
-        
-        <div id="gameScreen" class="game-screen hidden">
-         <div class="theme-display">Theme: <span id="selectedTheme"></span></div>
-         <div id="wordBoxes" class="word-boxes"></div>
-         <div class="guesses-remaining">Guesses remaining: <span id="guessesRemaining"></span></div>
-         <div id="keyboard" class="keyboard">
-         </div>
-
-         <div id="gameScreen" class="game-screen hidden">
-        <div class="theme-display">Theme: <span id="selectedTheme"></span></div>
-        
-        <!-- CLUE DISPLAY - NEW -->
-        <div id="clueDisplay" class="clue-display hidden" style="
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px;
-            border-radius: 12px;
-            margin: 20px 0;
-            text-align: center;
-            font-size: 18px;
-            font-weight: 600;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
-        ">
-            <div style="font-size: 14px; opacity: 0.9; margin-bottom: 8px;">💡 Clue</div>
-            <div id="clueText"></div>
-        </div>
-
-
-    
-        <div id="wordBoxes" class="word-boxes"></div>
-        <div class="guesses-remaining">Guesses remaining: <span id="guessesRemaining"></span></div>
-        <div id="keyboard" class="keyboard"></div>
-        
-    	<div id="hintDisplay" class="hint-display hidden"></div>
-
-    	<div id="previousGuesses" class="previous-guesses"></div>
-    	<div id="gameMessage" class="message"></div>
-    	<button id="resetButton" class="play-again hidden" onclick="resetToTheme()">Reset</button>
-	<button id="buyButton" onclick="buyThemes()" class="upgrade-btn hidden">Buy 4 Themes for $0.99</button>
-	</div>
     </div>
+
+    <div id="hintDisplay" class="hint-display hidden"></div>
+    <div id="previousGuesses" class="previous-guesses"></div>
+    <div id="gameMessage" class="message"></div>
+    <button id="resetButton" class="play-again hidden" onclick="resetToTheme()">Reset</button>
+    <button id="buyButton" onclick="buyThemes()" class="upgrade-btn hidden">Buy 4 Themes for $0.99</button>
+</div>
+</div>
+
 
     <script>
         const API_URL = 'https://api.wizbee.app'
@@ -1649,7 +1635,7 @@ async function launchThemeFromBrowser(cacheKey) {
             document.getElementById('giveUpBtn').classList.add('hidden');
             document.getElementById('resetButton').classList.remove('hidden');
             document.getElementById('hintDisplay').classList.add('hidden');
-            document.getElementById('hintBtn').classList.add('hidden');
+           
             document.getElementById('showClueBtn').classList.add('hidden');
             document.getElementById('submitGuess').classList.add('hidden');
 
