@@ -1751,6 +1751,8 @@ async function launchThemeFromBrowser(cacheKey) {
         }
 
     function resetToTheme() {
+            console.trace('[RESET] resetToTheme called from:'); // ← This will show the call stack
+
         if (isResetting) {
         console.log('[RESET] Already resetting, ignoring duplicate call');
         return;
