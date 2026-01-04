@@ -125,11 +125,44 @@
     	<div id="keyboard" class="keyboard"></div>
     
     	<div class="guess-input-container">
-        	<button id="submitGuess" class="submit-guess" onclick="submitGuess()">Submit Word</button>
-        	<button id="hintBtn" class="hint-btn" onclick="getHint()">💡 Get Hint</button>
-        	<button id="giveUpBtn" class="give-up-btn" onclick="giveUp()">Give Up</button>
-    	</div>
+        <button id="submitGuess" class="submit-guess" onclick="submitGuess()">Submit Word</button>
+        <button id="showClueBtn" class="hint-btn" onclick="showClue()">💡 Show Clue</button>
+        <button id="giveUpBtn" class="give-up-btn" onclick="giveUp()">Give Up</button>
+        </div>
+        
+        <div id="gameScreen" class="game-screen hidden">
+         <div class="theme-display">Theme: <span id="selectedTheme"></span></div>
+         <div id="wordBoxes" class="word-boxes"></div>
+         <div class="guesses-remaining">Guesses remaining: <span id="guessesRemaining"></span></div>
+         <div id="keyboard" class="keyboard">
+         </div>
+
+         <div id="gameScreen" class="game-screen hidden">
+        <div class="theme-display">Theme: <span id="selectedTheme"></span></div>
+        
+        <!-- CLUE DISPLAY - NEW -->
+        <div id="clueDisplay" class="clue-display hidden" style="
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            text-align: center;
+            font-size: 18px;
+            font-weight: 600;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+        ">
+            <div style="font-size: 14px; opacity: 0.9; margin-bottom: 8px;">💡 Clue</div>
+            <div id="clueText"></div>
+        </div>
+
+
     
+        <div id="wordBoxes" class="word-boxes"></div>
+        <div class="guesses-remaining">Guesses remaining: <span id="guessesRemaining"></span></div>
+        <div id="keyboard" class="keyboard"></div>
+        
     	<div id="hintDisplay" class="hint-display hidden"></div>
 
     	<div id="previousGuesses" class="previous-guesses"></div>
@@ -160,6 +193,10 @@
 	let wordList = [];
 	let currentWordIndex = 0;
         let themesPlayedCount = 0;
+        // CLUE SYSTEM VARIABLES
+    let wordClues = [];           // Array of clues for current game
+    let clueViewCount = 0;        // How many times current clue was viewed
+    let currentClueTimeout = null; // Timeout for auto-hiding clue
         
         // REFINE SYSTEM VARIABLES
         let refineAttempts = 0;
@@ -1251,7 +1288,163 @@ async function launchThemeFromBrowser(cacheKey) {
             }
         }
 
-        function startGame(gameData) {
+        async function startGame(gameData) {
+            console.log('=== START GAME ===');
+            console.log('gameData:', gameData);
+            console.log('gameData.theme:', gameData.theme);
+            
+            wordList = gameData.words;
+            currentWordIndex = 0;
+            selectedThemeWord = gameData.theme;
+            currentWord = wordList[currentWordIndex];
+            maxGuesses = gameData.guesses;
+            remainingGuesses = maxGuesses;
+            currentLanguage = gameData.language || 'en';
+            winMessage = gameData.winMessage;  
+            loseMessage = gameData.loseMessage;
+            currentThemeId = gameData.themeId || null;
+            wordStartTime = Date.now();
+            letterSwapCount = 0;
+            wordClues = []; // Reset clues
+            
+            createKeyboard(currentLanguage);
+            
+            document.getElementById('themeInputScreen').classList.add('hidden');
+            document.getElementById('gameScreen').classList.remove('hidden');
+            document.getElementById('selectedTheme').textContent = `${selectedThemeWord} (${currentWordIndex + 1}/${wordList.length})`;
+            
+            // Generate clues for all words
+            await generateAllClues();
+            
+            createWordBoxes();
+            updateGuessCount();
+            
+            // Show first clue automatically
+            if (wordClues.length > 0) {
+                showClueAuto(5000); // Show for 5 seconds
+            }
+        }
+
+        async function generateAllClues() {
+            console.log('[CLUES] Generating clues for', wordList.length, 'words');
+            
+            // Show loading message
+            const clueBtn = document.getElementById('showClueBtn');
+            const originalText = clueBtn.textContent;
+            clueBtn.textContent = '⏳ Loading clues...';
+            clueBtn.disabled = true;
+            
+            try {
+                const response = await fetch(`${API_URL}/api/generate-clues`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        words: wordList,
+                        theme: selectedThemeWord,
+                        difficulty: 'medium' // Could make this dynamic
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok || data.error) {
+                    console.error('[CLUES] Failed to generate:', data.message);
+                    showError('Failed to generate clues, but you can still play!');
+                    wordClues = []; // Empty array
+                } else {
+                    wordClues = data.clues || [];
+                    console.log('[CLUES] Successfully generated', wordClues.length, 'clues');
+                }
+                
+            } catch (error) {
+                console.error('[CLUES] Error:', error);
+                showError('Failed to generate clues, but you can still play!');
+                wordClues = [];
+            } finally {
+                clueBtn.textContent = '💡 Show Clue';
+                clueBtn.disabled = false;
+            }
+        }
+
+        function showClueAuto(duration = 5000) {
+            if (!wordClues || wordClues.length === 0 || currentWordIndex >= wordClues.length) {
+                return;
+            }
+            
+            const clueDisplay = document.getElementById('clueDisplay');
+            const clueText = document.getElementById('clueText');
+            
+            clueText.textContent = wordClues[currentWordIndex];
+            clueDisplay.classList.remove('hidden');
+            clueDisplay.style.opacity = '0';
+            clueDisplay.style.transform = 'translateY(-10px)';
+            
+            // Fade in
+            setTimeout(() => {
+                clueDisplay.style.opacity = '1';
+                clueDisplay.style.transform = 'translateY(0)';
+            }, 10);
+            
+            // Auto-hide after duration
+            if (currentClueTimeout) clearTimeout(currentClueTimeout);
+            currentClueTimeout = setTimeout(() => {
+                hideClue();
+            }, duration);
+        }
+
+        function showClue() {
+            if (!wordClues || wordClues.length === 0 || currentWordIndex >= wordClues.length) {
+                showError('No clue available for this word');
+                return;
+            }
+            
+            clueViewCount++;
+            console.log('[CLUES] User viewed clue', clueViewCount, 'times');
+            
+            const clueDisplay = document.getElementById('clueDisplay');
+            const clueText = document.getElementById('clueText');
+            
+            // If already visible, just keep it visible longer
+            if (!clueDisplay.classList.contains('hidden')) {
+                if (currentClueTimeout) clearTimeout(currentClueTimeout);
+                currentClueTimeout = setTimeout(() => {
+                    hideClue();
+                }, 8000); // Keep visible for 8 more seconds
+                return;
+            }
+            
+            // Show the clue
+            clueText.textContent = wordClues[currentWordIndex];
+            clueDisplay.classList.remove('hidden');
+            clueDisplay.style.opacity = '0';
+            clueDisplay.style.transform = 'translateY(-10px)';
+            
+            setTimeout(() => {
+                clueDisplay.style.opacity = '1';
+                clueDisplay.style.transform = 'translateY(0)';
+            }, 10);
+            
+            // Auto-hide after 8 seconds
+            if (currentClueTimeout) clearTimeout(currentClueTimeout);
+            currentClueTimeout = setTimeout(() => {
+                hideClue();
+            }, 8000);
+        }
+
+        function hideClue() {
+            const clueDisplay = document.getElementById('clueDisplay');
+            clueDisplay.style.opacity = '0';
+            clueDisplay.style.transform = 'translateY(-10px)';
+            
+            setTimeout(() => {
+                clueDisplay.classList.add('hidden');
+            }, 500); // Wait for fade out animation
+        }
+
+        function startGameDepreciated(gameData) {
             console.log('=== START GAME ===');
             console.log('gameData:', gameData);
             console.log('gameData.theme:', gameData.theme);
@@ -1446,6 +1639,8 @@ async function launchThemeFromBrowser(cacheKey) {
             }
         }
 
+        
+
         async function endGame(won) {
             gameOver = true;
             await recordWordAttempt(won);
@@ -1455,6 +1650,7 @@ async function launchThemeFromBrowser(cacheKey) {
             document.getElementById('resetButton').classList.remove('hidden');
             document.getElementById('hintDisplay').classList.add('hidden');
             document.getElementById('hintBtn').classList.add('hidden');
+            document.getElementById('showClueBtn').classList.add('hidden');
             document.getElementById('submitGuess').classList.add('hidden');
 
 	    if (won) {
@@ -1547,7 +1743,50 @@ async function launchThemeFromBrowser(cacheKey) {
             }
         }
 
-	function resetToTheme() {
+    function resetToTheme() {
+        if (currentWordIndex < wordList.length - 1 && wordList.length > 0) {
+            currentWordIndex++;
+            currentWord = wordList[currentWordIndex];
+            maxGuesses = 8;
+            remainingGuesses = maxGuesses;
+            currentGuess = '';
+            guessHistory = [];
+            gameOver = false;
+            hintsUsed = 0;
+            clueViewCount = 0;  // ← ADD THIS
+            wordStartTime = Date.now();
+            letterSwapCount = 0;
+            
+            // Hide any visible clue
+            hideClue();  // ← ADD THIS
+            
+            document.getElementById('selectedTheme').textContent = `${selectedThemeWord} (${currentWordIndex + 1}/${wordList.length})`;
+            document.getElementById('previousGuesses').innerHTML = '';
+            document.getElementById('gameMessage').textContent = '';
+            document.getElementById('resetButton').classList.add('hidden');
+            document.getElementById('giveUpBtn').classList.remove('hidden');
+            document.getElementById('submitGuess').classList.remove('hidden');
+            document.getElementById('submitGuess').disabled = false;
+            document.getElementById('showClueBtn').classList.remove('hidden');  // ← CHANGED from hintBtn
+            document.getElementById('showClueBtn').disabled = false;            // ← CHANGED from hintBtn
+            document.getElementById('hintDisplay').classList.add('hidden');
+            
+            document.querySelectorAll('.key').forEach(key => {
+                key.classList.remove('correct', 'present', 'used');
+        });
+            
+        createWordBoxes();
+        updateGuessCount();
+        
+        // Show clue for new word
+        if (wordClues.length > currentWordIndex) {  // ← ADD THIS
+            showClueAuto(5000);                      // ← ADD THIS
+        }                                            // ← ADD THIS
+        
+        return;
+    }
+
+	function resetToThemeDepreciated() {
             if (currentWordIndex < wordList.length - 1 && wordList.length > 0) {
                 currentWordIndex++;
                 currentWord = wordList[currentWordIndex];
