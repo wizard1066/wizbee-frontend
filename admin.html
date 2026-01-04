@@ -352,9 +352,7 @@
         </div>
     </div>
 
-<button class="btn btn-secondary" onclick="renameTheme('${theme.cache_key}', ${index}, '${themeName.replace(/'/g, "\\'")}')">
-    ✏️ Rename
-</button>
+
 
 
     <script>
@@ -537,6 +535,9 @@
                                 </div>
                             </div>
                             <div class="action-buttons">
+                                <button class="btn btn-secondary" onclick="renameTheme('${theme.cache_key}', ${index}, '${themeName.replace(/'/g, "\\'")}')">
+                                 ✏️ Rename
+                                </button>
                                 <button class="btn btn-success" onclick="showShareModal('${theme.cache_key}', '${themeName}')">
                                     📤 Share
                                 </button>
