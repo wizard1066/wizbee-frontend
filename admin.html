@@ -352,6 +352,11 @@
         </div>
     </div>
 
+<button class="btn btn-secondary" onclick="renameTheme('${theme.cache_key}', ${index}, '${themeName.replace(/'/g, "\\'")}')">
+    ✏️ Rename
+</button>
+
+
     <script>
         const API_URL = 'https://api.wizbee.app';
         let authToken = null;
@@ -390,6 +395,58 @@
             localStorage.removeItem('authToken');
             localStorage.removeItem('userEmail');
             window.location.href = 'index.html';
+        }
+
+        async function renameTheme(cacheKey, index, currentName) {
+            const newName = prompt(`Rename theme:`, currentName);
+    
+            if (!newName || newName.trim() === '') {
+                return; // User cancelled or entered empty name
+            }
+            
+            if (newName.trim() === currentName) {
+                return; // No change
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/api/rename-theme`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        cacheKey: cacheKey,
+                        newName: newName.trim()
+                    })
+                });
+                
+                if (!response.ok) {
+                    alert('❌ Failed to rename theme');
+                    return;
+                }
+                
+                // Update local theme name
+                themes[index].theme_name = newName.trim();
+                
+                // Re-render to show new name
+                const wasEditing = document.getElementById(`words-${index}`).style.display === 'block';
+                renderThemes();
+                
+                // Restore editing state if it was open
+                if (wasEditing) {
+                    document.getElementById(`words-${index}`).style.display = 'block';
+                    document.getElementById(`edit-btn-${index}`).textContent = '✓ Close';
+                    document.getElementById(`done-btn-${index}`).classList.remove('hidden');
+                    document.getElementById(`theme-${index}`).classList.add('editing');
+                }
+                
+                alert('✅ Theme renamed successfully!');
+        
+            } catch (error) {
+                console.error('Error renaming theme:', error);
+                alert('❌ Failed to rename theme');
+            }
         }
 
         async function loadMyGroups() {
@@ -870,8 +927,10 @@
         }
 
         async function deleteTheme(cacheKey, index) {
-            const parts = cacheKey.split('_');
-            const themeName = parts[0].charAt(0).toUpperCase() + parts[0].slice(1);
+            const theme = themes[index];
+            const themeName = theme.theme_name 
+                ? theme.theme_name.charAt(0).toUpperCase() + theme.theme_name.slice(1)
+                : 'this';
             
             if (!confirm(`Delete the entire "${themeName}" theme? This cannot be undone.`)) return;
             
