@@ -170,6 +170,7 @@
         let guessHistory = [];
         let gameOver = false;
         let selectedThemeWord = '';
+        let isResetting = false; 
 	let hintsUsed = 0;
 	let winMessage = '';
 	let loseMessage = '';
@@ -1750,6 +1751,11 @@ async function launchThemeFromBrowser(cacheKey) {
         }
 
     function resetToTheme() {
+        if (isResetting) {
+        console.log('[RESET] Already resetting, ignoring duplicate call');
+        return;
+    }
+    isResetting = true;
     if (currentWordIndex < wordList.length - 1 && wordList.length > 0) {
         // Next word logic
         currentWordIndex++;
