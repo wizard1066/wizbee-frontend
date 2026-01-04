@@ -1420,6 +1420,21 @@ async function launchThemeFromBrowser(cacheKey) {
         }
 
         function hideClue() {
+            if (currentClueTimeout) {
+                clearTimeout(currentClueTimeout);
+                currentClueTimeout = null;
+            }
+            
+            const clueDisplay = document.getElementById('clueDisplay');
+            clueDisplay.style.opacity = '0';
+            clueDisplay.style.transform = 'translateY(-10px)';
+            
+            setTimeout(() => {
+                clueDisplay.classList.add('hidden');
+            }, 500);
+        }
+
+        function hideClueDepreciated() {
             const clueDisplay = document.getElementById('clueDisplay');
             clueDisplay.style.opacity = '0';
             clueDisplay.style.transform = 'translateY(-10px)';
@@ -1742,6 +1757,12 @@ async function launchThemeFromBrowser(cacheKey) {
         clueViewCount = 0;
         wordStartTime = Date.now();
         letterSwapCount = 0;
+
+        // Clear any existing timeout FIRST
+        if (currentClueTimeout) {
+            clearTimeout(currentClueTimeout);
+            currentClueTimeout = null;
+        }
         
         hideClue();
         
@@ -1764,7 +1785,7 @@ async function launchThemeFromBrowser(cacheKey) {
         updateGuessCount();
         
         if (wordClues.length > currentWordIndex) {
-            showClueAuto(5000);
+            showClueAuto(20000);
         }
         
         return;
