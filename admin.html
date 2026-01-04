@@ -447,16 +447,20 @@
             const container = document.getElementById('themesContainer');
             
             let html = '<div class="theme-list">';
-            
+
             themes.forEach((theme, index) => {
-                const parts = theme.cache_key.split('_');
-                const themeName = parts[0].charAt(0).toUpperCase() + parts[0].slice(1);
-                const language = parts[1].toUpperCase();
-                const difficulty = parts[2].charAt(0).toUpperCase() + parts[2].slice(1);
-                
-                const wordCount = theme.words.length;
-                const quartileSize = Math.ceil(wordCount / 4);
-                const selectedCount = Array.from(selectedWords).filter(key => key.startsWith(`${index}-`)).length;
+                // Use theme_name from database or fallback to first 8 chars of UUID
+                const themeName = theme.theme_name 
+                 ? theme.theme_name.charAt(0).toUpperCase() + theme.theme_name.slice(1)
+                   : theme.cache_key.substring(0, 8);
+    
+                    const language = theme.language ? theme.language.toUpperCase() : 'EN';
+                    const difficulty = 'Medium';  // Default since we don't store difficulty anymore
+    
+                    const wordCount = theme.words.length;
+                    const quartileSize = Math.ceil(wordCount / 4);
+                    const selectedCount = Array.from(selectedWords).filter(key => key.startsWith(`${index}-`)).length;
+            
                 
                 // Format shared groups display
                 let sharedGroupsHtml = '';
