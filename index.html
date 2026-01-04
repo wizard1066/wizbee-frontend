@@ -1756,7 +1756,7 @@ async function launchThemeFromBrowser(cacheKey) {
         if (isResetting) {
         console.log('[RESET] Already resetting, ignoring duplicate call');
         return;
-    }
+        }
     isResetting = true;
     if (currentWordIndex < wordList.length - 1 && wordList.length > 0) {
         // Next word logic
@@ -1779,7 +1779,7 @@ async function launchThemeFromBrowser(cacheKey) {
             currentClueTimeout = null;
         }
         
-        hideClue();
+        //hideClue();
         
         document.getElementById('selectedTheme').textContent = `${selectedThemeWord} (${currentWordIndex + 1}/${wordList.length})`;
         document.getElementById('previousGuesses').innerHTML = '';
@@ -1832,7 +1832,7 @@ async function launchThemeFromBrowser(cacheKey) {
     letterSwapCount = 0;
     wordClues = [];
     
-    hideClue();
+    //hideClue();
     
     document.getElementById('generateBtn').textContent = 'Generate';
     document.getElementById('generateBtn').onclick = generateTheme;
