@@ -1252,6 +1252,9 @@ async function launchThemeFromBrowser(cacheKey) {
         }
 
         function startGame(gameData) {
+            console.log('=== START GAME ===');
+            console.log('gameData:', gameData);
+            console.log('gameData.theme:', gameData.theme);
 	    wordList = gameData.words;
     	    currentWordIndex = 0;
             selectedThemeWord = gameData.theme;
