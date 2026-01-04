@@ -1765,6 +1765,7 @@ async function launchThemeFromBrowser(cacheKey) {
         letterSwapCount = 0;
 
         // Clear any existing timeout FIRST
+        console.log('[RESET] Clearing old clue timeout:', currentClueTimeout); // ← ADD
         if (currentClueTimeout) {
             clearTimeout(currentClueTimeout);
             currentClueTimeout = null;
@@ -1792,6 +1793,15 @@ async function launchThemeFromBrowser(cacheKey) {
         
         if (wordClues.length > currentWordIndex) {
             showClueAuto(20000);
+        }
+
+        // Show new clue
+        console.log('[RESET] About to show clue. wordClues.length:', wordClues.length, 'currentWordIndex:', currentWordIndex); // ← ADD
+        if (wordClues.length > currentWordIndex) {
+            console.log('[RESET] Calling showClueAuto(20000)'); // ← ADD
+            showClueAuto(20000);
+        } else {
+            console.log('[RESET] NOT showing clue - no clue available'); // ← ADD
         }
         
         return;
