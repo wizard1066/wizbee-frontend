@@ -458,7 +458,36 @@
 	    updateThemeCounter();
         }
 
-	function switchTab(tabName) {
+    function switchTab(tabName, event = null) {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        
+        // If called from HTML onclick, use event.target
+        // If called from JS, find the tab button by name
+        if (event && event.target) {
+            event.target.classList.add('active');
+        } else {
+            // Find the tab button that matches this tab
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                if (tab.textContent.toLowerCase().includes(tabName.toLowerCase().replace('theme', ''))) {
+                    tab.classList.add('active');
+                }
+            });
+        }
+        
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        
+        if (tabName === 'newTheme') {
+            document.getElementById('newThemeTab').classList.add('active');
+            updateThemeCounter();
+        } else if (tabName === 'browseThemes') {
+            document.getElementById('browseThemesTab').classList.add('active');
+        }
+    }
+
+
+
+	function switchTabDepreciated(tabName) {
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             event.target.classList.add('active');
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
@@ -1160,7 +1189,7 @@ async function launchThemeFromBrowser(cacheKey) {
         }
         
         // Switch to game tab
-        switchTab('newTheme');
+        //switchTab('newTheme');
         
         // Start the game
         startGame(data);
