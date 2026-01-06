@@ -292,35 +292,6 @@
             }
         };
 
-        // Handle games launched from browse page
-window.addEventListener('DOMContentLoaded', () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    
-    if (urlParams.get('play') === 'true') {
-        const pendingGame = localStorage.getItem('pendingGame');
-        
-        if (pendingGame) {
-            console.log('[BROWSE-LAUNCH] Starting game from browse page');
-            const gameData = JSON.parse(pendingGame);
-            localStorage.removeItem('pendingGame');
-            
-            // Start the game
-            startGame(gameData);
-        } else {
-            console.error('[BROWSE-LAUNCH] No pending game found');
-        }
-    }
-});
-```
-
----
-
-## **Or Check Console:**
-
-When you click a theme in Browse, open the browser console. Do you see:
-```
-Playing theme: abc123...
-
         async function handleGoogleSignIn(response) {
             try {
                 const apiResponse = await fetch(`${API_URL}/auth/google`, {
