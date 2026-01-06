@@ -1119,6 +1119,7 @@ async function launchThemeFromBrowser(cacheKey) {
             document.getElementById('selectedTheme').textContent = `${selectedThemeWord} (${currentWordIndex + 1}/${wordList.length})`;
             
             // Generate clues for all words
+            console.log('startGame gen CLUES', gameData.words);
             await generateAllClues();
             
             createWordBoxes();
