@@ -2109,6 +2109,78 @@ function shareResults() {
     
     shareText += `\nPlay at https://wizbee.app`;
     
+    // Try modern clipboard API first
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(shareText).then(() => {
+            const btn = event.target;
+            const originalText = btn.textContent;
+            btn.textContent = '✅ Copied!';
+            setTimeout(() => btn.textContent = originalText, 2000);
+        }).catch((err) => {
+            console.error('Clipboard error:', err);
+            fallbackCopyToClipboard(shareText);
+        });
+    } else {
+        // Fallback for older browsers
+        fallbackCopyToClipboard(shareText);
+    }
+}
+
+function fallbackCopyToClipboard(text) {
+    // Create temporary textarea
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.style.position = 'fixed';
+    textarea.style.top = '0';
+    textarea.style.left = '0';
+    textarea.style.width = '2em';
+    textarea.style.height = '2em';
+    textarea.style.padding = '0';
+    textarea.style.border = 'none';
+    textarea.style.outline = 'none';
+    textarea.style.boxShadow = 'none';
+    textarea.style.background = 'transparent';
+    document.body.appendChild(textarea);
+    
+    // Select and copy
+    textarea.focus();
+    textarea.select();
+    
+    try {
+        const successful = document.execCommand('copy');
+        if (successful) {
+            const btn = event.target;
+            const originalText = btn.textContent;
+            btn.textContent = '✅ Copied!';
+            setTimeout(() => btn.textContent = originalText, 2000);
+        } else {
+            alert('Failed to copy. Please manually copy the text:\n\n' + text);
+        }
+    } catch (err) {
+        console.error('Fallback copy failed:', err);
+        alert('Failed to copy. Please manually copy the text:\n\n' + text);
+    }
+    
+    document.body.removeChild(textarea);
+}
+
+
+function shareResultsDepreciated() {
+    const solvedWords = gameResults.filter(r => r.won).length;
+    const totalWords = gameResults.length;
+    const totalTime = gameResults.reduce((sum, r) => sum + r.timeSeconds, 0);
+    
+    let shareText = `🐝 Wizbee - ${selectedThemeWord}\n`;
+    shareText += `Score: ${solvedWords}/${totalWords} • ${formatTime(totalTime)}\n\n`;
+    
+    gameResults.forEach(result => {
+        const icon = result.won ? '✅' : '❌';
+        const guessText = result.won ? `${result.guesses}` : 'X';
+        shareText += `${icon} ${result.word} (${guessText})\n`;
+    });
+    
+    shareText += `\nPlay at https://wizbee.app`;
+    
     navigator.clipboard.writeText(shareText).then(() => {
         const btn = event.target;
         const originalText = btn.textContent;
