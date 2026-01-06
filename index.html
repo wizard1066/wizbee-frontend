@@ -1144,7 +1144,8 @@ async function launchThemeFromBrowser(cacheKey) {
                 const response = await fetch(`${API_URL}/api/generate-clues`, {
                     method: 'POST',
                     headers: {
-                        'Authorization': `Bearer ${authToken}`,
+                        /*'Authorization': `Bearer ${authToken}`,*/
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
