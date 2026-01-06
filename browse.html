@@ -154,8 +154,10 @@
 
             try {
                 console.log('Playing theme:', cacheKey);
+                const response = await fetch(`${API_URL}/api/accept-theme`, {
 
-                const response = await fetch(`${API_URL}/api/play-theme`, {
+                /*const response = await fetch(`${API_URL}/api/play-theme`, {*/
+
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
