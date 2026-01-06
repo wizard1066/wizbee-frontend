@@ -504,8 +504,50 @@
         // ========================================================================
         // REFINE SYSTEM - NEW FUNCTIONS
         // ========================================================================
-
 async function generateTheme() {
+    const input = document.getElementById('themeInput').value.trim();
+    
+    if (!input) {
+        showError('Please enter a theme!');
+        return;
+    }
+    
+    // ===== CHECK CREDITS FIRST =====
+    try {
+        const creditCheck = await fetch(`${API_URL}/api/user-info`, {
+            headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        
+        const creditData = await creditCheck.json();
+        
+        if (creditData.themesRemaining <= 0) {
+            showError('🎯 No themes remaining! Buy 4 more themes for $0.99');
+            updateThemeCounter();
+            return;  // Stop here - don't generate
+        }
+    } catch (error) {
+        console.error('Error checking credits:', error);
+        // Continue anyway - let the API handle it
+    }
+    // ===== END CREDIT CHECK =====
+    
+    // ===== UPDATE UI IMMEDIATELY WHEN USER CLICKS GENERATE =====
+    const themeInput = document.getElementById('themeInput');
+    themeInput.value = '';
+    themeInput.placeholder = 'Refine search here (e.g., "only 5-letter words", "exclude colors")';
+    // ===== END IMMEDIATE UPDATE =====
+    
+    // Set base theme and reset refinements
+    baseTheme = input;
+    refinements = [];
+    currentThemeText = input;
+    refineAttempts = 0;
+    
+    updatePromptDisplay();
+    await generateWordlist();
+}
+
+async function generateThemeD2() {
     const input = document.getElementById('themeInput').value.trim();
     
     if (!input) {
