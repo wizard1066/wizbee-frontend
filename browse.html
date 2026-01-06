@@ -108,6 +108,15 @@
         }
 
         async function playTheme(cacheKey) {
+            // Store game data and redirect to game
+            localStorage.setItem('pendingGame', JSON.stringify(data));
+
+            console.log('[BROWSE] About to redirect');
+            console.log('[BROWSE] authToken in localStorage:', localStorage.getItem('authToken')?.substring(0, 30));
+            console.log('[BROWSE] pendingGame in localStorage:', !!localStorage.getItem('pendingGame'));
+
+            window.location.href = 'index.html?play=true';
+
             try {
                 console.log('Playing theme:', cacheKey);
 
