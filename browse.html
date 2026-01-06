@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Browse Themes - Wizbee</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🐝 Browse Themes</h1>
+            <button onclick="window.location.href='index.html'" class="back-button">← Back to Game</button>
+        </header>
+
+        <div class="browse-container">
+            <!-- Private Themes Section -->
+            <section class="theme-section">
+                <h2>👑 My Private Themes</h2>
+                <div id="privateThemes" class="theme-grid">
+                    <p class="loading">Loading...</p>
+                </div>
+            </section>
+
+            <!-- Public Themes Section -->
+            <section class="theme-section">
+                <h2>🌍 Public Themes</h2>
+                <div id="publicThemes" class="theme-grid">
+                    <p class="loading">Loading...</p>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://api.wizbee.app';
+        const authToken = localStorage.getItem('authToken');
+
+        if (!authToken) {
+            window.location.href = 'index.html';
+        }
+
+        // Load themes on page load
+        window.addEventListener('DOMContentLoaded', loadThemes);
+
+        async function loadThemes() {
+            try {
+                const response = await fetch(`${API_URL}/api/browse-themes`, {
+                    headers: { 
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to load themes');
+                }
+
+                const data = await response.json();
+                console.log('Browse themes data:', data);
+
+                displayThemes(data.themes);
+
+            } catch (error) {
+                console.error('Error loading themes:', error);
+                document.getElementById('privateThemes').innerHTML = '<p class="error">Failed to load themes</p>';
+                document.getElementById('publicThemes').innerHTML = '<p class="error">Failed to load themes</p>';
+            }
+        }
+
+        function displayThemes(themes) {
+            const privateContainer = document.getElementById('privateThemes');
+            const publicContainer = document.getElementById('publicThemes');
+
+            let privateHTML = '';
+            let publicHTML = '';
+
+            // Process all themes
+            Object.keys(themes).forEach(language => {
+                ['easy', 'medium', 'hard'].forEach(difficulty => {
+                    const themeList = themes[language][difficulty] || [];
+
+                    themeList.forEach(theme => {
+                        const themeCard = `
+                            <div class="theme-card" onclick="playTheme('${theme.cacheKey}')">
+                                <div class="theme-name">${theme.displayName}</div>
+                                <div class="theme-meta">
+                                    <span class="theme-difficulty ${difficulty}">${difficulty}</span>
+                                    <span class="theme-language">${language}</span>
+                                </div>
+                                <div class="theme-stats">
+                                    ${theme.wordCount} words • Played ${theme.useCount} times
+                                </div>
+                            </div>
+                        `;
+
+                        if (theme.isMine) {
+                            privateHTML += themeCard;
+                        } else {
+                            publicHTML += themeCard;
+                        }
+                    });
+                });
+            });
+
+            privateContainer.innerHTML = privateHTML || '<p class="empty">No private themes yet. Create one in the New Theme tab!</p>';
+            publicContainer.innerHTML = publicHTML || '<p class="empty">No public themes available</p>';
+        }
+
+        async function playTheme(cacheKey) {
+            try {
+                console.log('Playing theme:', cacheKey);
+
+                const response = await fetch(`${API_URL}/api/play-theme`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ cacheKey })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    alert(data.message || 'Failed to load theme');
+                    return;
+                }
+
+                // Store game data and redirect to game
+                localStorage.setItem('pendingGame', JSON.stringify(data));
+                window.location.href = 'index.html?play=true';
+
+            } catch (error) {
+                console.error('Error playing theme:', error);
+                alert('Failed to load theme. Please try again.');
+            }
+        }
+    </script>
+
+    <style>
+        .browse-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .theme-section {
+            margin-bottom: 40px;
+        }
+
+        .theme-section h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #2d3748;
+        }
+
+        .theme-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .theme-card {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .theme-card:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+        }
+
+        .theme-name {
+            font-size: 20px;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+
+        .theme-meta {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .theme-difficulty {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .theme-difficulty.easy {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .theme-difficulty.medium {
+            background: #feebc8;
+            color: #7c2d12;
+        }
+
+        .theme-difficulty.hard {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+
+        .theme-language {
+            padding: 4px 12px;
+            background: #e2e8f0;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #4a5568;
+        }
+
+        .theme-stats {
+            font-size: 14px;
+            color: #718096;
+        }
+
+        .loading, .empty, .error {
+            text-align: center;
+            color: #718096;
+            padding: 40px;
+        }
+
+        .error {
+            color: #e53e3e;
+        }
+
+        .back-button {
+            background: #718096;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .back-button:hover {
+            background: #4a5568;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+    </style>
+</body>
+</html>
