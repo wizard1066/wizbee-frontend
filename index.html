@@ -513,6 +513,30 @@ async function generateTheme() {
         return;
     }
     
+    // ===== UPDATE UI IMMEDIATELY WHEN USER CLICKS GENERATE =====
+    const themeInput = document.getElementById('themeInput');
+    themeInput.value = '';  // Clear the input
+    themeInput.placeholder = 'Refine search here (e.g., "only 5-letter words", "exclude colors")';
+    // ===== END IMMEDIATE UPDATE =====
+    
+    // Set base theme and reset refinements
+    baseTheme = input;
+    refinements = [];
+    currentThemeText = input;
+    refineAttempts = 0;
+    
+    updatePromptDisplay();  // Show base theme
+    await generateWordlist();
+}
+
+async function generateThemeDepreciated() {
+    const input = document.getElementById('themeInput').value.trim();
+    
+    if (!input) {
+        showError('Please enter a theme!');
+        return;
+    }
+    
     // Set base theme and reset refinements
     baseTheme = input;
     refinements = [];
@@ -523,18 +547,7 @@ async function generateTheme() {
     await generateWordlist();
 }
         
-        async function generateThemeD() {
-            const input = document.getElementById('themeInput').value.trim();
-            
-            if (!input) {
-                showError('Please enter a theme!');
-                return;
-            }
-            
-            currentThemeText = input;
-            refineAttempts = 0;
-            await generateWordlist();
-        }
+        
 
 	async function generateWordlistD() {
     document.getElementById('generatingMessage').classList.remove('hidden');
