@@ -652,6 +652,46 @@ function displayPreview(words) {
     
     // Transform Generate button into Refine button
     const generateBtn = document.getElementById('generateBtn');
+    const themeInput = document.getElementById('themeInput');
+    
+    const used = refineAttempts;
+    const total = maxRefineAttempts;
+    
+    if (remaining > 0) {
+        // Still have refines left
+        generateBtn.textContent = `🔄 Refine (${used}/${total} used)`;
+        generateBtn.onclick = refineTheme;
+        generateBtn.disabled = false;
+        themeInput.placeholder = 'Refine search here (e.g., "only 5-letter words", "exclude colors")';
+        themeInput.disabled = false;
+    } else {
+        // No refines left - disable
+        generateBtn.textContent = `🔄 Refine (${used}/${total} used)`;
+        generateBtn.onclick = null;
+        generateBtn.disabled = true;
+        themeInput.placeholder = 'No more refines available - Edit or Play';
+        themeInput.disabled = true;
+    }
+    
+    document.getElementById('editWordsBtn').disabled = false;
+    document.getElementById('playBtn').disabled = false;
+}
+
+function displayPreviewDepreciated(words) {
+    document.getElementById('previewSection').classList.remove('hidden');
+    document.getElementById('wordCount').textContent = words.length;
+    
+    const quartileSize = Math.ceil(words.length / 4);
+    const lastQuartile = words.slice(-quartileSize);
+    document.getElementById('lastQuartile').textContent = '...' + lastQuartile.join(', ');
+    
+    const refineCounter = document.getElementById('refineCounter');
+    const remaining = maxRefineAttempts - refineAttempts;
+    
+    refineCounter.textContent = `Attempt ${refineAttempts + 1}/${maxRefineAttempts + 1}`;
+    
+    // Transform Generate button into Refine button
+    const generateBtn = document.getElementById('generateBtn');
 
 const used = refineAttempts;
 const total = maxRefineAttempts;
@@ -760,6 +800,7 @@ async function acceptAndPlayD() {
         generateBtn.textContent = 'Generate';
         generateBtn.onclick = generateTheme;
         generateBtn.disabled = false;
+        themeInput.placeholder = 'e.g., household pets, common colors, European capitals';
         
         document.getElementById('editWordsBtn').disabled = true;
         document.getElementById('playBtn').disabled = true;
