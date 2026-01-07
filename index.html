@@ -1208,6 +1208,15 @@ async function launchThemeFromBrowser(cacheKey) {
             }, duration);
         }
 
+        function saySomething(text) {
+            let speech = new SpeechSynthesisUtterance();
+            speech.text = "What the fuck";
+            speech.volumn = 1;
+            speech.rate = 1;
+            speech.pitch = 1;
+            window.speechSynthesis.speak(speech)
+        }
+
         function showClue() {
             if (!wordClues || wordClues.length === 0 || currentWordIndex >= wordClues.length) {
                 showError('No clue available for this word');
@@ -1219,6 +1228,8 @@ async function launchThemeFromBrowser(cacheKey) {
             
             const clueDisplay = document.getElementById('clueDisplay');
             const clueText = document.getElementById('clueText');
+
+
             
             // If already visible, just keep it visible longer
             if (!clueDisplay.classList.contains('hidden')) {
@@ -1229,11 +1240,12 @@ async function launchThemeFromBrowser(cacheKey) {
                 return;
             }
             
-            // Show the clue
+            // Show the clue & speak the clue
             clueText.textContent = wordClues[currentWordIndex];
             clueDisplay.classList.remove('hidden');
             clueDisplay.style.opacity = '0';
             clueDisplay.style.transform = 'translateY(-10px)';
+            saySomething(clueText.textContent);
             
             setTimeout(() => {
                 clueDisplay.style.opacity = '1';
