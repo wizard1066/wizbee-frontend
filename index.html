@@ -1214,10 +1214,9 @@ async function launchThemeFromBrowser(cacheKey) {
             voices = box.getVoices();
             speech.text = text;
             speech.volumn = 1;
-            speech.rate = 0.8;
+            speech.rate = 0.7;
             speech.pitch = 1;
-            speech.voice = voices[100];
-            console.log(voices[0]);
+            speech.voice = voices[0];
             box.speak(speech)
         }
 
