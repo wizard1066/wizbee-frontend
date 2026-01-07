@@ -1210,13 +1210,14 @@ async function launchThemeFromBrowser(cacheKey) {
 
         function saySomething(text) {
             let speech = new SpeechSynthesisUtterance();
-            voices = this.getVoices();
+            let box = window.speechSynthesis;
+            voices = box.getVoices();
             speech.text = text;
             speech.volumn = 1;
             speech.rate = 0.8;
             speech.pitch = 1;
             speech.voice = voices[2];
-            window.speechSynthesis.speak(speech)
+            box.speak(speech)
         }
 
         function showClue() {
