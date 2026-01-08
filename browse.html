@@ -135,17 +135,20 @@
                                     </div>
                                 `;
                             } else {
-                                // Draft theme - only edit/delete
-                                actionButtons = `
-                                    <div class="theme-actions">
-                                        <button onclick="event.stopPropagation(); editTheme('${theme.cacheKey}')" class="btn-edit">
-                                            ✏️ Edit
-                                        </button>
-                                        <button onclick="event.stopPropagation(); deleteTheme('${theme.cacheKey}')" class="btn-delete">
-                                            🗑️ Delete
-                                        </button>
-                                    </div>
-                                `;
+                                    // Draft theme - complete/edit/delete
+                                    actionButtons = `
+                                        <div class="theme-actions">
+                                            <button onclick="event.stopPropagation(); completeAndPlay('${theme.cacheKey}')" class="btn-play">
+                                                ✓ Complete & Play
+                                            </button>
+                                            <button onclick="event.stopPropagation(); editTheme('${theme.cacheKey}')" class="btn-edit">
+                                                ✏️ Edit
+                                            </button>
+                                            <button onclick="event.stopPropagation(); deleteTheme('${theme.cacheKey}')" class="btn-delete">
+                                                🗑️
+                                            </button>
+                                        </div>
+                                    `;
                             }
                         } else {
                             // Public theme - only play
@@ -185,6 +188,32 @@
 
             privateContainer.innerHTML = privateHTML || '<p class="empty">No private themes yet. Create one in the New Theme tab!</p>';
             publicContainer.innerHTML = publicHTML || '<p class="empty">No public themes available</p>';
+        }
+
+        async function completeAndPlay(cacheKey) {
+            try {
+                // Mark as complete
+                const response = await fetch(`${API_URL}/api/complete-theme`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ cacheKey })
+                });
+                
+                if (!response.ok) {
+                    alert('Failed to complete theme');
+                    return;
+                }
+                
+                // Now play it
+                playTheme(cacheKey);
+                
+            } catch (error) {
+                console.error('Error completing theme:', error);
+                alert('Failed to complete theme');
+            }
         }
 
         async function playTheme(cacheKey) {
