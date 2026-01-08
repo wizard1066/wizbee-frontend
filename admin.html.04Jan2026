@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wizbee - My Themes</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        .theme-list {
+            display: grid;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .theme-card {
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            background: white;
+        }
+        
+        .theme-card.editing {
+            border-color: #667eea;
+            background: #f7fafc;
+        }
+        
+        .theme-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .theme-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #2d3748;
+        }
+        
+        .theme-meta {
+            color: #718096;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        
+        .shared-groups {
+            color: #667eea;
+            font-size: 13px;
+            margin-top: 5px;
+        }
+        
+        .word-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .word-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .word-item.q1 { border-left: 3px solid #48bb78; }
+        .word-item.q2 { border-left: 3px solid #4299e1; }
+        .word-item.q3 { border-left: 3px solid #ed8936; }
+        .word-item.q4 { border-left: 3px solid #f56565; }
+        
+        .word-text {
+            flex: 1;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #5a67d8;
+        }
+        
+        .btn-success {
+            background: #48bb78;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #38a169;
+        }
+        
+        .btn-danger {
+            background: #f56565;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #e53e3e;
+        }
+        
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #2d3748;
+        }
+        
+        .btn-secondary:hover {
+            background: #cbd5e0;
+        }
+        
+        .quartile-legend {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 15px;
+            font-size: 12px;
+            color: #718096;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 3px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #718096;
+        }
+        
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 30px;
+            border-radius: 8px;
+            max-width: 500px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .modal-header {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #2d3748;
+        }
+        
+        .modal-body {
+            margin-bottom: 20px;
+        }
+        
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #2d3748;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .group-item {
+            padding: 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            cursor: pointer;
+        }
+        
+        .group-item:hover {
+            background: #f7fafc;
+        }
+        
+        .group-item.selected {
+            background: #e6fffa;
+            border-color: #48bb78;
+        }
+        
+        .share-code-display {
+            background: #f7fafc;
+            padding: 15px;
+            border-radius: 6px;
+            border: 2px dashed #cbd5e0;
+            text-align: center;
+            margin: 15px 0;
+        }
+        
+        .share-code-text {
+            font-size: 24px;
+            font-weight: 700;
+            color: #667eea;
+            letter-spacing: 2px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>
+            <a href="index.html" style="text-decoration: none; color: inherit;">
+                <img src="bee3.gif" alt="Wizbee" style="height: 48px; vertical-align: middle;"> Wizbee
+            </a>
+        </h1>
+
+        <div class="user-info">
+            <div>Signed in as: <span id="userEmail"></span></div>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+
+        <!-- Navigation -->
+        <div class="tabs">
+            <button class="tab" onclick="window.location.href='index.html'">Play Game</button>
+            <button class="tab active">⚙️ My Themes</button>
+            <button class="tab" onclick="window.location.href='groups.html'">🤝 Groups</button>
+        </div>
+
+        <div class="tab-content active">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="margin: 0;">⚙️ Manage Your Themes</h2>
+                <button class="btn btn-success" onclick="showCreateGroupModal()">
+                    ➕ Create Group
+                </button>
+            </div>
+            <p style="color: #718096; margin-bottom: 20px;">
+                Review and edit the themes you've created. Share them with groups or delete words that don't fit.
+            </p>
+            
+            <div id="themesContainer">
+                <div style="text-align: center; padding: 40px; color: #718096;">Loading your themes...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Share to Group Modal -->
+    <div id="shareModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">📤 Share Theme to Group</div>
+            <div class="modal-body">
+                <p style="color: #718096; margin-bottom: 15px;">
+                    Select a group to share "<span id="shareThemeName"></span>" with:
+                </p>
+                <div id="groupsList"></div>
+                <p style="color: #718096; margin-top: 15px; font-size: 12px;">
+                    Don't see your group? <a href="#" onclick="showCreateGroupModal(); closeShareModal(); return false;" style="color: #667eea;">Create a new group</a>
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeShareModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="confirmShareToGroup()">Share</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Group Modal -->
+    <div id="createGroupModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">➕ Create New Group</div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Group Name</label>
+                    <input type="text" id="newGroupName" class="form-input" placeholder="e.g., Grade 3 Spelling" maxlength="100">
+                </div>
+                <div id="createGroupError" style="color: #e53e3e; font-size: 14px; margin-top: 10px;" class="hidden"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeCreateGroupModal()">Cancel</button>
+                <button class="btn btn-success" onclick="createGroup()">Create Group</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Share Code Modal -->
+    <div id="shareCodeModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">🎉 Group Created!</div>
+            <div class="modal-body">
+                <p style="color: #718096; margin-bottom: 15px;">
+                    Share this code with others so they can join your group:
+                </p>
+                <div class="share-code-display">
+                    <div class="share-code-text" id="displayShareCode"></div>
+                </div>
+                <p style="color: #718096; font-size: 12px; text-align: center;">
+                    Anyone with this code can join and see all themes you share to this group.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="copyShareCode()">📋 Copy Code</button>
+                <button class="btn btn-secondary" onclick="closeShareCodeModal()">Done</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://api.wizbee.app';
+        let authToken = null;
+        let userEmail = null;
+        let themes = [];
+        let selectedWords = new Set();
+        let myGroups = [];
+        let currentShareTheme = null;
+        let selectedGroupId = null;
+        let currentShareCode = '';
+
+        window.onload = function() {
+            authToken = localStorage.getItem('authToken');
+            userEmail = localStorage.getItem('userEmail');
+            
+            if (!authToken || !userEmail) {
+                window.location.href = 'index.html';
+                return;
+            }
+            
+            document.getElementById('userEmail').textContent = userEmail;
+            loadMyThemes();
+            loadMyGroups();
+            
+            const urlParams = new URLSearchParams(window.location.search);
+            const editCacheKey = urlParams.get('edit');
+            
+            if (editCacheKey) {
+                setTimeout(() => {
+                    autoOpenTheme(editCacheKey);
+                }, 500);
+            }
+        };
+
+        function logout() {
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('userEmail');
+            window.location.href = 'index.html';
+        }
+
+        async function loadMyGroups() {
+            try {
+                const response = await fetch(`${API_URL}/api/my-groups`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    myGroups = data.groups || [];
+                }
+            } catch (error) {
+                console.error('Error loading groups:', error);
+            }
+        }
+
+        async function loadMyThemes() {
+            const container = document.getElementById('themesContainer');
+            
+            try {
+                const response = await fetch(`${API_URL}/api/my-themes`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (!response.ok) {
+                    container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><p>Failed to load themes</p></div>';
+                    return;
+                }
+                
+                const data = await response.json();
+                themes = data.themes || [];
+                
+                if (themes.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📝</div>
+                            <h3>No themes yet</h3>
+                            <p>Create your first theme to get started!</p>
+                            <button class="btn btn-primary" onclick="window.location.href='index.html'">Create Theme</button>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                renderThemes();
+                
+            } catch (error) {
+                console.error('Error loading themes:', error);
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><p>Failed to load themes</p></div>';
+            }
+        }
+
+        function renderThemes() {
+            const container = document.getElementById('themesContainer');
+            
+            let html = '<div class="theme-list">';
+
+            themes.forEach((theme, index) => {
+                // Use theme_name from database or fallback to first 8 chars of UUID
+                const themeName = theme.theme_name 
+                 ? theme.theme_name.charAt(0).toUpperCase() + theme.theme_name.slice(1)
+                   : theme.cache_key.substring(0, 8);
+    
+                    const language = theme.language ? theme.language.toUpperCase() : 'EN';
+                    const difficulty = 'Medium';  // Default since we don't store difficulty anymore
+    
+                    const wordCount = theme.words.length;
+                    const quartileSize = Math.ceil(wordCount / 4);
+                    const selectedCount = Array.from(selectedWords).filter(key => key.startsWith(`${index}-`)).length;
+            
+                
+                // Format shared groups display
+                let sharedGroupsHtml = '';
+                if (theme.sharedGroups && theme.sharedGroups.length > 0) {
+                    const groupNames = theme.sharedGroups.map(g => '🤝 ' + g.name).join(', ');
+                    sharedGroupsHtml = `<div class="shared-groups">Shared with: ${groupNames}</div>`;
+                }
+                
+                html += `
+                    <div class="theme-card" id="theme-${index}">
+                        <div class="theme-header">
+                            <div style="flex: 1;">
+                                <div class="theme-title">${themeName}</div>
+                                <div class="theme-meta">
+                                    ${language} • ${difficulty} • ${wordCount} words
+                                    ${sharedGroupsHtml}
+                                </div>
+                            </div>
+                            <div class="action-buttons">
+                                <button class="btn btn-success" onclick="showShareModal('${theme.cache_key}', '${themeName}')">
+                                    📤 Share
+                                </button>
+                                <button class="btn btn-secondary" onclick="toggleEdit(${index})">
+                                    <span id="edit-btn-${index}">✏️ Edit</span>
+                                </button>
+                                <button id="done-btn-${index}" class="btn btn-primary hidden" onclick="doneEditing('${theme.cache_key}')">
+                                    ✓ Done
+                                </button>
+                                <button class="btn btn-danger" onclick="deleteTheme('${theme.cache_key}', ${index})">🗑️ Delete</button>
+                            </div>
+                        </div>
+                        
+                        <div id="words-${index}" style="display: none;">
+                            <div class="quartile-legend">
+                                <div class="legend-item">
+                                    <div class="legend-color" style="background: #48bb78;"></div>
+                                    <span>Q1 (Easy)</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-color" style="background: #4299e1;"></div>
+                                    <span>Q2 (Medium)</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-color" style="background: #ed8936;"></div>
+                                    <span>Q3 (Hard)</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-color" style="background: #f56565;"></div>
+                                    <span>Q4 (Expert)</span>
+                                </div>
+                            </div>
+                            
+                            <div style="margin-bottom: 10px;">
+                                <button class="btn btn-secondary" onclick="selectAll(${index})" style="margin-right: 10px;">Select All</button>
+                                <button class="btn btn-secondary" onclick="deselectAll(${index})">Deselect All</button>
+                                <span style="margin-left: 20px; color: #718096;" id="selected-count-${index}">
+                                    ${selectedCount > 0 ? `${selectedCount} selected` : ''}
+                                </span>
+                            </div>
+                            
+                            <div style="margin-bottom: 15px;">
+                                <button class="btn btn-danger" onclick="deleteSelectedWords(${index})" ${selectedCount === 0 ? 'disabled' : ''}>
+                                    🗑️ Delete Selected (${selectedCount})
+                                </button>
+                            </div>
+                            
+                            <div class="word-grid">
+                `;
+                
+                theme.words.forEach((word, wordIndex) => {
+                    let quartileClass = 'q1';
+                    if (wordIndex >= quartileSize * 3) quartileClass = 'q4';
+                    else if (wordIndex >= quartileSize * 2) quartileClass = 'q3';
+                    else if (wordIndex >= quartileSize) quartileClass = 'q2';
+                    
+                    const wordKey = `${index}-${wordIndex}`;
+                    const isSelected = selectedWords.has(wordKey);
+                    
+                    html += `
+                        <div class="word-item ${quartileClass}" id="word-${index}-${wordIndex}" style="${isSelected ? 'background: #fed7d7; border-color: #fc8181;' : ''}">
+                            <input type="checkbox" 
+                                   id="check-${index}-${wordIndex}" 
+                                   ${isSelected ? 'checked' : ''}
+                                   onchange="toggleWordSelection(${index}, ${wordIndex})"
+                                   style="cursor: pointer;">
+                            <span class="word-text">${word}</span>
+                        </div>
+                    `;
+                });
+                
+                html += `
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        // Group Sharing Functions
+        function showShareModal(cacheKey, themeName) {
+            currentShareTheme = cacheKey;
+            selectedGroupId = null;
+            document.getElementById('shareThemeName').textContent = themeName;
+            
+            let groupsHtml = '';
+            if (myGroups.length === 0) {
+                groupsHtml = '<p style="color: #718096; text-align: center;">You don\'t have any groups yet.</p>';
+            } else {
+                myGroups.forEach(group => {
+                    groupsHtml += `
+                        <div class="group-item" onclick="selectGroup('${group.id}')" id="group-${group.id}">
+                            <div style="font-weight: 600;">${group.name}</div>
+                            <div style="font-size: 12px; color: #718096;">
+                                ${group.themeCount} themes • ${group.memberCount} members
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            
+            document.getElementById('groupsList').innerHTML = groupsHtml;
+            document.getElementById('shareModal').style.display = 'block';
+        }
+
+        function selectGroup(groupId) {
+            selectedGroupId = groupId;
+            document.querySelectorAll('.group-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            document.getElementById(`group-${groupId}`).classList.add('selected');
+        }
+
+        function closeShareModal() {
+            document.getElementById('shareModal').style.display = 'none';
+            currentShareTheme = null;
+            selectedGroupId = null;
+        }
+
+        async function confirmShareToGroup() {
+            if (!selectedGroupId) {
+                alert('Please select a group');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/api/add-theme-to-group`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        groupId: selectedGroupId,
+                        cacheKey: currentShareTheme
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    alert('✅ Theme shared to group!');
+                    closeShareModal();
+                    loadMyGroups();
+                    loadMyThemes(); // Reload to show updated shared groups
+                } else {
+                    alert(data.message || 'Failed to share theme');
+                }
+            } catch (error) {
+                console.error('Error sharing theme:', error);
+                alert('Failed to share theme');
+            }
+        }
+
+        function showCreateGroupModal() {
+            document.getElementById('newGroupName').value = '';
+            document.getElementById('createGroupError').classList.add('hidden');
+            document.getElementById('createGroupModal').style.display = 'block';
+        }
+
+        function closeCreateGroupModal() {
+            document.getElementById('createGroupModal').style.display = 'none';
+        }
+
+        async function createGroup() {
+            const groupName = document.getElementById('newGroupName').value.trim();
+            const errorDiv = document.getElementById('createGroupError');
+            
+            if (!groupName) {
+                errorDiv.textContent = 'Please enter a group name';
+                errorDiv.classList.remove('hidden');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/api/create-group`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ groupName })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    currentShareCode = data.group.shareCode;
+                    closeCreateGroupModal();
+                    showShareCodeModal();
+                    loadMyGroups();
+                } else {
+                    errorDiv.textContent = data.message || 'Failed to create group';
+                    errorDiv.classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error('Error creating group:', error);
+                errorDiv.textContent = 'Failed to create group';
+                errorDiv.classList.remove('hidden');
+            }
+        }
+
+        function showShareCodeModal() {
+            document.getElementById('displayShareCode').textContent = currentShareCode;
+            document.getElementById('shareCodeModal').style.display = 'block';
+        }
+
+        function closeShareCodeModal() {
+            document.getElementById('shareCodeModal').style.display = 'none';
+            currentShareCode = '';
+        }
+
+        function copyShareCode() {
+            navigator.clipboard.writeText(currentShareCode).then(() => {
+                alert('✅ Share code copied to clipboard!');
+            }).catch(() => {
+                alert('Failed to copy code. Share code: ' + currentShareCode);
+            });
+        }
+
+        // Existing functions
+        function toggleEdit(index) {
+            const wordsDiv = document.getElementById(`words-${index}`);
+            const editBtn = document.getElementById(`edit-btn-${index}`);
+            const doneBtn = document.getElementById(`done-btn-${index}`);
+            const card = document.getElementById(`theme-${index}`);
+            
+            if (wordsDiv.style.display === 'none') {
+                wordsDiv.style.display = 'block';
+                editBtn.textContent = '✓ Close';
+                doneBtn.classList.remove('hidden');
+                card.classList.add('editing');
+            } else {
+                wordsDiv.style.display = 'none';
+                editBtn.textContent = '✏️ Edit';
+                doneBtn.classList.add('hidden');
+                card.classList.remove('editing');
+                clearThemeSelections(index);
+            }
+        }
+
+        function doneEditing(cacheKey) {
+            window.location.href = `index.html?resume=${cacheKey}`;
+        }
+
+        function autoOpenTheme(cacheKey) {
+            const themeIndex = themes.findIndex(t => t.cache_key === cacheKey);
+            if (themeIndex === -1) return;
+            
+            toggleEdit(themeIndex);
+            setTimeout(() => {
+                const themeCard = document.getElementById(`theme-${themeIndex}`);
+                if (themeCard) {
+                    themeCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }, 100);
+        }
+
+        function toggleWordSelection(themeIndex, wordIndex) {
+            const wordKey = `${themeIndex}-${wordIndex}`;
+            const wordElement = document.getElementById(`word-${themeIndex}-${wordIndex}`);
+            const countSpan = document.getElementById(`selected-count-${themeIndex}`);
+            const deleteBtn = document.querySelector(`[onclick="deleteSelectedWords(${themeIndex})"]`);
+            
+            if (selectedWords.has(wordKey)) {
+                selectedWords.delete(wordKey);
+                if (wordElement) {
+                    wordElement.style.background = '';
+                    wordElement.style.borderColor = '';
+                }
+            } else {
+                selectedWords.add(wordKey);
+                if (wordElement) {
+                    wordElement.style.background = '#fed7d7';
+                    wordElement.style.borderColor = '#fc8181';
+                }
+            }
+            
+            const count = Array.from(selectedWords).filter(key => key.startsWith(`${themeIndex}-`)).length;
+            if (countSpan) countSpan.textContent = count > 0 ? `${count} selected` : '';
+            
+            if (deleteBtn) {
+                deleteBtn.disabled = count === 0;
+                deleteBtn.textContent = `🗑️ Delete Selected (${count})`;
+            }
+        }
+
+        function selectAll(themeIndex) {
+            const theme = themes[themeIndex];
+            theme.words.forEach((word, wordIndex) => {
+                const wordKey = `${themeIndex}-${wordIndex}`;
+                selectedWords.add(wordKey);
+                const checkbox = document.getElementById(`check-${themeIndex}-${wordIndex}`);
+                const wordElement = document.getElementById(`word-${themeIndex}-${wordIndex}`);
+                if (checkbox) checkbox.checked = true;
+                if (wordElement) {
+                    wordElement.style.background = '#fed7d7';
+                    wordElement.style.borderColor = '#fc8181';
+                }
+            });
+            
+            const countSpan = document.getElementById(`selected-count-${themeIndex}`);
+            const deleteBtn = document.querySelector(`[onclick="deleteSelectedWords(${themeIndex})"]`);
+            if (countSpan) countSpan.textContent = `${theme.words.length} selected`;
+            if (deleteBtn) {
+                deleteBtn.disabled = false;
+                deleteBtn.textContent = `🗑️ Delete Selected (${theme.words.length})`;
+            }
+        }
+
+        function deselectAll(themeIndex) {
+            const theme = themes[themeIndex];
+            theme.words.forEach((word, wordIndex) => {
+                const wordKey = `${themeIndex}-${wordIndex}`;
+                selectedWords.delete(wordKey);
+                const checkbox = document.getElementById(`check-${themeIndex}-${wordIndex}`);
+                const wordElement = document.getElementById(`word-${themeIndex}-${wordIndex}`);
+                if (checkbox) checkbox.checked = false;
+                if (wordElement) {
+                    wordElement.style.background = '';
+                    wordElement.style.borderColor = '';
+                }
+            });
+            
+            const countSpan = document.getElementById(`selected-count-${themeIndex}`);
+            const deleteBtn = document.querySelector(`[onclick="deleteSelectedWords(${themeIndex})"]`);
+            if (countSpan) countSpan.textContent = '';
+            if (deleteBtn) {
+                deleteBtn.disabled = true;
+                deleteBtn.textContent = `🗑️ Delete Selected (0)`;
+            }
+        }
+
+        function clearThemeSelections(themeIndex) {
+            const keysToDelete = Array.from(selectedWords).filter(key => key.startsWith(`${themeIndex}-`));
+            keysToDelete.forEach(key => selectedWords.delete(key));
+        }
+
+        async function deleteSelectedWords(themeIndex) {
+            const theme = themes[themeIndex];
+            const selectedIndices = Array.from(selectedWords)
+                .filter(key => key.startsWith(`${themeIndex}-`))
+                .map(key => parseInt(key.split('-')[1]))
+                .sort((a, b) => b - a);
+            
+            if (selectedIndices.length === 0) return;
+            if (!confirm(`Delete ${selectedIndices.length} selected word(s)?`)) return;
+            
+            try {
+                for (const wordIndex of selectedIndices) {
+                    const response = await fetch(`${API_URL}/api/delete-word`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${authToken}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            cacheKey: theme.cache_key,
+                            wordIndex: wordIndex
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        alert('Failed to delete some words');
+                        break;
+                    }
+                    
+                    themes[themeIndex].words.splice(wordIndex, 1);
+                }
+                
+                clearThemeSelections(themeIndex);
+                const wasEditing = document.getElementById(`words-${themeIndex}`).style.display === 'block';
+                renderThemes();
+                
+                if (wasEditing) {
+                    document.getElementById(`words-${themeIndex}`).style.display = 'block';
+                    document.getElementById(`edit-btn-${themeIndex}`).textContent = '✓ Close';
+                    document.getElementById(`done-btn-${themeIndex}`).classList.remove('hidden');
+                    document.getElementById(`theme-${themeIndex}`).classList.add('editing');
+                }
+            } catch (error) {
+                console.error('Error deleting words:', error);
+                alert('Failed to delete words');
+            }
+        }
+
+        async function deleteTheme(cacheKey, index) {
+            const parts = cacheKey.split('_');
+            const themeName = parts[0].charAt(0).toUpperCase() + parts[0].slice(1);
+            
+            if (!confirm(`Delete the entire "${themeName}" theme? This cannot be undone.`)) return;
+            
+            try {
+                const response = await fetch(`${API_URL}/api/delete-theme`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ cacheKey })
+                });
+                
+                if (!response.ok) {
+                    alert('Failed to delete theme');
+                    return;
+                }
+                
+                clearThemeSelections(index);
+                themes.splice(index, 1);
+                
+                if (themes.length === 0) {
+                    loadMyThemes();
+                } else {
+                    renderThemes();
+                }
+            } catch (error) {
+                console.error('Error deleting theme:', error);
+                alert('Failed to delete theme');
+            }
+        }
+    </script>
+</body>
+</html>

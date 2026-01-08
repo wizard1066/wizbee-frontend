@@ -1,0 +1,1709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wizbee - AI Word Puzzle Game</title>
+    
+    <!-- Google Sign-In -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+	<h1><img src="bee3.gif" alt="Wizbee" style="height: 48px; vertical-align: middle;"> Wizbee</h1>
+
+        <!-- Login Screen -->
+        <div id="loginScreen" class="login-screen">
+            <h2>Welcome to Wizbee!</h2>
+            <p>Sign in with Google to play AI-powered word puzzles</p>
+		<div style="display: flex; justify-content: center;">
+    		<div id="google-signin-button"></div>
+		</div>
+        </div>
+
+	<!-- Theme Input Screen -->
+        <div id="themeInputScreen" class="theme-input-screen hidden">
+            <div class="user-info">
+		<div>Signed in as: <span id="userEmail"></span></div>
+        	<button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+            
+            <!-- Tab Navigation -->
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('newTheme')">New</button>
+                <button class="tab" onclick="switchTab('browseThemes')">Browse</button>
+		<button class="tab" onclick="window.location.href='groups.html'">Share</button>
+		<button class="tab" onclick="window.location.href='admin.html'">Edit</button>
+            </div>
+            
+            <!-- New Theme Tab WITH REFINE SYSTEM -->
+            <div id="newThemeTab" class="tab-content active">
+		<div id="themeCounter" style="text-align: center; margin-bottom: 20px; color: #667eea; font-weight: bold; font-size: 18px;">
+        		<!-- Populated by JS -->
+    		</div>
+                <h2>Create Your Theme</h2>
+		<p style="color: #718096; margin-bottom: 20px;">
+    Enter a theme and we'll generate word puzzles for you...
+</p>
+
+<!-- Prompt Display - shows refinement progression -->
+<div id="promptDisplayContainer" style="display: none; background: #f7fafc; border-left: 4px solid #667eea; border-radius: 6px; padding: 15px; margin-bottom: 20px; font-family: monospace; font-size: 14px; color: #2d3748;">
+    <div style="font-weight: 600; margin-bottom: 8px; color: #667eea;">Current Prompt:</div>
+    <div id="promptDisplay" style="white-space: pre-line;"></div>
+</div>
+	        <div id="errorMessage" class="error-message hidden"></div>
+                
+                <div style="margin-bottom: 20px;">
+                    <input type="text" id="themeInput" placeholder="e.g., household pets, common colors, European capitals" autofocus style="width: 90%; padding: 12px; font-size: 16px; border: 2px solid #e2e8f0; border-radius: 8px;">
+		    <div style="display: flex; gap: 10px; margin-top: 20px;">
+    <button id="generateBtn" onclick="generateTheme()" style="flex: 1; padding: 12px 24px; border-radius: 8px; font-weight: 600; cursor: pointer; border: none; background: #667eea; color: white; font-size: 16px;">
+        Generate
+    </button>
+    <button id="editWordsBtn" onclick="editWords()" disabled style="flex: 1; padding: 12px 24px; border-radius: 8px; font-weight: 600; cursor: pointer; border: none; background: #e2e8f0; color: #2d3748; font-size: 16px;">
+        ✏️ Edit Words
+    </button>
+    <button id="playBtn" onclick="acceptAndPlay()" disabled style="flex: 1; padding: 12px 24px; border-radius: 8px; font-weight: 600; cursor: pointer; border: none; background: #48bb78; color: white; font-size: 16px;">
+        ▶️ Play
+    </button>
+</div>
+                </div>
+                
+                <div id="generatingMessage" class="hidden" style="text-align: center; padding: 20px; font-size: 18px;">
+                    <img src="bee2.gif" style="height: 60px; vertical-align: middle;"> Generating words...
+                </div>
+                
+                <!-- Preview Section -->
+                <div id="previewSection" class="hidden" style="margin-top: 30px; border: 2px solid #e2e8f0; border-radius: 8px; padding: 20px; background: #f7fafc;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <div>
+                            <div style="font-size: 18px; font-weight: 600; color: #2d3748;">
+                                Generated: <span id="wordCount">0</span> words
+                            </div>
+                            <div style="font-size: 14px; color: #718096; margin-top: 5px;">
+                                💡 Words ordered easy→hard. Check last section for trickiest words.
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div id="refineCounter" style="font-size: 14px; font-weight: 600; color: #667eea;"></div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <div style="font-weight: 600; color: #718096; margin-bottom: 8px;">Last Quartile (Hardest Words):</div>
+                        <div id="lastQuartile" style="background: white; padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0; font-family: monospace; color: #2d3748; word-wrap: break-word; line-height: 1.6;">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+
+		<div style="background: #fff3cd; border: 2px solid #ffc107; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+    <div style="font-weight: 600; color: #856404; margin-bottom: 10px;">
+        ⚠️ Words don't look right? Edit your theme above and click <strong>Refine</strong> to try again!
+    </div>
+</div>
+                    
+                    
+                </div>
+            </div>
+            
+            <!-- Browse Themes Tab -->
+            <div id="browseThemesTab" class="tab-content">
+                <h2>All Sets</h2>
+                <div id="themesList" style="max-height: 400px; overflow-y: auto;">
+                    <div style="text-align: center; padding: 40px; color: #718096;">Loading themes...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Board -->
+	<div id="gameScreen" class="game-screen hidden">
+    	<div class="theme-display">Theme: <span id="selectedTheme"></span></div>
+    	<div id="wordBoxes" class="word-boxes"></div>
+    	<div class="guesses-remaining">Guesses remaining: <span id="guessesRemaining"></span></div>
+    	<div id="keyboard" class="keyboard"></div>
+    
+    	<div class="guess-input-container">
+        	<button id="submitGuess" class="submit-guess" onclick="submitGuess()">Submit Word</button>
+        	<button id="hintBtn" class="hint-btn" onclick="getHint()">💡 Get Hint</button>
+        	<button id="giveUpBtn" class="give-up-btn" onclick="giveUp()">Give Up</button>
+    	</div>
+    
+    	<div id="hintDisplay" class="hint-display hidden"></div>
+
+    	<div id="previousGuesses" class="previous-guesses"></div>
+    	<div id="gameMessage" class="message"></div>
+    	<button id="resetButton" class="play-again hidden" onclick="resetToTheme()">Reset</button>
+	<button id="buyButton" onclick="buyThemes()" class="upgrade-btn hidden">Buy 4 Themes for $0.99</button>
+	</div>
+    </div>
+
+    <script>
+        const API_URL = 'https://api.wizbee.app'
+        const GOOGLE_CLIENT_ID = '635584185020-emmqudvevrf1j01lpu6nha4tfneju6t2.apps.googleusercontent.com';
+
+        let authToken = null;
+        let userEmail = null;
+        let currentWord = '';
+        let maxGuesses = 0;
+        let remainingGuesses = 0;
+        let currentGuess = '';
+        let guessHistory = [];
+        let gameOver = false;
+        let selectedThemeWord = '';
+	let hintsUsed = 0;
+	let winMessage = '';
+	let loseMessage = '';
+        const MAX_HINTS = 3;
+        let currentLanguage = 'en';
+	let wordList = [];
+	let currentWordIndex = 0;
+        let themesPlayedCount = 0;
+        
+        // REFINE SYSTEM VARIABLES
+        let refineAttempts = 0;
+	let baseTheme = '';           // Original theme
+	let refinements = [];         // Array of refinement strings
+        const maxRefineAttempts = 3;
+        let currentGeneratedWords = null;
+        let currentThemeText = '';
+        
+        let currentThemeId = null;
+        let wordStartTime = null;
+        let letterSwapCount = 0;
+	let currentCacheKey = null;
+
+	const keyboardLayouts = {
+            en: [
+                ['Q','W','E','R','T','Y','U','I','O','P'],
+                ['A','S','D','F','G','H','J','K','L'],
+                ['Z','X','C','V','B','N','M','⌫']
+            ],
+            fr: [
+                ['A','Z','E','R','T','Y','U','I','O','P'],
+                ['Q','S','D','F','G','H','J','K','L','M'],
+                ['W','X','C','V','B','N','É','È','Ê','À','⌫']
+            ],
+            es: [
+                ['Q','W','E','R','T','Y','U','I','O','P'],
+                ['A','S','D','F','G','H','J','K','L','Ñ'],
+                ['Z','X','C','V','B','N','M','Á','É','Í','Ó','Ú','⌫']
+            ],
+	    de: [
+	        ['Q','W','E','R','T','Z','U','I','O','P','Ü'],
+        	['A','S','D','F','G','H','J','K','L','Ö','Ä'],
+        	['Y','X','C','V','B','N','M','ß','⌫']
+    	    ],
+    	    pl: [
+        	['Q','W','E','R','T','Y','U','I','O','P'],
+        	['A','S','D','F','G','H','J','K','L','Ł'],
+        	['Z','X','C','V','B','N','M','Ą','Ć','Ę','Ń','Ó','Ś','Ź','Ż','⌫']
+    	    ],
+    	    it: [
+    		['Q','W','E','R','T','Y','U','I','O','P'],
+    		['A','S','D','F','G','H','J','K','L'],
+    		['Z','X','C','V','B','N','M','À','È','É','Ì','Ò','Ù','⌫']
+	    ],
+	    pt: [
+    		['Q','W','E','R','T','Y','U','I','O','P'],
+    		['A','S','D','F','G','H','J','K','L','Ç'],
+    		['Z','X','C','V','B','N','M','Á','À','Â','Ã','É','É','Í','Ó','Ô','Õ','Ú','⌫']
+	    ],
+	    nl: [
+    		['Q','W','E','R','T','Y','U','I','O','P'],
+    		['A','S','D','F','G','H','J','K','L'],
+    		['Z','X','C','V','B','N','M','⌫']
+	    ],
+	    sv: [
+    		['Q','W','E','R','T','Y','U','I','O','P','Å'],
+    		['A','S','D','F','G','H','J','K','L','Ö','Ä'],
+    		['Z','X','C','V','B','N','M','⌫']
+	    ],
+	    fi: [
+       		['Q','W','E','R','T','Y','U','I','O','P','Å'],
+    		['A','S','D','F','G','H','J','K','L','Ö','Ä'],
+    		['Z','X','C','V','B','N','M','⌫']
+	    ]
+        };
+
+        function editWords() {
+    if (!currentCacheKey) {
+        showError('No theme to edit');
+        return;
+    }
+    window.location.href = `admin.html?edit=${currentCacheKey}`;
+}
+
+        function initializeGoogleSignIn() {
+            if (typeof google !== 'undefined' && google.accounts) {
+                google.accounts.id.initialize({
+                    client_id: GOOGLE_CLIENT_ID,
+                    callback: handleGoogleSignIn
+                });
+                
+                google.accounts.id.renderButton(
+                    document.getElementById('google-signin-button'),
+                    { theme: 'outline', size: 'large', text: 'signin_with' }
+                );
+            } else {
+                setTimeout(initializeGoogleSignIn, 100);
+            }
+        }
+
+        window.onload = function() {
+            authToken = localStorage.getItem('authToken');
+            userEmail = localStorage.getItem('userEmail');
+
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('success') === 'true') {
+                showError('🎉 Payment successful! 4 more themes added to your account.');
+                updateThemeCounter();
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+            
+            if (authToken && userEmail) {
+                showThemeInput();
+            } else {
+                initializeGoogleSignIn();
+            }
+        };
+
+        async function handleGoogleSignIn(response) {
+            try {
+                const apiResponse = await fetch(`${API_URL}/auth/google`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: parseJwt(response.credential).email,
+                        googleToken: response.credential
+                    })
+                });
+                
+                const data = await apiResponse.json();
+                
+                if (data.token) {
+                    authToken = data.token;
+                    userEmail = data.email;
+                    localStorage.setItem('authToken', authToken);
+                    localStorage.setItem('userEmail', userEmail);
+                    showThemeInput();
+                } else {
+		    showError('Authentication failed. Please try again.');
+                }
+            } catch (error) {
+                console.error('Auth error:', error);
+		showError('Authentication failed. Please try again.');
+            }
+        }
+
+        function parseJwt(token) {
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+            return JSON.parse(jsonPayload);
+	}
+
+	async function resumeFromEdit(cacheKey) {
+    try {
+        // Fetch the edited theme from database
+        const response = await fetch(`${API_URL}/api/get-draft-theme/${cacheKey}`, {
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok || data.error) {
+            showError('Failed to load edited theme');
+            return;
+        }
+        
+        // Load the edited words into preview
+        currentGeneratedWords = data.words;
+        currentThemeText = data.theme;
+        refineAttempts = maxRefineAttempts; // Mark as fully refined (can't refine more)
+        
+        document.getElementById('themeInput').value = data.theme;
+        displayPreview(data.words);
+        
+        showError('✅ Theme loaded! Your edits are ready. Click Play when ready.');
+        
+        // Clean URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+        
+    } catch (error) {
+        console.error('Error resuming:', error);
+        showError('Failed to load edited theme');
+    }
+}
+
+        async function updateThemeCounter() {
+            try {
+                const response = await fetch(`${API_URL}/api/user-info`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });     
+                            
+                if (!response.ok) {
+                    document.getElementById('themeCounter').innerHTML = '✨ Loading...';
+                    return; 
+                }           
+                    
+                const data = await response.json();
+                const remaining = data.themesRemaining;
+                const total = data.themesAllowed;
+                const counter = document.getElementById('themeCounter');
+
+                if (remaining > 0) {
+                    counter.innerHTML = `✨ <strong>${remaining}</strong> of <strong>${total}</strong> themes purchased`;
+                } else {
+                    counter.innerHTML = `🎯 <a href="#" onclick="buyThemes(); return false;" style="color: #667eea; text-decoration: underline;">Buy 4 more themes for $0.99</a>`;
+                }
+
+                const buyBtn = document.getElementById('buyButton');
+                if (buyBtn) {
+                    buyBtn.classList.toggle('hidden', remaining > 0);
+                }
+            } catch (error) {
+                console.error('Error fetching theme count:', error);
+                document.getElementById('themeCounter').innerHTML = '✨ Loading...';
+            }
+        }
+
+	async function buyThemes() {
+  	    try {
+    		const response = await fetch(`${API_URL}/api/create-checkout-session`, {
+      		    method: 'POST',
+      		    headers: { 
+        	        'Authorization': `Bearer ${authToken}`,
+        	        'Content-Type': 'application/json'
+      		    }
+    	    });
+    
+    	    const { url } = await response.json();
+    	    if (url) {
+      		window.location.href = url;
+    	    } else {
+      		showError('Error creating checkout session');
+    	    }
+  	    } catch (error) {
+    		console.error('Payment error:', error);
+    		showError('Unable to start checkout. Please try again.');
+  	    }
+	}
+
+	function createKeyboard(language) {
+    	    const container = document.getElementById('keyboard');
+    	    container.innerHTML = '';
+    	    const layout = keyboardLayouts[language] || keyboardLayouts['en'];
+    
+    	    layout.forEach(row => {
+        	const rowDiv = document.createElement('div');
+        	rowDiv.className = 'keyboard-row';
+        	row.forEach(letter => {
+            	    const key = document.createElement('button');
+            	    key.className = 'key';
+            	    key.textContent = letter;
+            	    if (letter === '⌫') {
+                	key.onclick = () => deleteLetter();
+            	    } else {
+                	key.setAttribute('draggable', 'true');
+                	key.onclick = () => addLetter(letter);
+            	    }
+            	    rowDiv.appendChild(key);
+       		});
+        	container.appendChild(rowDiv);
+    	    });
+	}
+
+	function showError(message) {
+ 	    const errorDiv = document.getElementById('errorMessage');
+    	    errorDiv.textContent = message;
+    	    errorDiv.classList.remove('hidden');
+    	    const duration = message.length > 80 ? 8000 : 5000;
+    	    setTimeout(() => errorDiv.classList.add('hidden'), duration);
+	}
+
+	function showThemeInput() {
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('themeInputScreen').classList.remove('hidden');
+            document.getElementById('userEmail').textContent = userEmail;
+            loadBrowseThemes();
+	    updateThemeCounter();
+        }
+
+	function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            
+            if (tabName === 'newTheme') {
+                document.getElementById('newThemeTab').classList.add('active');
+                updateThemeCounter();
+            } else if (tabName === 'browseThemes') {
+                document.getElementById('browseThemesTab').classList.add('active');
+            }
+        }
+
+        // ========================================================================
+        // REFINE SYSTEM - NEW FUNCTIONS
+        // ========================================================================
+
+async function generateTheme() {
+    const input = document.getElementById('themeInput').value.trim();
+    
+    if (!input) {
+        showError('Please enter a theme!');
+        return;
+    }
+    
+    // Set base theme and reset refinements
+    baseTheme = input;
+    refinements = [];
+    currentThemeText = input;
+    refineAttempts = 0;
+    
+    updatePromptDisplay();  // Show base theme
+    await generateWordlist();
+}
+        
+        async function generateThemeD() {
+            const input = document.getElementById('themeInput').value.trim();
+            
+            if (!input) {
+                showError('Please enter a theme!');
+                return;
+            }
+            
+            currentThemeText = input;
+            refineAttempts = 0;
+            await generateWordlist();
+        }
+
+	async function generateWordlistD() {
+    document.getElementById('generatingMessage').classList.remove('hidden');
+    document.getElementById('generateBtn').disabled = true;
+    document.getElementById('previewSection').classList.add('hidden');
+    
+    try {
+        const response = await fetch(`${API_URL}/api/generate-word`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify({ 
+                theme: currentThemeText,
+                previewOnly: true
+            })
+        });
+        
+        const data = await response.json();
+        document.getElementById('generatingMessage').classList.add('hidden');
+        
+        if (response.status === 429 || response.status === 503) {
+            document.getElementById('generateBtn').disabled = false;
+            showError(data.message || 'Theme limit reached!');
+            updateThemeCounter();
+            return;
+        }
+        
+        if (!response.ok || data.error) {
+            showError(data.message || 'Failed to generate words');
+            document.getElementById('generateBtn').disabled = false;
+            return;
+        }
+        
+        currentGeneratedWords = data.preview || data.words;
+        currentCacheKey = data.cacheKey;  // ← ADD THIS LINE
+        
+        displayPreview(currentGeneratedWords);
+        
+    } catch (error) {
+        console.error('Generation error:', error);
+        document.getElementById('generatingMessage').classList.add('hidden');
+        document.getElementById('generateBtn').disabled = false;
+        showError('Connection error');
+    }
+}
+
+        async function generateWordlistD2() {
+	    	console.log('generateWordlist called');
+    		console.log('currentThemeText:', currentThemeText);
+    		console.log('authToken exists:', !!authToken);
+            document.getElementById('generatingMessage').classList.remove('hidden');
+            document.getElementById('generateBtn').disabled = true;
+            document.getElementById('previewSection').classList.add('hidden');
+            
+            try {
+                const response = await fetch(`${API_URL}/api/generate-word`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ 
+                        theme: currentThemeText,
+                        previewOnly: true
+                    })
+                });
+                
+                const data = await response.json();
+                document.getElementById('generatingMessage').classList.add('hidden');
+                
+                if (response.status === 429 || response.status === 503) {
+                    document.getElementById('generateBtn').disabled = false;
+                    showError(data.message || 'Theme limit reached!');
+                    updateThemeCounter();
+                    return;
+               }
+                
+                if (!response.ok || data.error) {
+			let errorMsg = data.message || 'Failed to generate words';
+    
+    if (errorMsg.includes('Insufficient words')) {
+        errorMsg = `😔 Only found ${data.message.match(/\d+/)?.[0] || 'a few'} valid words. Try:\n• Remove word length limits\n• Use a broader theme\n• Click Refine with a different prompt`;
+    }
+    
+    showError(errorMsg);
+    document.getElementById('generateBtn').disabled = false;
+    return;
+                }
+                
+                currentGeneratedWords = data.preview || data.words;
+                displayPreview(currentGeneratedWords);
+                
+            } catch (error) {
+                console.error('Generation error:', error);
+                document.getElementById('generatingMessage').classList.add('hidden');
+                document.getElementById('generateBtn').disabled = false;
+                showError('Connection error');
+            }
+        }
+
+function displayPreview(words) {
+    document.getElementById('previewSection').classList.remove('hidden');
+    document.getElementById('wordCount').textContent = words.length;
+    
+    const quartileSize = Math.ceil(words.length / 4);
+    const lastQuartile = words.slice(-quartileSize);
+    document.getElementById('lastQuartile').textContent = '...' + lastQuartile.join(', ');
+    
+    const refineCounter = document.getElementById('refineCounter');
+    const remaining = maxRefineAttempts - refineAttempts;
+    
+    refineCounter.textContent = `Attempt ${refineAttempts + 1}/${maxRefineAttempts + 1}`;
+    
+    // Transform Generate button into Refine button
+    const generateBtn = document.getElementById('generateBtn');
+
+const used = refineAttempts;
+const total = maxRefineAttempts;
+generateBtn.textContent = `🔄 Refine (${used}/${total} used)`;
+
+    generateBtn.onclick = refineTheme;
+    generateBtn.disabled = remaining <= 0;
+    
+    document.getElementById('editWordsBtn').disabled = false;
+    document.getElementById('playBtn').disabled = false;
+}   
+
+async function refineTheme() {
+    const input = document.getElementById('themeInput').value.trim();
+    
+    if (!input) {
+        showError('Please enter refinement text!');
+        return;
+    }
+    
+    if (refineAttempts >= maxRefineAttempts) {
+        showError('Maximum refine attempts reached!');
+        return;
+    }
+    
+    // Add refinement to array
+    refinements.push(input);
+    refineAttempts++;
+    
+    // Build full prompt
+    currentThemeText = baseTheme + refinements.map(r => ' + ' + r).join('');
+    
+    // Clear input for next refinement
+    document.getElementById('themeInput').value = '';
+    
+    updatePromptDisplay();  // Show full progression
+    await generateWordlist();
+}
+
+function updatePromptDisplay() {
+    const displayElement = document.getElementById('promptDisplay');
+    const container = document.getElementById('promptDisplayContainer');
+    if (!displayElement || !container) return;
+    
+    let html = baseTheme;
+    refinements.forEach(r => {
+        html += '\n+ ' + r;
+    });
+    
+    displayElement.textContent = html;
+    container.style.display = 'block';  // Show it
+}
+
+function updatePromptDisplayD() {
+    const displayElement = document.getElementById('promptDisplay');
+    if (!displayElement) return;
+    
+    let html = baseTheme;
+    refinements.forEach(r => {
+        html += '\n+ ' + r;
+    });
+    
+    displayElement.textContent = html;
+}
+
+async function acceptAndPlayD() {
+    if (!currentGeneratedWords || currentGeneratedWords.length === 0) {
+        showError('No words to use!');
+        return;
+    }
+    
+    if (!currentCacheKey) {
+        showError('Cache key missing!');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${API_URL}/api/create-theme-from-preview`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify({ 
+                cacheKey: currentCacheKey,
+                words: currentGeneratedWords
+            })
+        });
+
+        const data = await response.json();
+        
+        if (!response.ok || data.error) {
+            showError(data.message || 'Failed to create theme');
+            return;
+        }
+        
+        // Reset state
+        currentGeneratedWords = null;
+        currentCacheKey = null;
+        refineAttempts = 0;
+        document.getElementById('previewSection').classList.add('hidden');
+        document.getElementById('themeInput').value = '';
+        
+        // Reset Generate button
+        const generateBtn = document.getElementById('generateBtn');
+        generateBtn.textContent = 'Generate';
+        generateBtn.onclick = generateTheme;
+        generateBtn.disabled = false;
+        
+        document.getElementById('editWordsBtn').disabled = true;
+        document.getElementById('playBtn').disabled = true;
+        
+        updateThemeCounter();
+        
+        // Reload browse themes to show newly created theme
+        if (typeof loadBrowseThemes === 'function') {
+            loadBrowseThemes();
+        }
+        
+        startGame(data);
+        
+    } catch (error) {
+        console.error('Error:', error);
+        showError('Connection error');
+    }
+}
+
+
+
+
+
+
+async function acceptAndPlayD() {
+    if (!currentGeneratedWords || currentGeneratedWords.length === 0) {
+        showError('No words to use!');
+        return;
+    }
+    
+    if (!currentCacheKey) {
+        showError('Cache key missing!');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${API_URL}/api/create-theme-from-preview`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify({ 
+                cacheKey: currentCacheKey,
+                words: currentGeneratedWords
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok || data.error) {
+            showError(data.message || 'Failed to create theme');
+            return;
+        }
+        
+        // Reset state
+        currentGeneratedWords = null;
+        currentCacheKey = null;
+        refineAttempts = 0;
+        document.getElementById('previewSection').classList.add('hidden');
+        document.getElementById('themeInput').value = '';
+        
+        // Reset Generate button
+        const generateBtn = document.getElementById('generateBtn');
+        generateBtn.textContent = 'Generate';
+        generateBtn.onclick = generateTheme;
+        generateBtn.disabled = false;
+        
+        document.getElementById('editWordsBtn').disabled = true;
+        document.getElementById('playBtn').disabled = true;
+        
+        updateThemeCounter();
+        startGame(data);
+        
+    } catch (error) {
+        console.error('Error:', error);
+        showError('Connection error');
+    }
+}
+
+
+        // ========================================================================
+        // END REFINE SYSTEM
+        // ========================================================================
+
+        async function loadBrowseThemes() {
+            const themesList = document.getElementById('themesList');
+            
+            try {
+                const response = await fetch(`${API_URL}/api/browse-themes`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    themesList.innerHTML = '<div style="text-align: center; padding: 40px; color: #718096;">Failed to load themes</div>';
+                    return;
+                }
+
+                const languageNames = {
+                    en: '🇬🇧 English', fr: '🇫🇷 French', es: '🇪🇸 Spanish',
+                    de: '🇩🇪 German', it: '🇮🇹 Italian', pt: '🇵🇹 Portuguese',
+                    nl: '🇳🇱 Dutch', sv: '🇸🇪 Swedish', pl: '🇵🇱 Polish', fi: '🇫🇮 Finnish'
+                };
+
+                const difficultyNames = {
+                    easy: '⭐ Easy (Ages 5-7)',
+                    medium: '⭐⭐ Medium (Ages 8-10)',
+                    hard: '⭐⭐⭐ Hard (Ages 11+)'
+                };
+
+                let html = '';
+                const myThemes = [];
+                
+                Object.keys(data.themes).forEach(lang => {
+                    ['easy', 'medium', 'hard'].forEach(difficulty => {
+                        const themes = data.themes[lang][difficulty] || [];
+                        themes.forEach(theme => {
+                            if (theme.isMine) {
+                                myThemes.push({...theme, lang, difficulty});
+                            }
+                        });
+                    });
+                });
+                
+                if (myThemes.length > 0) {
+                    myThemes.sort((a, b) => a.displayName.localeCompare(b.displayName));
+                    html += `<div style="max-height: 300px; overflow-y: auto; margin-bottom: 20px; border: 2px solid #667eea; border-radius: 8px; padding: 10px; background: #f7fafc;">`;
+                    html += `<div style="font-weight: bold; font-size: 18px; color: #667eea; margin-bottom: 10px; padding: 10px;">👑 Private Themes</div>`;
+                    
+                    myThemes.forEach(theme => {
+                        const langIcon = languageNames[theme.lang]?.split(' ')[0] || '';
+                        const diffIcon = theme.difficulty === 'easy' ? '⭐' : theme.difficulty === 'medium' ? '⭐⭐' : '⭐⭐⭐';
+                        html += `
+                            <div class="theme-item" onclick="launchThemeFromBrowser('${theme.cacheKey}', '${theme.displayName}')" style="border-left: 3px solid #667eea; margin-bottom: 8px;">
+                                <span class="theme-name">${theme.displayName} ${langIcon} ${diffIcon}</span>
+                                <div class="theme-stats">
+                                    <span class="theme-badge">${theme.wordCount} words</span>
+                                    <span style="color: #cbd5e0;">👥 ${theme.useCount}</span>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    html += `</div>`;
+                }
+                
+                html += `<div style="font-weight: bold; font-size: 18px; color: #48bb78; margin-bottom: 10px; padding: 10px;">🌍 Public Themes</div>`;
+                html += `<div style="max-height: 400px; overflow-y: auto;">`;
+                
+		const sortedLanguages = Object.keys(data.themes).sort((a, b) => {
+  			if (a === 'en') return -1;  // English first
+  			if (b === 'en') return 1;
+  		return a.localeCompare(b);  // Others alphabetically
+		});
+
+
+                sortedLanguages.forEach(lang => {
+                    const languageName = languageNames[lang] || lang.toUpperCase();
+                    html += `<div class="language-section"><div class="language-header">${languageName}</div>`;
+                    
+                    ['easy', 'medium', 'hard'].forEach(difficulty => {
+                        const themes = data.themes[lang][difficulty];
+                        if (themes && themes.length > 0) {
+                            html += `<div class="difficulty-section"><div class="difficulty-header">${difficultyNames[difficulty]}</div>`;
+                            themes.forEach(theme => {
+                                html += `
+                                    <div class="theme-item" onclick="launchThemeFromBrowser('${theme.cacheKey}', '${theme.displayName}')">
+                                        <span class="theme-name">${theme.displayName}</span>
+                                        <div class="theme-stats">
+                                            <span class="theme-badge">${theme.wordCount} words</span>
+                                            <span style="color: #cbd5e0;">👥 ${theme.useCount}</span>
+                                        </div>
+                                    </div>
+                                `;
+                            });
+                            html += `</div>`;
+                        }
+                    });
+                    html += `</div>`;
+                });
+                html += `</div>`;
+
+                themesList.innerHTML = html || '<div style="text-align: center; padding: 40px; color: #718096;">No themes available yet.</div>';
+
+            } catch (error) {
+                console.error('Error loading themes:', error);
+                themesList.innerHTML = '<div style="text-align: center; padding: 40px; color: #718096;">Failed to load themes</div>';
+            }
+        }
+
+// ============================================================================
+// COMPLETE FUNCTIONS TO REPLACE IN INDEX.HTML
+// Find and replace these 3 functions completely
+// ============================================================================
+
+// ============================================================================
+// 1. REPLACE: async function generateWordlist()
+// ============================================================================
+async function generateWordlist() {
+    document.getElementById('generatingMessage').classList.remove('hidden');
+    document.getElementById('generateBtn').disabled = true;
+    document.getElementById('previewSection').classList.add('hidden');
+    
+    try {
+        const response = await fetch(`${API_URL}/api/preview-theme`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify({ 
+                theme: currentThemeText
+            })
+        });
+        
+        const data = await response.json();
+        document.getElementById('generatingMessage').classList.add('hidden');
+        
+        if (response.status === 429 || response.status === 503) {
+            document.getElementById('generateBtn').disabled = false;
+            showError(data.message || 'Theme limit reached!');
+            updateThemeCounter();
+            return;
+        }
+        
+        if (!response.ok || data.error) {
+            showError(data.message || 'Failed to generate words');
+            document.getElementById('generateBtn').disabled = false;
+            return;
+        }
+        
+        currentGeneratedWords = data.preview;
+        currentCacheKey = data.cacheKey;
+        
+        displayPreview(currentGeneratedWords);
+        
+    } catch (error) {
+        console.error('Generation error:', error);
+        document.getElementById('generatingMessage').classList.add('hidden');
+        document.getElementById('generateBtn').disabled = false;
+        showError('Connection error');
+    }
+}
+
+// ============================================================================
+// 2. REPLACE: async function acceptAndPlay()
+// ============================================================================
+// ============================================================================
+// COMPLETE REPLACEMENT: async function acceptAndPlay()
+// Replace your entire acceptAndPlay function with this
+// ============================================================================
+
+async function acceptAndPlay() {
+    // Validate BEFORE clearing anything
+    const playBtn = document.getElementById('playBtn');
+    if (playBtn.disabled) return;  // Already processing
+    playBtn.disabled = true;  // Disable IMMEDIATELY
+    if (!currentGeneratedWords || currentGeneratedWords.length === 0) {
+        showError('No words to use!');
+        return;
+    }
+    
+    if (!currentCacheKey) {
+        showError('Cache key missing!');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${API_URL}/api/accept-theme`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify({ 
+                cacheKey: currentCacheKey
+            })
+        });
+
+	console.log('=== ACCEPT-THEME REQUEST ===');
+        
+        const data = await response.json();
+
+	console.log('=== ACCEPT-THEME RESPONSE ===');
+	console.log('Response OK:', response.ok);
+	console.log('Response status:', response.status);
+	console.log('Data:', data);
+	console.log('Has words:', !!data.words);
+	console.log('Words array:', data.words);
+        
+        // Check for errors BEFORE resetting state
+        if (!response.ok || data.error) {
+            showError(data.message || 'Failed to create theme');
+            return;  // Keep state so user can retry
+        }
+        
+        // ONLY reset state AFTER successful response
+        currentGeneratedWords = null;
+        currentCacheKey = null;
+        refineAttempts = 0;
+        baseTheme = '';
+        refinements = [];
+        document.getElementById('promptDisplayContainer').style.display = 'none';
+        document.getElementById('previewSection').classList.add('hidden');
+        document.getElementById('themeInput').value = '';
+        
+        // Reset Generate button
+        const generateBtn = document.getElementById('generateBtn');
+        generateBtn.textContent = 'Generate';
+        generateBtn.onclick = generateTheme;
+        generateBtn.disabled = false;
+        
+        document.getElementById('editWordsBtn').disabled = true;
+        document.getElementById('playBtn').disabled = true;
+        
+        updateThemeCounter();
+        
+        // Reload browse themes to show newly created theme
+        if (typeof loadBrowseThemes === 'function') {
+            loadBrowseThemes();
+        }
+        
+        startGame(data);
+        
+    } catch (error) {
+        console.error('Error:', error);
+        showError('Connection error');
+        // Don't reset state on error - user can retry
+    }
+}
+
+// ============================================================================
+// END: Complete acceptAndPlay function
+// ============================================================================
+
+
+
+
+
+
+
+async function acceptAndPlayD2() {
+    if (!currentGeneratedWords || currentGeneratedWords.length === 0) {
+        showError('No words to use!');
+        return;
+    }
+    
+    if (!currentCacheKey) {
+        showError('Cache key missing!');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${API_URL}/api/accept-theme`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify({ 
+                cacheKey: currentCacheKey
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok || data.error) {
+            showError(data.message || 'Failed to create theme');
+            return;
+        }
+        
+        // Reset state
+        currentGeneratedWords = null;
+        currentCacheKey = null;
+        refineAttempts = 0;
+	baseTheme = '';                    // ← ADD
+	refinements = [];                   // ← ADD
+	document.getElementById('promptDisplayContainer').style.display = 'none';  // ← ADD
+        document.getElementById('previewSection').classList.add('hidden');
+        document.getElementById('themeInput').value = '';
+        
+        // Reset Generate button
+        const generateBtn = document.getElementById('generateBtn');
+        generateBtn.textContent = 'Generate';
+        generateBtn.onclick = generateTheme;
+        generateBtn.disabled = false;
+        
+        document.getElementById('editWordsBtn').disabled = true;
+        document.getElementById('playBtn').disabled = true;
+        
+        updateThemeCounter();
+        
+        // Reload browse themes to show newly created theme
+        if (typeof loadBrowseThemes === 'function') {
+            loadBrowseThemes();
+        }
+        
+        startGame(data);
+        
+    } catch (error) {
+        console.error('Error:', error);
+        showError('Connection error');
+    }
+}
+
+// ============================================================================
+// 3. REPLACE: async function launchThemeFromBrowser(cacheKey)
+// ============================================================================
+async function launchThemeFromBrowser(cacheKey) {
+    try {
+        const response = await fetch(`${API_URL}/api/play-theme`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify({ 
+                cacheKey: cacheKey
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok || data.error) {
+            showError(data.message || 'Failed to launch theme');
+            return;
+        }
+        
+        // Switch to game tab
+        switchTab('newTheme');
+        
+        // Start the game
+        startGame(data);
+        
+    } catch (error) {
+        console.error('Error launching theme:', error);
+        showError('Connection error');
+    }
+}
+
+// ============================================================================
+// END: Complete function replacements
+// ============================================================================
+
+	async function launchThemeFromBrowserD(cacheKey, displayName) {
+    console.log(`Launching cached theme: ${cacheKey}`);
+    
+    try {
+        const response = await fetch(`${API_URL}/api/play-cached-theme`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify({ cacheKey })
+        });
+        
+        const data = await response.json();
+
+        if (response.status === 429 || response.status === 503) {
+            showError(data.message || 'Theme limit reached!');
+            updateThemeCounter();
+            return;
+        }
+
+        if (response.status === 400 && data.error === 'Theme exhausted') {
+            showError(data.message || 'Theme exhausted!');
+            return;
+        }
+
+        if (data.error) {
+            showError(data.message || 'Failed to load theme');
+            return;
+        }
+
+        startGame(data);
+        
+    } catch (error) {
+        console.error('Error loading cached theme:', error);
+        showError('Connection error');
+    }
+}
+
+	async function launchThemeFromBrowserD(cacheKey, displayName) {
+            const parts = cacheKey.split('_');
+            const ageMap = { easy: '5 year old', medium: '9 year old', hard: '12 year old' };
+            const themeString = `${parts[0]} ${ageMap[parts[2]] || ''}`.trim();
+            console.log(`Launching: ${themeString} (${cacheKey})`);
+            fetchAndStartGame(themeString);
+        }
+
+        function logout() {
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('userEmail');
+            location.reload();
+        }
+
+        async function fetchAndStartGame(theme, forcePlay = false) {
+            if (!theme) {
+                showError('Error: No theme provided');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/api/generate-word`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ theme, forcePlay })
+                });
+                
+                const data = await response.json();
+
+		if (response.status === 429 || response.status === 503) {
+		    showError(data.message || 'Theme limit reached!');
+		    updateThemeCounter();
+    		    return;
+		}
+
+                if (data.themesRemaining !== undefined) {
+                    updateThemeCounter();
+                }
+
+                if (response.status === 400 && data.error === 'Theme exhausted') {
+                    showError(data.message || 'Theme exhausted!');
+                    return;
+                }
+
+                if (data.error) {
+                    showError(data.message || 'Failed to generate puzzle');
+                    return;
+                }
+
+                startGame(data);
+                
+            } catch (error) {
+                console.error('API Error:', error);
+                showError('Connection error: ' + error.message);
+            }
+        }
+
+        function startGame(gameData) {
+            console.log('=== START GAME ===');
+            console.log('gameData:', gameData);
+            console.log('gameData.theme:', gameData.theme);
+	    wordList = gameData.words;
+    	    currentWordIndex = 0;
+            selectedThemeWord = gameData.theme;
+	    currentWord = wordList[currentWordIndex];
+            maxGuesses = gameData.guesses;
+            remainingGuesses = maxGuesses;
+	    currentLanguage = gameData.language || 'en';
+	    winMessage = gameData.winMessage;  
+    	    loseMessage = gameData.loseMessage;
+    	    currentThemeId = gameData.themeId || null;
+            wordStartTime = Date.now();
+            letterSwapCount = 0;
+	    createKeyboard(currentLanguage);
+            
+            document.getElementById('themeInputScreen').classList.add('hidden');
+            document.getElementById('gameScreen').classList.remove('hidden');
+	    document.getElementById('selectedTheme').textContent = `${selectedThemeWord} (${currentWordIndex + 1}/${wordList.length})`;
+
+            createWordBoxes();
+            updateGuessCount();
+        }
+
+        function createWordBoxes() {
+            const container = document.getElementById('wordBoxes');
+            container.innerHTML = '';
+    
+            let fontSizeClass = '';
+            if (currentWord.length > 9) fontSizeClass = 'tiny-font';
+            else if (currentWord.length > 6) fontSizeClass = 'small-font';
+            
+            for (let i = 0; i < currentWord.length; i++) {
+                const box = document.createElement('div');
+                box.className = `letter-box ${fontSizeClass}`;
+                box.id = `box-${i}`;
+                box.setAttribute('draggable', 'true');
+                container.appendChild(box);
+            }
+        }
+
+        function addLetter(letter) {
+            if (gameOver) return;
+            if (currentGuess.length < currentWord.length) {
+                currentGuess += letter;
+                updateCurrentGuessDisplay();
+            }
+        }
+
+        function deleteLetter() {
+            if (gameOver) return;
+            currentGuess = currentGuess.slice(0, -1);
+            updateCurrentGuessDisplay();
+        }
+
+        function updateCurrentGuessDisplay() {
+            for (let i = 0; i < currentWord.length; i++) {
+                const box = document.getElementById(`box-${i}`);
+                box.textContent = i < currentGuess.length ? currentGuess[i] : '';
+            }
+        }
+
+        function submitGuess() {
+            if (gameOver) return;
+
+            const guess = currentGuess.toUpperCase();
+            
+            if (guess.length !== currentWord.length) {
+		showError(`Please enter a ${currentWord.length}-letter word!`);
+                return;
+            }
+            
+            guessHistory.push(guess);
+            remainingGuesses--;
+            
+            showGuessFeedback(guess);
+            updateKeyboard(guess);
+            
+            if (guess === currentWord) {
+                for (let i = 0; i < currentWord.length; i++) {
+                    const box = document.getElementById(`box-${i}`);
+                    box.textContent = currentWord[i];
+                    box.classList.add('correct');
+                }
+                endGame(true);
+            } else if (remainingGuesses === 0) {
+                endGame(false);
+            } else {
+                let preservedGuess = '';
+                for (let i = 0; i < currentWord.length; i++) {
+                    const box = document.getElementById(`box-${i}`);
+                    if (box.style.opacity === '0.5') {
+                        preservedGuess += box.textContent;
+                    }
+                }
+                currentGuess = preservedGuess;
+                updateCurrentGuessDisplay();
+            }
+            
+            updateGuessCount();
+        }
+
+        function showGuessFeedback(guess) {
+            const container = document.getElementById('previousGuesses');
+            const guessDiv = document.createElement('div');
+            guessDiv.className = 'previous-guess';
+            
+            const wordCopy = currentWord.split('');
+            const guessCopy = guess.split('');
+            const feedback = new Array(guess.length).fill('absent');
+            
+            for (let i = 0; i < guess.length; i++) {
+                if (guess[i] === currentWord[i]) {
+                    feedback[i] = 'correct';
+                    wordCopy[i] = null;
+                    guessCopy[i] = null;
+                }
+            }
+            
+            for (let i = 0; i < guess.length; i++) {
+                if (guessCopy[i] !== null) {
+                    const index = wordCopy.indexOf(guessCopy[i]);
+                    if (index !== -1) {
+                        feedback[i] = 'present';
+                        wordCopy[index] = null;
+                    }
+                }
+            }
+            
+            let fontSizeClass = '';
+            if (currentWord.length > 9) fontSizeClass = 'tiny-font';
+            else if (currentWord.length > 6) fontSizeClass = 'small-font';
+            
+            for (let i = 0; i < guess.length; i++) {
+                const box = document.createElement('div');
+                box.className = `letter-box ${feedback[i]} ${fontSizeClass}`;
+                box.textContent = guess[i];
+                guessDiv.appendChild(box);
+            }
+            
+            container.appendChild(guessDiv);
+        }
+
+        function updateKeyboard(guess) {
+            const wordCopy = currentWord.split('');
+            
+            for (let i = 0; i < guess.length; i++) {
+                const letter = guess[i];
+                const key = Array.from(document.querySelectorAll('.key')).find(k => k.textContent === letter);
+                if (!key) continue;
+                
+                if (guess[i] === currentWord[i]) {
+                    key.classList.add('correct');
+                    key.classList.remove('present', 'used');
+                } else if (wordCopy.includes(letter) && !key.classList.contains('correct')) {
+                    key.classList.add('present');
+                    key.classList.remove('used');
+                } else if (!key.classList.contains('correct') && !key.classList.contains('present')) {
+                    key.classList.add('used');
+                }
+            }
+        }
+
+        function updateGuessCount() {
+            document.getElementById('guessesRemaining').textContent = remainingGuesses;
+        }
+
+        async function recordWordAttempt(won) {
+            if (!currentThemeId) return;
+            
+            try {
+                await fetch(`${API_URL}/api/record-word-attempt`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({
+                        themeId: currentThemeId,
+                        word: currentWord,
+                        guesses: maxGuesses - remainingGuesses,
+                        hintsUsed: hintsUsed,
+                        won: won,
+                        letterSwaps: letterSwapCount,
+                        guessHistory: guessHistory,
+                        timeSeconds: Math.floor((Date.now() - wordStartTime) / 1000)
+                    })
+                });
+            } catch (error) {
+                console.error('Failed to record:', error);
+            }
+        }
+
+        async function endGame(won) {
+            gameOver = true;
+            await recordWordAttempt(won);
+            
+            const messageDiv = document.getElementById('gameMessage');
+            document.getElementById('giveUpBtn').classList.add('hidden');
+            document.getElementById('resetButton').classList.remove('hidden');
+            document.getElementById('hintDisplay').classList.add('hidden');
+            document.getElementById('hintBtn').classList.add('hidden');
+            document.getElementById('submitGuess').classList.add('hidden');
+
+	    if (won) {
+ 	   	celebrateWin();
+		messageDiv.textContent = `🎉 ${winMessage} ${currentWord}`;
+    		messageDiv.className = 'message win';
+	    } else {
+		messageDiv.textContent = `${loseMessage} ${currentWord}`;
+    		messageDiv.className = 'message lose';
+	    }
+
+	    if (currentWordIndex < wordList.length - 1) {
+    		document.getElementById('resetButton').textContent = 'Next Word →';
+	    } else {
+    		document.getElementById('resetButton').textContent = 'New Theme';
+	    }
+        }
+
+        function celebrateWin() {
+            for (let i = 0; i < currentWord.length; i++) {
+                const box = document.getElementById(`box-${i}`);
+                setTimeout(() => box.classList.add('flash'), i * 150);
+                setTimeout(() => box.classList.remove('flash'), i * 150 + 1000);
+                setTimeout(() => box.classList.add('flash'), i * 150 + 1200);
+                setTimeout(() => box.classList.remove('flash'), i * 150 + 2200);
+            }
+        }
+
+        function giveUp() {
+            if (gameOver) return;
+            endGame(false);
+        }
+
+	async function getHint() {
+            if (gameOver || hintsUsed >= MAX_HINTS) {
+		showError('No hints available!');
+                return;
+            }
+            
+            const hintBtn = document.getElementById('hintBtn');
+            const hintDisplay = document.getElementById('hintDisplay');
+
+	    if (hintsUsed < 2) {
+        	const emptyBoxes = [];
+        	for (let i = 0; i < currentWord.length; i++) {
+            	    if (!document.getElementById(`box-${i}`).textContent) {
+                	emptyBoxes.push(i);
+            	    }
+        	}
+        
+        	if (emptyBoxes.length > 0) {
+            	    const box = document.getElementById(`box-${emptyBoxes[0]}`);
+            	    box.textContent = currentWord[emptyBoxes[0]];
+            	    box.style.opacity = '0.5';
+            	    currentGuess += currentWord[emptyBoxes[0]];
+        	}
+        
+            	hintsUsed++;
+            	hintBtn.textContent = `💡 Hint (${3 - hintsUsed} left)`;
+            	return;
+    	    }
+            
+            hintBtn.disabled = true;
+            hintDisplay.textContent = '💡 Generating hint...';
+            hintDisplay.classList.remove('hidden');
+            
+            try {
+                const response = await fetch(`${API_URL}/api/get-hint`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ word: currentWord, theme: selectedThemeWord })
+                });
+                
+                const data = await response.json();
+                
+                if (data.hint) {
+                    hintDisplay.textContent = '💡 ' + data.hint;
+                    hintsUsed++;
+                    hintBtn.textContent = hintsUsed >= MAX_HINTS ? '💡 No hints left' : `💡 Get Hint (${MAX_HINTS - hintsUsed} left)`;
+                    hintBtn.disabled = hintsUsed >= MAX_HINTS;
+                } else {
+                    throw new Error('No hint');
+                }
+            } catch (error) {
+                hintDisplay.textContent = '❌ Failed to generate hint';
+                hintBtn.disabled = false;
+            }
+        }
+
+	function resetToTheme() {
+            if (currentWordIndex < wordList.length - 1 && wordList.length > 0) {
+                currentWordIndex++;
+                currentWord = wordList[currentWordIndex];
+                maxGuesses = 8;
+                remainingGuesses = maxGuesses;
+                currentGuess = '';
+                guessHistory = [];
+                gameOver = false;
+                hintsUsed = 0;
+                wordStartTime = Date.now();
+                letterSwapCount = 0;
+                
+                document.getElementById('selectedTheme').textContent = `${selectedThemeWord} (${currentWordIndex + 1}/${wordList.length})`;
+                document.getElementById('previousGuesses').innerHTML = '';
+                document.getElementById('gameMessage').textContent = '';
+                document.getElementById('resetButton').classList.add('hidden');
+                document.getElementById('giveUpBtn').classList.remove('hidden');
+                document.getElementById('submitGuess').classList.remove('hidden');
+                document.getElementById('submitGuess').disabled = false;
+                document.getElementById('hintBtn').classList.remove('hidden');
+                document.getElementById('hintBtn').disabled = false;
+                document.getElementById('hintBtn').textContent = '💡 Get Hint';
+                document.getElementById('hintDisplay').classList.add('hidden');
+                
+                document.querySelectorAll('.key').forEach(key => {
+                    key.classList.remove('correct', 'present', 'used');
+                });
+                
+                createWordBoxes();
+                updateGuessCount();
+                return;
+            }
+            
+            // Reset to theme input
+            currentWord = '';
+            wordList = [];
+            currentWordIndex = 0;
+            maxGuesses = 0;
+            remainingGuesses = 0;
+            currentGuess = '';
+            guessHistory = [];
+            gameOver = false;
+            selectedThemeWord = '';
+            hintsUsed = 0;
+            currentThemeId = null;
+            wordStartTime = null;
+            letterSwapCount = 0;
+
+		document.getElementById('generateBtn').textContent = 'Generate';
+document.getElementById('generateBtn').onclick = generateTheme;
+document.getElementById('generateBtn').disabled = false;
+            
+            document.getElementById('hintBtn').disabled = false;
+            document.getElementById('hintBtn').textContent = '💡 Get Hint';
+            document.getElementById('hintDisplay').classList.add('hidden');
+            document.getElementById('themeInput').value = '';
+            document.getElementById('gameScreen').classList.add('hidden');
+            document.getElementById('themeInputScreen').classList.remove('hidden');
+            document.getElementById('previousGuesses').innerHTML = '';
+            document.getElementById('gameMessage').textContent = '';
+            document.getElementById('resetButton').classList.add('hidden');
+            document.getElementById('resetButton').textContent = 'Reset';
+            document.getElementById('giveUpBtn').classList.remove('hidden');
+            document.getElementById('submitGuess').disabled = false;
+            document.getElementById('hintBtn').classList.remove('hidden');
+            document.getElementById('submitGuess').classList.remove('hidden');
+            
+            document.querySelectorAll('.key').forEach(key => {
+                key.classList.remove('correct', 'present', 'used');
+            });
+            
+            updateThemeCounter();
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (gameOver) return;
+            if (e.key === 'Enter') submitGuess();
+            else if (e.key === 'Backspace') deleteLetter();
+            else if (/^[a-zA-Z]$/.test(e.key)) addLetter(e.key.toUpperCase());
+        });
+
+        // Drag and drop handlers
+        let draggedLetter = null;
+        let dragSourceIndex = null;
+        let dragSourceType = null;
+
+        document.addEventListener('dragstart', (e) => {
+            if (gameOver) return;
+            if (e.target.classList.contains('key') && e.target.textContent !== '⌫') {
+                draggedLetter = e.target.textContent;
+                dragSourceType = 'keyboard';
+                e.target.classList.add('dragging');
+            } else if (e.target.classList.contains('letter-box') && e.target.textContent) {
+                draggedLetter = e.target.textContent;
+                dragSourceType = 'box';
+                dragSourceIndex = parseInt(e.target.id.split('-')[1]);
+                e.target.style.opacity = '0.5';
+            }
+        });
+
+        document.addEventListener('dragend', (e) => {
+            if (e.target.classList.contains('key')) {
+                e.target.classList.remove('dragging');
+            } else if (e.target.classList.contains('letter-box')) {
+                e.target.style.opacity = '1';
+            }
+        });
+
+        document.getElementById('wordBoxes').addEventListener('dragover', (e) => {
+            if (gameOver) return;
+            if (e.target.classList.contains('letter-box')) {
+                e.preventDefault();
+                e.target.classList.add('drag-over');
+            }
+        });
+
+        document.getElementById('wordBoxes').addEventListener('dragleave', (e) => {
+            if (e.target.classList.contains('letter-box')) {
+                e.target.classList.remove('drag-over');
+            }
+        });
+
+        document.getElementById('wordBoxes').addEventListener('drop', (e) => {
+            if (gameOver) return;
+            if (!e.target.classList.contains('letter-box')) return;
+            
+            e.preventDefault();
+            e.target.classList.remove('drag-over');
+            
+            const targetIndex = parseInt(e.target.id.split('-')[1]);
+            
+            if (dragSourceType === 'box' && dragSourceIndex !== null && dragSourceIndex !== targetIndex) {
+                letterSwapCount++;
+                let guessArray = currentGuess.split('');
+                
+                if (targetIndex < guessArray.length && guessArray[targetIndex]) {
+                    const temp = guessArray[targetIndex];
+                    guessArray[targetIndex] = guessArray[dragSourceIndex];
+                    guessArray[dragSourceIndex] = temp;
+                } else {
+                    guessArray.splice(dragSourceIndex, 1);
+                    guessArray.splice(targetIndex, 0, draggedLetter);
+                }
+                
+                currentGuess = guessArray.join('');
+                updateCurrentGuessDisplay();
+            } else if (dragSourceType === 'keyboard') {
+                if (currentGuess.length < currentWord.length) {
+                    addLetter(draggedLetter);
+                }
+            }
+            
+            dragSourceType = null;
+            dragSourceIndex = null;
+            draggedLetter = null;
+        });
+    </script>
+</body>
+</html>

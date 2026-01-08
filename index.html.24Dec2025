@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wizbee - AI Word Puzzle Game</title>
+    
+    <!-- Google Sign-In -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+	<h1><img src="bee3.gif" alt="Wizbee" style="height: 48px; vertical-align: middle;"> Wizbee</h1>
+
+        <!-- Login Screen -->
+        <div id="loginScreen" class="login-screen">
+            <h2>Welcome to Wizbee!</h2>
+            <p>Sign in with Google to play AI-powered word puzzles</p>
+		<div style="display: flex; justify-content: center;">
+    		<div id="google-signin-button"></div>
+		</div>
+        </div>
+
+        <!-- Upgrade Modal -->
+        <div id="upgradeModal" class="upgrade-modal hidden">
+            <div class="modal-content">
+	        <h2>🎉 You've used all 4 free themes!</h2>
+	        <p>Buy 128 more themes for just $0.99</p>
+                <button class="upgrade-btn" onclick="upgradeNow()">Upgrade Now</button>
+                <button class="maybe-later-btn" onclick="closeUpgradeModal()">Maybe Later</button>
+            </div>
+        </div>
+
+        <!-- Screen 1: Theme Input -->
+        <div id="themeInputScreen" class="theme-input-screen hidden">
+            <div class="user-info">
+		<div>Signed in as: <span id="userEmail"></span></div>
+        	<button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+            <h2>What theme would you like?</h2>
+	    <div id="errorMessage" class="error-message hidden"></div>
+            <input type="text" id="themeInput" placeholder="Enter a theme (e.g., Italian Renaissance painters)">
+            <button onclick="generateThemes()">Generate →</button>
+        </div>
+
+        <!-- Screen 2: Theme Selection -->
+        <div id="themeSelectionScreen" class="theme-selection-screen hidden">
+            <h2>Choose your theme:</h2>
+            <div id="themeOptions" class="theme-options"></div>
+	    <button class="back-btn" onclick="resetToTheme()" style="margin-top: 20px;">← Back</button>
+        </div>
+
+        <!-- Screen 3: Game Board -->
+	<div id="gameScreen" class="game-screen hidden">
+    	<div class="theme-display">Theme: <span id="selectedTheme"></span></div>
+    	<div id="wordBoxes" class="word-boxes"></div>
+    	<div class="guesses-remaining">Guesses remaining: <span id="guessesRemaining"></span></div>
+    	<div id="keyboard" class="keyboard"></div>
+    
+    	<div class="guess-input-container">
+        	<button id="submitGuess" class="submit-guess" onclick="submitGuess()">Submit Word</button>
+        	<button id="hintBtn" class="hint-btn" onclick="getHint()">💡 Get Hint</button>
+        	<button id="giveUpBtn" class="give-up-btn" onclick="giveUp()">Give Up</button>
+    	</div>
+    
+    	<div id="hintDisplay" class="hint-display hidden"></div>
+
+    	<div id="previousGuesses" class="previous-guesses"></div>
+    	<div id="gameMessage" class="message"></div>
+    	<button id="resetButton" class="play-again hidden" onclick="resetToTheme()">Reset</button>
+	</div>
+    </div>
+
+    <script>
+        // Your Railway backend URL
+        const API_URL = 'https://wizbee-backend-production.up.railway.app';
+        
+        // Google Client ID
+        const GOOGLE_CLIENT_ID = '635584185020-emmqudvevrf1j01lpu6nha4tfneju6t2.apps.googleusercontent.com';
+
+        let authToken = null;
+        let userEmail = null;
+        let currentWord = '';
+        let maxGuesses = 0;
+        let remainingGuesses = 0;
+        let currentGuess = '';
+        let guessHistory = [];
+        let gameOver = false;
+        let selectedThemeWord = '';
+	let hintsUsed = 0;
+	let winMessage = '';
+	let loseMessage = '';
+        const MAX_HINTS = 3;
+	const MAX_THEMES = 3;
+        let currentLanguage = 'en';
+	let wordList = [];
+	let currentWordIndex = 0;
+        let themesPlayedCount = 0;
+
+	const keyboardLayouts = {
+            en: [ //English
+                ['Q','W','E','R','T','Y','U','I','O','P'],
+                ['A','S','D','F','G','H','J','K','L'],
+                ['Z','X','C','V','B','N','M','⌫']
+            ],
+            fr: [ //French
+                ['A','Z','E','R','T','Y','U','I','O','P'],
+                ['Q','S','D','F','G','H','J','K','L','M'],
+                ['W','X','C','V','B','N','É','È','Ê','À','⌫']
+            ],
+            es: [ //Spanish
+                ['Q','W','E','R','T','Y','U','I','O','P'],
+                ['A','S','D','F','G','H','J','K','L','Ñ'],
+                ['Z','X','C','V','B','N','M','Á','É','Í','Ó','Ú','⌫']
+            ],
+	    de: [ // German
+	        ['Q','W','E','R','T','Z','U','I','O','P','Ü'],
+        	['A','S','D','F','G','H','J','K','L','Ö','Ä'],
+        	['Y','X','C','V','B','N','M','ß','⌫']
+    	    ],
+    	    pl: [ // Polish
+        	['Q','W','E','R','T','Y','U','I','O','P'],
+        	['A','S','D','F','G','H','J','K','L','Ł'],
+        	['Z','X','C','V','B','N','M','Ą','Ć','Ę','Ń','Ó','Ś','Ź','Ż','⌫']
+    	    ],
+    	    it: [  // Italian
+    		['Q','W','E','R','T','Y','U','I','O','P'],
+    		['A','S','D','F','G','H','J','K','L'],
+    		['Z','X','C','V','B','N','M','À','È','É','Ì','Ò','Ù','⌫']
+	    ],
+	    pt: [  // Portuguese
+    		['Q','W','E','R','T','Y','U','I','O','P'],
+    		['A','S','D','F','G','H','J','K','L','Ç'],
+    		['Z','X','C','V','B','N','M','Á','À','Â','Ã','É','Ê','Í','Ó','Ô','Õ','Ú','⌫']
+	    ],
+	    nl: [  // Dutch
+    		['Q','W','E','R','T','Y','U','I','O','P'],
+    		['A','S','D','F','G','H','J','K','L'],
+    		['Z','X','C','V','B','N','M','⌫']
+	    ],
+	    sv: [  // Swedish/Norwegian
+    		['Q','W','E','R','T','Y','U','I','O','P','Å'],
+    		['A','S','D','F','G','H','J','K','L','Ö','Ä'],
+    		['Z','X','C','V','B','N','M','⌫']
+	    ],
+	    fi: [ // Finnish
+       		['Q','W','E','R','T','Y','U','I','O','P','Å'],
+    		['A','S','D','F','G','H','J','K','L','Ö','Ä'],
+    		['Z','X','C','V','B','N','M','⌫']
+	    ]
+        };
+
+        // Initialize Google Sign-In
+        window.onload = function() {
+            authToken = localStorage.getItem('authToken');
+            userEmail = localStorage.getItem('userEmail');
+            
+            if (authToken && userEmail) {
+                showThemeInput();
+            } else {
+                google.accounts.id.initialize({
+                    client_id: GOOGLE_CLIENT_ID,
+                    callback: handleGoogleSignIn
+                });
+                
+                google.accounts.id.renderButton(
+                    document.getElementById('google-signin-button'),
+                    { theme: 'outline', size: 'large', text: 'signin_with' }
+                );
+            }
+        };
+
+        // Handle Google Sign-In
+        async function handleGoogleSignIn(response) {
+            try {
+                const apiResponse = await fetch(`${API_URL}/auth/google`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: parseJwt(response.credential).email,
+                        googleToken: response.credential
+                    })
+                });
+                
+                const data = await apiResponse.json();
+                
+                if (data.token) {
+                    authToken = data.token;
+                    userEmail = data.email;
+                    
+                    localStorage.setItem('authToken', authToken);
+                    localStorage.setItem('userEmail', userEmail);
+                    
+                    showThemeInput();
+                } else {
+		    showError('Authentication failed. Please try again.');
+                }
+            } catch (error) {
+                console.error('Auth error:', error);
+		showError('Authentication failed. Please try again.');
+            }
+        }
+
+        // Parse JWT to get email
+        function parseJwt(token) {
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+            return JSON.parse(jsonPayload);
+        }
+
+	// Function create keyboard
+	function createKeyboard(language) {
+    	    const container = document.getElementById('keyboard');
+    	    container.innerHTML = '';
+    
+    	    const layout = keyboardLayouts[language] || keyboardLayouts['en'];
+    
+    	    layout.forEach(row => {
+        	const rowDiv = document.createElement('div');
+        	rowDiv.className = 'keyboard-row';
+        
+        	row.forEach(letter => {
+            	    const key = document.createElement('button');
+            	    key.className = 'key';
+            	    key.textContent = letter;
+            
+            	    if (letter === '⌫') {
+                	key.onclick = () => deleteLetter();
+            	    } else {
+                	key.setAttribute('draggable', 'true');
+                	key.onclick = () => addLetter(letter);
+            	    }
+            
+            	    rowDiv.appendChild(key);
+       		});
+        
+        	container.appendChild(rowDiv);
+    	    });
+	}
+
+	function showError(message) {
+ 	    const errorDiv = document.getElementById('errorMessage');
+    	    errorDiv.textContent = message;
+    	    errorDiv.classList.remove('hidden');
+    	    setTimeout(() => errorDiv.classList.add('hidden'), 5000);
+	}
+
+        function showThemeInput() {
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('themeInputScreen').classList.remove('hidden');
+            document.getElementById('userEmail').textContent = userEmail;
+        }
+
+        function logout() {
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('userEmail');
+            authToken = null;
+            userEmail = null;
+            location.reload();
+        }
+
+        function generateThemes() {
+            const input = document.getElementById('themeInput').value.trim();
+            console.log('generateThemes called, input value:', input);
+            
+            if (!input) {
+		showError('Please enter a theme!');
+                return;
+            }
+            
+            document.getElementById('themeInputScreen').classList.add('hidden');
+            document.getElementById('themeSelectionScreen').classList.remove('hidden');
+            
+            const optionsContainer = document.getElementById('themeOptions');
+            
+            optionsContainer.innerHTML = '';
+            const button = document.createElement('div');
+            button.className = 'theme-option';
+            button.textContent = `Generate puzzle for: ${input}`;
+            
+            const capturedTheme = input;
+            console.log('Creating button with capturedTheme:', capturedTheme);
+            
+            button.onclick = function() {
+                console.log('Button clicked! Captured theme:', capturedTheme);
+                fetchAndStartGame(capturedTheme);
+            };
+            optionsContainer.appendChild(button);
+        }
+
+        async function fetchAndStartGame(theme) {
+            console.log('fetchAndStartGame called with theme:', theme, 'type:', typeof theme);
+            
+            if (!theme) {
+		showError('Error: No theme provided');
+                return;
+            }
+            
+            const optionsContainer = document.getElementById('themeOptions');
+	    optionsContainer.innerHTML = '<div style="padding: 40px; text-align: center; font-size: 24px;"><img src="bee2.gif" style="height: 80px; vertical-align: middle;"> Generating puzzle...</div>';
+            
+            try {
+                console.log('Calling API with theme:', theme);
+                
+                const response = await fetch(`${API_URL}/api/generate-word`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ theme: theme })
+                });
+                
+                console.log('API response status:', response.status);
+
+		const data = await response.json();
+                console.log('API data:', data);
+
+		if (data.themesRemaining !== undefined) {
+ 		    themesPlayedCount = data.themesUsed;
+    
+   		    // Show warning at theme 3
+    		    if (data.themesRemaining === 1) {
+        	//	showError('Warning: Only 1 free theme remaining!');
+    		    }
+		}
+
+		if (response.status === 429 || response.status === 503) {
+		    optionsContainer.innerHTML = '';
+
+		    showError(data.message || 'Theme limit reached!');
+		    document.getElementById('themeInput').disabled = true;
+
+			optionsContainer.innerHTML = '';
+    
+    			// Hide theme input elements
+    			document.getElementById('themeInput').style.display = 'none';
+    			document.querySelector('.theme-input-screen h2').style.display = 'none';
+			document.querySelector('.theme-input-screen > button').style.display = 'none';
+    
+   			 // Show upgrade modal
+    			document.getElementById('upgradeModal').classList.remove('hidden');
+
+                    resetToTheme();
+        	    return;
+        	}
+
+                if (data.error) {
+		    showError(data.message || 'Failed to generate puzzle. Please try again.');
+                    resetToTheme();
+                    return;
+                }
+
+                console.log('Starting game with words:', data.words);
+                startGame(data);
+                
+            } catch (error) {
+                console.error('API Error:', error);
+		showError('Connection error: ' + error.message);
+                resetToTheme();
+            }
+        }
+
+        function startGame(gameData) {
+	    wordList = gameData.words;
+    	    currentWordIndex = 0;
+            selectedThemeWord = gameData.theme;
+	    currentWord = wordList[currentWordIndex];
+            maxGuesses = gameData.guesses;
+            remainingGuesses = maxGuesses;
+	    currentLanguage = gameData.language || 'en';
+	    winMessage = gameData.winMessage;  
+    	    loseMessage = gameData.loseMessage;  
+	    createKeyboard(currentLanguage);
+            
+            document.getElementById('themeSelectionScreen').classList.add('hidden');
+            document.getElementById('gameScreen').classList.remove('hidden');
+	    document.getElementById('selectedTheme').textContent = `${selectedThemeWord} (${currentWordIndex + 1}/${wordList.length})`;
+
+		
+
+            createWordBoxes();
+            updateGuessCount();
+
+	 /*   setTimeout(() => {
+        document.body.insertAdjacentHTML('beforeend', '<div class="tutorial-overlay"></div>');
+        document.getElementById('keyboard').classList.add('tutorial-highlight');
+        localStorage.setItem('tutorialSeen', 'true');
+        
+        // Remove after 3 seconds
+        setTimeout(() => {
+            document.querySelector('.tutorial-overlay').remove();
+            document.getElementById('keyboard').classList.remove('tutorial-highlight');
+        }, 3000);
+    }, 500); */
+
+        }
+
+        function createWordBoxes() {
+            const container = document.getElementById('wordBoxes');
+            container.innerHTML = '';
+            
+            let fontSizeClass = '';
+            if (currentWord.length > 9) {
+                fontSizeClass = 'tiny-font';
+            } else if (currentWord.length > 6) {
+                fontSizeClass = 'small-font';
+            }
+            
+            for (let i = 0; i < currentWord.length; i++) {
+                const box = document.createElement('div');
+                box.className = `letter-box ${fontSizeClass}`;
+                box.id = `box-${i}`;
+                box.setAttribute('draggable', 'true');
+                container.appendChild(box);
+            }
+        }
+
+        function addLetter(letter) {
+            if (gameOver) return;
+            if (currentGuess.length < currentWord.length) {
+                currentGuess += letter;
+                updateCurrentGuessDisplay();
+            }
+        }
+
+        function deleteLetter() {
+            if (gameOver) return;
+            currentGuess = currentGuess.slice(0, -1);
+            updateCurrentGuessDisplay();
+        }
+
+        function updateCurrentGuessDisplay() {
+            for (let i = 0; i < currentWord.length; i++) {
+                const box = document.getElementById(`box-${i}`);
+                if (i < currentGuess.length) {
+                    box.textContent = currentGuess[i];
+                } else {
+                    box.textContent = '';
+                }
+            }
+        }
+
+        function checkUpgradePrompt() {
+            if (themesPlayedCount > MAX_THEMES) {
+                document.getElementById('upgradeModal').classList.remove('hidden');
+            }
+        }
+
+        function closeUpgradeModal() {
+            document.getElementById('upgradeModal').classList.add('hidden');
+
+	   // Show upgrade button on theme screen
+    	    	const upgradeBtn = document.createElement('button');
+    	    	upgradeBtn.textContent = '🎉 Get 128 More Themes - $0.99';
+    		upgradeBtn.className = 'upgrade-btn';
+    		upgradeBtn.style.marginTop = '20px';
+    		upgradeBtn.onclick = upgradeNow;
+    
+    		const themeScreen = document.getElementById('themeInputScreen');
+    		if (!document.getElementById('permanentUpgradeBtn')) {
+        		upgradeBtn.id = 'permanentUpgradeBtn';
+        		themeScreen.appendChild(upgradeBtn);
+    		}
+        }
+
+        function upgradeNow() {
+            alert('Stripe payment coming soon!');
+            closeUpgradeModal();
+        }
+
+        function submitGuess() {
+            if (gameOver) return;
+
+            const guess = currentGuess.toUpperCase();
+            
+            if (guess.length !== currentWord.length) {
+		showError(`Please enter a ${currentWord.length}-letter word!`);
+                return;
+            }
+            
+            guessHistory.push(guess);
+            remainingGuesses--;
+            
+            showGuessFeedback(guess);
+            updateKeyboard(guess);
+            
+            if (guess === currentWord) {
+                for (let i = 0; i < currentWord.length; i++) {
+                    const box = document.getElementById(`box-${i}`);
+                    box.textContent = currentWord[i];
+                    box.classList.add('correct');
+                }
+                endGame(true);
+            } else if (remainingGuesses === 0) {
+                endGame(false);
+            } else {
+		// Clear guess but preserve hint letters
+                let preservedGuess = '';
+                for (let i = 0; i < currentWord.length; i++) {
+                    const box = document.getElementById(`box-${i}`);
+                    if (box.style.opacity === '0.5') {
+                        preservedGuess += box.textContent;
+                    }
+                }
+                currentGuess = preservedGuess;
+                updateCurrentGuessDisplay();
+            }
+            
+            updateGuessCount();
+        }
+
+        function showGuessFeedback(guess) {
+            const container = document.getElementById('previousGuesses');
+            const guessDiv = document.createElement('div');
+            guessDiv.className = 'previous-guess';
+            
+            const wordCopy = currentWord.split('');
+            const guessCopy = guess.split('');
+            const feedback = new Array(guess.length).fill('absent');
+            
+            for (let i = 0; i < guess.length; i++) {
+                if (guess[i] === currentWord[i]) {
+                    feedback[i] = 'correct';
+                    wordCopy[i] = null;
+                    guessCopy[i] = null;
+                }
+            }
+            
+            for (let i = 0; i < guess.length; i++) {
+                if (guessCopy[i] !== null) {
+                    const index = wordCopy.indexOf(guessCopy[i]);
+                    if (index !== -1) {
+                        feedback[i] = 'present';
+                        wordCopy[index] = null;
+                    }
+                }
+            }
+            
+            let fontSizeClass = '';
+            if (currentWord.length > 9) {
+                fontSizeClass = 'tiny-font';
+            } else if (currentWord.length > 6) {
+                fontSizeClass = 'small-font';
+            }
+            
+            for (let i = 0; i < guess.length; i++) {
+                const box = document.createElement('div');
+                box.className = `letter-box ${feedback[i]} ${fontSizeClass}`;
+                box.textContent = guess[i];
+                guessDiv.appendChild(box);
+            }
+            
+            container.appendChild(guessDiv);
+        }
+
+        function updateKeyboard(guess) {
+            const wordCopy = currentWord.split('');
+            
+            for (let i = 0; i < guess.length; i++) {
+                const letter = guess[i];
+                const key = Array.from(document.querySelectorAll('.key')).find(k => k.textContent === letter);
+                
+                if (!key) continue;
+                
+                if (guess[i] === currentWord[i]) {
+                    key.classList.add('correct');
+                    key.classList.remove('present', 'used');
+                } else if (wordCopy.includes(letter) && !key.classList.contains('correct')) {
+                    key.classList.add('present');
+                    key.classList.remove('used');
+                } else if (!key.classList.contains('correct') && !key.classList.contains('present')) {
+                    key.classList.add('used');
+                }
+            }
+        }
+
+        function updateGuessCount() {
+            document.getElementById('guessesRemaining').textContent = remainingGuesses;
+        }
+
+        function endGame(won) {
+            gameOver = true;
+            const messageDiv = document.getElementById('gameMessage');
+            const submitButton = document.getElementById('submitGuess');
+            const giveUpButton = document.getElementById('giveUpBtn');
+            const resetButton = document.getElementById('resetButton');
+	    const hintDisplay = document.getElementById('hintDisplay');  
+	    const hintBtn = document.getElementById('hintBtn');  
+            
+            giveUpButton.classList.add('hidden');
+            resetButton.classList.remove('hidden');
+            hintDisplay.classList.add('hidden');
+    	    hintBtn.classList.add('hidden');  
+	    submitButton.classList.add('hidden'); 
+
+	    if (won) {
+ 	   	celebrateWin();
+		messageDiv.textContent = `🎉 ${winMessage} ${currentWord}`;
+    		messageDiv.className = 'message win';
+	    } else {
+		messageDiv.textContent = `${loseMessage} ${currentWord}`;
+    		messageDiv.className = 'message lose';
+	    }
+
+	    if (currentWordIndex < wordList.length - 1) {
+    		resetButton.textContent = 'Next Word →';
+    		resetButton.classList.remove('hidden');
+	    } else {
+    		resetButton.textContent = 'New Theme';
+    		resetButton.classList.remove('hidden');
+	    }
+        }
+
+        function celebrateWin() {
+            for (let i = 0; i < currentWord.length; i++) {
+                const box = document.getElementById(`box-${i}`);
+                
+                setTimeout(() => { box.classList.add('flash'); }, i * 150);
+                setTimeout(() => { box.classList.remove('flash'); }, i * 150 + 1000);
+                setTimeout(() => { box.classList.add('flash'); }, i * 150 + 1200);
+                setTimeout(() => { box.classList.remove('flash'); }, i * 150 + 2200);
+            }
+        }
+
+        function giveUp() {
+            if (gameOver) return;
+            endGame(false);
+        }
+
+	async function getHint() {
+            if (gameOver) return;
+            if (hintsUsed >= MAX_HINTS) {
+		showError('You\'ve used all your hints for this puzzle!');
+                return;
+            }
+            
+            const hintBtn = document.getElementById('hintBtn');
+            const hintDisplay = document.getElementById('hintDisplay');
+
+	    if (hintsUsed < 2) {
+        	const emptyBoxes = [];
+        	for (let i = 0; i < currentWord.length; i++) {
+            	    if (!document.getElementById(`box-${i}`).textContent) {
+                	emptyBoxes.push(i);
+            	    }
+        	}
+        
+        	if (emptyBoxes.length > 0) {
+            	    const randomIndex = emptyBoxes[0]; // First empty box
+            	    const box = document.getElementById(`box-${randomIndex}`);
+            	    box.textContent = currentWord[randomIndex];
+            	    box.style.opacity = '0.5';
+            	    currentGuess += currentWord[randomIndex];
+        	}
+        
+            	hintsUsed++;
+            	hintBtn.textContent = `💡 Hint (${3 - hintsUsed} left)`;
+            	return;
+    	    }
+            
+            hintBtn.disabled = true;
+            hintDisplay.textContent = '💡 Generating hint...';
+            hintDisplay.classList.remove('hidden');
+            
+            try {
+                const response = await fetch(`${API_URL}/api/get-hint`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({
+                        word: currentWord,
+                        theme: selectedThemeWord
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.hint) {
+                    hintDisplay.textContent = '💡 ' + data.hint;
+                    hintsUsed++;
+                    
+                    if (hintsUsed >= MAX_HINTS) {
+                        hintBtn.textContent = '💡 No hints left';
+                    } else {
+                        hintBtn.disabled = false;
+                        hintBtn.textContent = `💡 Get Hint (${MAX_HINTS - hintsUsed} left)`;
+                    }
+                } else {
+                    throw new Error('No hint received');
+                }
+                
+            } catch (error) {
+                console.error('Hint error:', error);
+                hintDisplay.textContent = '❌ Failed to generate hint. Try again!';
+                hintBtn.disabled = false;
+            }
+        }
+
+	function resetToTheme() {
+            // Check if moving to next word in set
+            if (currentWordIndex < wordList.length - 1 && wordList.length > 0) {
+                currentWordIndex++;
+                currentWord = wordList[currentWordIndex];
+                maxGuesses = 8;
+                remainingGuesses = maxGuesses;
+                currentGuess = '';
+                guessHistory = [];
+                gameOver = false;
+                hintsUsed = 0;
+                
+                document.getElementById('selectedTheme').textContent = `${selectedThemeWord} (${currentWordIndex + 1}/${wordList.length})`;
+                document.getElementById('previousGuesses').innerHTML = '';
+                document.getElementById('gameMessage').textContent = '';
+                document.getElementById('resetButton').classList.add('hidden');
+                document.getElementById('giveUpBtn').classList.remove('hidden');
+                document.getElementById('submitGuess').classList.remove('hidden');
+                document.getElementById('submitGuess').disabled = false;
+                document.getElementById('hintBtn').classList.remove('hidden');
+                document.getElementById('hintBtn').disabled = false;
+                document.getElementById('hintBtn').textContent = '💡 Get Hint';
+                document.getElementById('hintDisplay').classList.add('hidden');
+                
+                document.querySelectorAll('.key').forEach(key => {
+                    key.classList.remove('correct', 'present', 'used');
+                });
+                
+                createWordBoxes();
+                updateGuessCount();
+	        checkUpgradePrompt();
+                return;
+            }
+            
+            // Reset to theme input
+            currentWord = '';
+            wordList = [];
+            currentWordIndex = 0;
+            maxGuesses = 0;
+            remainingGuesses = 0;
+            currentGuess = '';
+            guessHistory = [];
+            gameOver = false;
+            selectedThemeWord = '';
+            hintsUsed = 0;
+            
+            document.getElementById('hintBtn').disabled = false;
+            document.getElementById('hintBtn').textContent = '💡 Get Hint';
+            document.getElementById('hintDisplay').classList.add('hidden');
+            document.getElementById('themeSelectionScreen').classList.add('hidden');
+            document.getElementById('themeInput').value = '';
+            document.getElementById('gameScreen').classList.add('hidden');
+            document.getElementById('themeInputScreen').classList.remove('hidden');
+            document.getElementById('previousGuesses').innerHTML = '';
+            document.getElementById('gameMessage').textContent = '';
+            document.getElementById('resetButton').classList.add('hidden');
+            document.getElementById('resetButton').textContent = 'Reset';
+            document.getElementById('giveUpBtn').classList.remove('hidden');
+            document.getElementById('submitGuess').disabled = false;
+            document.getElementById('hintBtn').classList.remove('hidden');
+            document.getElementById('submitGuess').classList.remove('hidden');
+            
+            document.querySelectorAll('.key').forEach(key => {
+                key.classList.remove('correct', 'present', 'used');
+            });
+        }
+
+        // Keyboard input
+        document.addEventListener('keydown', (e) => {
+            if (gameOver) return;
+            
+            if (e.key === 'Enter') {
+                submitGuess();
+            } else if (e.key === 'Backspace') {
+                deleteLetter();
+            } else if (/^[a-zA-Z]$/.test(e.key)) {
+                addLetter(e.key.toUpperCase());
+            }
+        });
+
+        // Drag and drop
+        let draggedLetter = null;
+        let dragSourceIndex = null;
+        let dragSourceType = null;
+
+        document.querySelectorAll('.key[draggable="true"]').forEach(key => {
+            key.addEventListener('dragstart', (e) => {
+                if (gameOver) {
+                    e.preventDefault();
+                    return;
+                }
+                draggedLetter = e.target.textContent;
+                dragSourceType = 'keyboard';
+                e.target.classList.add('dragging');
+                e.dataTransfer.effectAllowed = 'copy';
+                e.dataTransfer.setData('text/plain', draggedLetter);
+            });
+
+            key.addEventListener('dragend', (e) => {
+                e.target.classList.remove('dragging');
+            });
+        });
+
+        document.getElementById('wordBoxes').addEventListener('dragstart', (e) => {
+            if (gameOver) return;
+            if (e.target.classList.contains('letter-box') && e.target.textContent.trim()) {
+                draggedLetter = e.target.textContent;
+                dragSourceType = 'box';
+                dragSourceIndex = parseInt(e.target.id.split('-')[1]);
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/plain', draggedLetter);
+                e.target.style.opacity = '0.5';
+                e.target.classList.add('dragging');
+            }
+        }, true);
+
+        document.getElementById('wordBoxes').addEventListener('dragend', (e) => {
+            if (e.target.classList.contains('letter-box')) {
+                e.target.style.opacity = '1';
+                e.target.classList.remove('dragging');
+            }
+        }, true);
+
+        document.getElementById('wordBoxes').addEventListener('dragover', (e) => {
+            if (gameOver) return;
+            if (e.target.classList.contains('letter-box')) {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = dragSourceType === 'box' ? 'move' : 'copy';
+                e.target.classList.add('drag-over');
+            }
+        }, true);
+
+        document.getElementById('wordBoxes').addEventListener('dragleave', (e) => {
+            if (e.target.classList.contains('letter-box')) {
+                e.target.classList.remove('drag-over');
+            }
+        }, true);
+
+        document.getElementById('wordBoxes').addEventListener('drop', (e) => {
+            if (gameOver) return;
+            if (!e.target.classList.contains('letter-box')) return;
+            
+            e.preventDefault();
+            e.target.classList.remove('drag-over');
+            
+            const targetIndex = parseInt(e.target.id.split('-')[1]);
+            
+            if (dragSourceType === 'box' && dragSourceIndex !== null) {
+                if (dragSourceIndex !== targetIndex) {
+                    let guessArray = currentGuess.split('');
+                    
+                    if (targetIndex < guessArray.length && guessArray[targetIndex]) {
+                        const temp = guessArray[targetIndex];
+                        guessArray[targetIndex] = guessArray[dragSourceIndex];
+                        guessArray[dragSourceIndex] = temp;
+                    } else {
+                        guessArray.splice(dragSourceIndex, 1);
+                        
+                        let adjustedTarget = targetIndex;
+                        if (dragSourceIndex < targetIndex) {
+                            adjustedTarget--;
+                        }
+                        
+                        if (adjustedTarget >= guessArray.length) {
+                            guessArray.push(draggedLetter);
+                        } else {
+                            guessArray.splice(adjustedTarget, 0, draggedLetter);
+                        }
+                    }
+                    
+                    currentGuess = guessArray.join('');
+                    updateCurrentGuessDisplay();
+                }
+            } else if (dragSourceType === 'keyboard') {
+                if (targetIndex === currentGuess.length && currentGuess.length < currentWord.length) {
+                    addLetter(draggedLetter);
+                } else if (targetIndex < currentGuess.length) {
+                    let guessArray = currentGuess.split('');
+                    guessArray[targetIndex] = draggedLetter;
+                    currentGuess = guessArray.join('');
+                    updateCurrentGuessDisplay();
+                } else if (currentGuess.length < currentWord.length) {
+                    addLetter(draggedLetter);
+                }
+            }
+            
+            dragSourceType = null;
+            dragSourceIndex = null;
+            draggedLetter = null;
+        }, true);
+    </script>
+</body>
+</html>

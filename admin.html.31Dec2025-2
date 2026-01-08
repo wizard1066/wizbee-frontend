@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wizbee - My Themes</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        .theme-list {
+            display: grid;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .theme-card {
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            background: white;
+        }
+        
+        .theme-card.editing {
+            border-color: #667eea;
+            background: #f7fafc;
+        }
+        
+        .theme-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .theme-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #2d3748;
+        }
+        
+        .theme-meta {
+            color: #718096;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        
+        .word-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .word-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .word-item.q1 { border-left: 3px solid #48bb78; }
+        .word-item.q2 { border-left: 3px solid #4299e1; }
+        .word-item.q3 { border-left: 3px solid #ed8936; }
+        .word-item.q4 { border-left: 3px solid #f56565; }
+        
+        .word-text {
+            flex: 1;
+        }
+        
+        .delete-word-btn {
+            background: none;
+            border: none;
+            color: #e53e3e;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 0;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .delete-word-btn:hover {
+            color: #c53030;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #5a67d8;
+        }
+        
+        .btn-danger {
+            background: #f56565;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #e53e3e;
+        }
+        
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #2d3748;
+        }
+        
+        .btn-secondary:hover {
+            background: #cbd5e0;
+        }
+        
+        .quartile-legend {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 15px;
+            font-size: 12px;
+            color: #718096;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 3px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #718096;
+        }
+        
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>
+            <a href="index.html" style="text-decoration: none; color: inherit;">
+                <img src="bee3.gif" alt="Wizbee" style="height: 48px; vertical-align: middle;"> Wizbee
+            </a>
+        </h1>
+
+        <div class="user-info">
+            <div>Signed in as: <span id="userEmail"></span></div>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+
+        <!-- Navigation -->
+        <div class="tabs">
+            <button class="tab" onclick="window.location.href='index.html'">Play Game</button>
+            <button class="tab active">⚙️ My Themes</button>
+            <button class="tab" onclick="window.location.href='leaderboard.html'">🏆 Leaderboard</button>
+            <button class="tab" onclick="window.location.href='progress.html'">📊 Progress</button>
+        </div>
+
+        <div class="tab-content active">
+            <h2>⚙️ Manage Your Themes</h2>
+            <p style="color: #718096; margin-bottom: 20px;">
+                Review and edit the themes you've created. Delete words that don't fit, or remove entire themes.
+            </p>
+            
+            <div id="themesContainer">
+                <div style="text-align: center; padding: 40px; color: #718096;">Loading your themes...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://api.wizbee.app';
+        let authToken = null;
+        let userEmail = null;
+        let themes = [];
+        let selectedWords = new Set();
+
+        window.onload = function() {
+            authToken = localStorage.getItem('authToken');
+            userEmail = localStorage.getItem('userEmail');
+            
+            if (!authToken || !userEmail) {
+                window.location.href = 'index.html';
+                return;
+            }
+            
+            document.getElementById('userEmail').textContent = userEmail;
+            loadMyThemes();
+            
+            // Check if we're editing a specific theme
+            const urlParams = new URLSearchParams(window.location.search);
+            const editCacheKey = urlParams.get('edit');
+            
+            if (editCacheKey) {
+                // Wait for themes to load, then auto-open the specified theme
+                setTimeout(() => {
+                    autoOpenTheme(editCacheKey);
+                }, 500);
+            }
+        };
+
+        function logout() {
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('userEmail');
+            window.location.href = 'index.html';
+        }
+
+        async function loadMyThemes() {
+            const container = document.getElementById('themesContainer');
+            
+            try {
+                const response = await fetch(`${API_URL}/api/my-themes`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><p>Failed to load themes</p></div>';
+                    return;
+                }
+                
+                const data = await response.json();
+                themes = data.themes || [];
+                
+                if (themes.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📝</div>
+                            <h3>No themes yet</h3>
+                            <p>Create your first theme to get started!</p>
+                            <button class="btn btn-primary" onclick="window.location.href='index.html'">Create Theme</button>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                renderThemes();
+                
+            } catch (error) {
+                console.error('Error loading themes:', error);
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><p>Failed to load themes</p></div>';
+            }
+        }
+
+        function renderThemes() {
+            const container = document.getElementById('themesContainer');
+            
+            let html = '<div class="theme-list">';
+            
+            themes.forEach((theme, index) => {
+                const parts = theme.cache_key.split('_');
+                const themeName = parts[0].charAt(0).toUpperCase() + parts[0].slice(1);
+                const language = parts[1].toUpperCase();
+                const difficulty = parts[2].charAt(0).toUpperCase() + parts[2].slice(1);
+                
+                const wordCount = theme.words.length;
+                const quartileSize = Math.ceil(wordCount / 4);
+                const selectedCount = Array.from(selectedWords).filter(key => key.startsWith(`${index}-`)).length;
+                
+                html += `
+                    <div class="theme-card" id="theme-${index}">
+                        <div class="theme-header">
+                            <div>
+                                <div class="theme-title">${themeName}</div>
+                                <div class="theme-meta">${language} • ${difficulty} • ${wordCount} words</div>
+                            </div>
+                            <div class="action-buttons">
+                                <button class="btn btn-secondary" onclick="toggleEdit(${index})">
+                                    <span id="edit-btn-${index}">✏️ Edit</span>
+                                </button>
+                                <button id="done-btn-${index}" class="btn btn-primary hidden" onclick="doneEditing('${theme.cache_key}')">
+                                    ✓ Done Editing
+                                </button>
+                                <button class="btn btn-danger" onclick="deleteTheme('${theme.cache_key}', ${index})">🗑️ Delete Theme</button>
+                            </div>
+                        </div>
+                        
+                        <div id="words-${index}" style="display: none;">
+                            <div class="quartile-legend">
+                                <div class="legend-item">
+                                    <div class="legend-color" style="background: #48bb78;"></div>
+                                    <span>Q1 (Easy)</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-color" style="background: #4299e1;"></div>
+                                    <span>Q2 (Medium)</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-color" style="background: #ed8936;"></div>
+                                    <span>Q3 (Hard)</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-color" style="background: #f56565;"></div>
+                                    <span>Q4 (Expert)</span>
+                                </div>
+                            </div>
+                            
+                            <div style="margin-bottom: 10px;">
+                                <button class="btn btn-secondary" onclick="selectAll(${index})" style="margin-right: 10px;">Select All</button>
+                                <button class="btn btn-secondary" onclick="deselectAll(${index})">Deselect All</button>
+                                <span style="margin-left: 20px; color: #718096;" id="selected-count-${index}">
+                                    ${selectedCount > 0 ? `${selectedCount} selected` : ''}
+                                </span>
+                            </div>
+                            
+                            <div style="margin-bottom: 15px;">
+                                <button class="btn btn-danger" onclick="deleteSelectedWords(${index})" ${selectedCount === 0 ? 'disabled' : ''}>
+                                    🗑️ Delete Selected (${selectedCount})
+                                </button>
+                            </div>
+                            
+                            <div class="word-grid">
+                `;
+                
+                theme.words.forEach((word, wordIndex) => {
+                    let quartileClass = 'q1';
+                    if (wordIndex >= quartileSize * 3) quartileClass = 'q4';
+                    else if (wordIndex >= quartileSize * 2) quartileClass = 'q3';
+                    else if (wordIndex >= quartileSize) quartileClass = 'q2';
+                    
+                    const wordKey = `${index}-${wordIndex}`;
+                    const isSelected = selectedWords.has(wordKey);
+                    
+                    html += `
+                        <div class="word-item ${quartileClass}" id="word-${index}-${wordIndex}" style="${isSelected ? 'background: #fed7d7; border-color: #fc8181;' : ''}">
+                            <input type="checkbox" 
+                                   id="check-${index}-${wordIndex}" 
+                                   ${isSelected ? 'checked' : ''}
+                                   onchange="toggleWordSelection(${index}, ${wordIndex})"
+                                   style="cursor: pointer;">
+                            <span class="word-text">${word}</span>
+                        </div>
+                    `;
+                });
+                
+                html += `
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function toggleEdit(index) {
+            const wordsDiv = document.getElementById(`words-${index}`);
+            const editBtn = document.getElementById(`edit-btn-${index}`);
+            const doneBtn = document.getElementById(`done-btn-${index}`);
+            const card = document.getElementById(`theme-${index}`);
+            
+            if (wordsDiv.style.display === 'none') {
+                wordsDiv.style.display = 'block';
+                editBtn.textContent = '✓ Close';
+                doneBtn.classList.remove('hidden');
+                card.classList.add('editing');
+            } else {
+                wordsDiv.style.display = 'none';
+                editBtn.textContent = '✏️ Edit';
+                doneBtn.classList.add('hidden');
+                card.classList.remove('editing');
+                clearThemeSelections(index);
+            }
+        }
+
+        function doneEditing(cacheKey) {
+            // Redirect back to index.html with resume parameter
+            window.location.href = `index.html?resume=${cacheKey}`;
+        }
+
+        function autoOpenTheme(cacheKey) {
+            // Find the theme in our loaded themes array
+            const themeIndex = themes.findIndex(t => t.cache_key === cacheKey);
+            
+            if (themeIndex === -1) {
+                console.log('Theme not found:', cacheKey);
+                return;
+            }
+            
+            // Auto-open it for editing
+            toggleEdit(themeIndex);
+            
+            // Scroll to it
+            setTimeout(() => {
+                const themeCard = document.getElementById(`theme-${themeIndex}`);
+                if (themeCard) {
+                    themeCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }, 100);
+        }
+
+        function toggleWordSelection(themeIndex, wordIndex) {
+            const wordKey = `${themeIndex}-${wordIndex}`;
+            const wordElement = document.getElementById(`word-${themeIndex}-${wordIndex}`);
+            const checkbox = document.getElementById(`check-${themeIndex}-${wordIndex}`);
+            const countSpan = document.getElementById(`selected-count-${themeIndex}`);
+            const deleteBtn = document.querySelector(`[onclick="deleteSelectedWords(${themeIndex})"]`);
+            
+            if (selectedWords.has(wordKey)) {
+                selectedWords.delete(wordKey);
+                if (wordElement) {
+                    wordElement.style.background = '';
+                    wordElement.style.borderColor = '';
+                }
+            } else {
+                selectedWords.add(wordKey);
+                if (wordElement) {
+                    wordElement.style.background = '#fed7d7';
+                    wordElement.style.borderColor = '#fc8181';
+                }
+            }
+            
+            const count = Array.from(selectedWords).filter(key => key.startsWith(`${themeIndex}-`)).length;
+            if (countSpan) countSpan.textContent = count > 0 ? `${count} selected` : '';
+            
+            if (deleteBtn) {
+                deleteBtn.disabled = count === 0;
+                deleteBtn.textContent = `🗑️ Delete Selected (${count})`;
+            }
+        }
+
+        function selectAll(themeIndex) {
+            const theme = themes[themeIndex];
+            theme.words.forEach((word, wordIndex) => {
+                const wordKey = `${themeIndex}-${wordIndex}`;
+                selectedWords.add(wordKey);
+                const checkbox = document.getElementById(`check-${themeIndex}-${wordIndex}`);
+                const wordElement = document.getElementById(`word-${themeIndex}-${wordIndex}`);
+                if (checkbox) checkbox.checked = true;
+                if (wordElement) {
+                    wordElement.style.background = '#fed7d7';
+                    wordElement.style.borderColor = '#fc8181';
+                }
+            });
+            
+            const countSpan = document.getElementById(`selected-count-${themeIndex}`);
+            const deleteBtn = document.querySelector(`[onclick="deleteSelectedWords(${themeIndex})"]`);
+            if (countSpan) countSpan.textContent = `${theme.words.length} selected`;
+            if (deleteBtn) {
+                deleteBtn.disabled = false;
+                deleteBtn.textContent = `🗑️ Delete Selected (${theme.words.length})`;
+            }
+        }
+
+        function deselectAll(themeIndex) {
+            const theme = themes[themeIndex];
+            theme.words.forEach((word, wordIndex) => {
+                const wordKey = `${themeIndex}-${wordIndex}`;
+                selectedWords.delete(wordKey);
+                const checkbox = document.getElementById(`check-${themeIndex}-${wordIndex}`);
+                const wordElement = document.getElementById(`word-${themeIndex}-${wordIndex}`);
+                if (checkbox) checkbox.checked = false;
+                if (wordElement) {
+                    wordElement.style.background = '';
+                    wordElement.style.borderColor = '';
+                }
+            });
+            
+            const countSpan = document.getElementById(`selected-count-${themeIndex}`);
+            const deleteBtn = document.querySelector(`[onclick="deleteSelectedWords(${themeIndex})"]`);
+            if (countSpan) countSpan.textContent = '';
+            if (deleteBtn) {
+                deleteBtn.disabled = true;
+                deleteBtn.textContent = `🗑️ Delete Selected (0)`;
+            }
+        }
+
+        function clearThemeSelections(themeIndex) {
+            const keysToDelete = Array.from(selectedWords).filter(key => key.startsWith(`${themeIndex}-`));
+            keysToDelete.forEach(key => selectedWords.delete(key));
+        }
+
+        async function deleteSelectedWords(themeIndex) {
+            const theme = themes[themeIndex];
+            const selectedIndices = Array.from(selectedWords)
+                .filter(key => key.startsWith(`${themeIndex}-`))
+                .map(key => parseInt(key.split('-')[1]))
+                .sort((a, b) => b - a);
+            
+            if (selectedIndices.length === 0) return;
+            
+            if (!confirm(`Delete ${selectedIndices.length} selected word(s)?`)) return;
+            
+            try {
+                for (const wordIndex of selectedIndices) {
+                    const response = await fetch(`${API_URL}/api/delete-word`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${authToken}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            cacheKey: theme.cache_key,
+                            wordIndex: wordIndex
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        alert('Failed to delete some words');
+                        break;
+                    }
+                    
+                    themes[themeIndex].words.splice(wordIndex, 1);
+                }
+                
+                clearThemeSelections(themeIndex);
+                
+                const wasEditing = document.getElementById(`words-${themeIndex}`).style.display === 'block';
+                renderThemes();
+                
+                if (wasEditing) {
+                    document.getElementById(`words-${themeIndex}`).style.display = 'block';
+                    document.getElementById(`edit-btn-${themeIndex}`).textContent = '✓ Close';
+                    document.getElementById(`done-btn-${themeIndex}`).classList.remove('hidden');
+                    document.getElementById(`theme-${themeIndex}`).classList.add('editing');
+                }
+                
+            } catch (error) {
+                console.error('Error deleting words:', error);
+                alert('Failed to delete words');
+            }
+        }
+
+        async function deleteTheme(cacheKey, index) {
+            const theme = themes[index];
+            const parts = cacheKey.split('_');
+            const themeName = parts[0].charAt(0).toUpperCase() + parts[0].slice(1);
+            
+            if (!confirm(`Delete the entire "${themeName}" theme? This cannot be undone.`)) return;
+            
+            try {
+                const response = await fetch(`${API_URL}/api/delete-theme`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        cacheKey: cacheKey
+                    })
+                });
+                
+                if (!response.ok) {
+                    alert('Failed to delete theme');
+                    return;
+                }
+                
+                clearThemeSelections(index);
+                themes.splice(index, 1);
+                
+                if (themes.length === 0) {
+                    loadMyThemes();
+                } else {
+                    renderThemes();
+                }
+                
+            } catch (error) {
+                console.error('Error deleting theme:', error);
+                alert('Failed to delete theme');
+            }
+        }
+    </script>
+</body>
+</html>
