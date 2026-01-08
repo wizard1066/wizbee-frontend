@@ -272,6 +272,12 @@
         <div style="display: flex; justify-content: center;">
     		 <button onclick="window.location.href='index.html'" class="back-button">← Back to Game</button>
 		</div>
+        <!--
+        <div class="user-info">
+            <div>Signed in as: <span id="userEmail"></span></div>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+        -->
 
         <!-- Navigation -->
         <div class="tabs">
@@ -372,7 +378,9 @@
             return;
         }
         
-        document.getElementById('userEmail').textContent = userEmail;
+    //document.getElementById('userEmail').textContent = userEmail;
+    
+        
         loadMyThemes();
         
         const urlParams = new URLSearchParams(window.location.search);
@@ -387,7 +395,7 @@
 
     function logout() {
         localStorage.removeItem('authToken');
-        localStorage.removeItem('userEmail');
+       localStorage.removeItem('userEmail');
         window.location.href = 'index.html';
     }
 
