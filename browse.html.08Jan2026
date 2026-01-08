@@ -33,10 +33,6 @@
     </div>
 
     <script>
-        const API_URL = 'https://api.wizbee.app';
-        let authToken = null;
-        let userEmail = null;
-
         window.onload = function() {
             authToken = localStorage.getItem('authToken');
             userEmail = localStorage.getItem('userEmail');
@@ -46,20 +42,22 @@
                 return;
             }
             
-            loadThemes();
+            document.getElementById('userEmail').textContent = userEmail;
+            loadBrowseThemes();
             
-            // Highlight theme if redirected
+            // ===== HIGHLIGHT THEME IF REDIRECTED =====
             const urlParams = new URLSearchParams(window.location.search);
             const highlightKey = urlParams.get('highlight');
             
             if (highlightKey) {
                 setTimeout(() => {
-                    const themeCard = document.querySelector(`[data-cache-key="${highlightKey}"]`);
+                    const themeCard = document.querySelector(`[onclick*="${highlightKey}"]`);
                     if (themeCard) {
                         themeCard.style.border = '3px solid #667eea';
                         themeCard.style.boxShadow = '0 0 20px rgba(102, 126, 234, 0.5)';
                         themeCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
                         
+                        // Flash animation
                         let flashes = 0;
                         const flashInterval = setInterval(() => {
                             themeCard.style.background = flashes % 2 === 0 ? '#f0f4ff' : 'white';
@@ -73,6 +71,17 @@
                 }, 500);
             }
         };
+
+
+        const API_URL = 'https://api.wizbee.app';
+        const authToken = localStorage.getItem('authToken');
+
+        if (!authToken) {
+            window.location.href = 'index.html';
+        }
+
+        // Load themes on page load
+        window.addEventListener('DOMContentLoaded', loadThemes);
 
         async function loadThemes() {
             try {
@@ -112,65 +121,16 @@
                     const themeList = themes[language][difficulty] || [];
 
                     themeList.forEach(theme => {
-                        const statusBadge = !theme.isComplete 
-                            ? '<span class="draft-badge">DRAFT</span>' 
-                            : '';
-                        
-                        let actionButtons = '';
-                        
-                        if (theme.isMine) {
-                            // User's own theme
-                            if (theme.isComplete) {
-                                actionButtons = `
-                                    <div class="theme-actions">
-                                        <button onclick="event.stopPropagation(); playTheme('${theme.cacheKey}')" class="btn-play">
-                                            ▶️ Play
-                                        </button>
-                                        <button onclick="event.stopPropagation(); editTheme('${theme.cacheKey}')" class="btn-edit">
-                                            ✏️ Edit
-                                        </button>
-                                        <button onclick="event.stopPropagation(); deleteTheme('${theme.cacheKey}')" class="btn-delete">
-                                            🗑️
-                                        </button>
-                                    </div>
-                                `;
-                            } else {
-                                // Draft theme - only edit/delete
-                                actionButtons = `
-                                    <div class="theme-actions">
-                                        <button onclick="event.stopPropagation(); editTheme('${theme.cacheKey}')" class="btn-edit">
-                                            ✏️ Edit
-                                        </button>
-                                        <button onclick="event.stopPropagation(); deleteTheme('${theme.cacheKey}')" class="btn-delete">
-                                            🗑️ Delete
-                                        </button>
-                                    </div>
-                                `;
-                            }
-                        } else {
-                            // Public theme - only play
-                            actionButtons = `
-                                <div class="theme-actions">
-                                    <button onclick="event.stopPropagation(); playTheme('${theme.cacheKey}')" class="btn-play">
-                                        ▶️ Play
-                                    </button>
-                                </div>
-                            `;
-                        }
-
                         const themeCard = `
-                            <div class="theme-card" data-cache-key="${theme.cacheKey}">
-                                <div class="theme-header">
-                                    <div class="theme-name">${theme.displayName}${statusBadge}</div>
-                                    <div class="theme-meta">
-                                        <span class="theme-difficulty ${difficulty}">${difficulty}</span>
-                                        <span class="theme-language">${language}</span>
-                                    </div>
-                                    <div class="theme-stats">
-                                        ${theme.wordCount} words • Played ${theme.useCount} times
-                                    </div>
+                            <div class="theme-card" onclick="playTheme('${theme.cacheKey}')">
+                                <div class="theme-name">${theme.displayName}</div>
+                                <div class="theme-meta">
+                                    <span class="theme-difficulty ${difficulty}">${difficulty}</span>
+                                    <span class="theme-language">${language}</span>
                                 </div>
-                                ${actionButtons}
+                                <div class="theme-stats">
+                                    ${theme.wordCount} words • Played ${theme.useCount} times
+                                </div>
                             </div>
                         `;
 
@@ -189,12 +149,12 @@
 
         async function playTheme(cacheKey) {
             try {
-                console.log('Playing theme:', cacheKey);
+                console.log('Playing theme [BROWSER]:', cacheKey);
 
                 const response = await fetch(`${API_URL}/api/play-theme`, {
                     method: 'POST',
                     headers: {
-                        'Authorization': `Bearer ${authToken}`,
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({ cacheKey })
@@ -207,7 +167,13 @@
                     return;
                 }
 
+                // Store game data and redirect to game
                 localStorage.setItem('pendingGame', JSON.stringify(data));
+                
+                console.log('[BROWSE] About to redirect');
+                console.log('[BROWSE] authToken in localStorage:', localStorage.getItem('authToken')?.substring(0, 30));
+                console.log('[BROWSE] pendingGame in localStorage:', !!localStorage.getItem('pendingGame'));
+                
                 window.location.href = 'index.html?play=true';
 
             } catch (error) {
@@ -216,34 +182,7 @@
             }
         }
 
-        function editTheme(cacheKey) {
-            window.location.href = `admin.html?edit=${cacheKey}`;
-        }
-
-        async function deleteTheme(cacheKey) {
-            if (!confirm('Delete this theme? This cannot be undone.')) return;
-            
-            try {
-                const response = await fetch(`${API_URL}/api/delete-theme`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${authToken}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ cacheKey })
-                });
-                
-                if (response.ok) {
-                    alert('✅ Theme deleted');
-                    loadThemes(); // Reload
-                } else {
-                    alert('❌ Failed to delete theme');
-                }
-            } catch (error) {
-                console.error('Error deleting theme:', error);
-                alert('❌ Failed to delete theme');
-            }
-        }
+       
     </script>
 
     <style>
@@ -265,7 +204,7 @@
 
         .theme-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 20px;
         }
 
@@ -274,19 +213,14 @@
             border: 2px solid #e2e8f0;
             border-radius: 12px;
             padding: 20px;
+            cursor: pointer;
             transition: all 0.2s;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
         }
 
         .theme-card:hover {
-            border-color: #cbd5e0;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .theme-header {
-            flex: 1;
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
         }
 
         .theme-name {
@@ -294,20 +228,6 @@
             font-weight: 600;
             color: #2d3748;
             margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .draft-badge {
-            background: #ffc107;
-            color: #856404;
-            padding: 3px 10px;
-            border-radius: 4px;
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
 
         .theme-meta {
@@ -352,54 +272,6 @@
         .theme-stats {
             font-size: 14px;
             color: #718096;
-        }
-
-        .theme-actions {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .theme-actions button {
-            border: none;
-            padding: 10px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            transition: all 0.2s;
-            flex: 1;
-            min-width: 80px;
-        }
-
-        .btn-play {
-            background: #48bb78;
-            color: white;
-        }
-
-        .btn-play:hover {
-            background: #38a169;
-        }
-
-        .btn-edit {
-            background: #e2e8f0;
-            color: #2d3748;
-        }
-
-        .btn-edit:hover {
-            background: #cbd5e0;
-        }
-
-        .btn-delete {
-            background: #fed7d7;
-            color: #c53030;
-            flex: 0;
-            min-width: 50px;
-        }
-
-        .btn-delete:hover {
-            background: #fc8181;
-            color: white;
         }
 
         .loading, .empty, .error {
