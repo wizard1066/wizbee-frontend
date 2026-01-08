@@ -1156,6 +1156,50 @@ async function launchThemeFromBrowser(cacheKey) {
         async function generateAllClues() {
             console.log('[CLUES] Generating clues for', wordList.length, 'words');
             
+            const clueBtn = document.getElementById('showClueBtn');
+            clueBtn.textContent = '⏳ Loading clues...';
+            clueBtn.disabled = true;
+            
+            try {
+                const response = await fetch(`${API_URL}/api/generate-clues`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        words: wordList,
+                        theme: selectedThemeWord,
+                        difficulty: 'medium',
+                        language: currentLanguage  // ← Send language
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok || data.error) {
+                    console.error('[CLUES] Failed:', data.message);
+                    wordClues = [];
+                } else {
+                    wordClues = data.clues || [];
+                    // Store translated messages
+                    if (data.winMessage) winMessage = data.winMessage;      // ← Store win message
+                    if (data.loseMessage) loseMessage = data.loseMessage;  // ← Store lose message
+                    console.log('[CLUES] Got', wordClues.length, 'clues +', winMessage);
+                }
+                
+            } catch (error) {
+                console.error('[CLUES] Error:', error);
+                wordClues = [];
+            } finally {
+                clueBtn.textContent = '💡 Show Clue';
+                clueBtn.disabled = false;
+            }
+        }
+
+        async function generateAllCluesDepreciated() {
+            console.log('[CLUES] Generating clues for', wordList.length, 'words');
+            
             // Show loading message
             const clueBtn = document.getElementById('showClueBtn');
             const originalText = clueBtn.textContent;
