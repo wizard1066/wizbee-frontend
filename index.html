@@ -764,6 +764,18 @@ async function generateWordlist() {
         
         const data = await response.json();
         document.getElementById('generatingMessage').classList.add('hidden');
+
+         // ===== HANDLE EXISTING THEME =====
+        if (response.status === 409 && data.redirect === 'browse') {
+            showError(data.message || 'Theme already exists. Loading it now...');
+            
+            // Wait 2 seconds to show message, then redirect
+            setTimeout(() => {
+                window.location.href = `browse.html?highlight=${data.cacheKey}`;
+            }, 2000);
+            
+            return;
+        }
         
         if (response.status === 429 || response.status === 503) {
             document.getElementById('generateBtn').disabled = false;
