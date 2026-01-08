@@ -1129,10 +1129,13 @@ async function launchThemeFromBrowser(cacheKey) {
             themeElement.parentNode.insertBefore(visualization, themeElement.nextSibling);
 
             // Draw visualization (using dummy data for now - will update from backend later)
-            const totalWords = 50;
-            const selectedIndices = [0, 1, 2, 3, 4, 5, 6]; // Will get real data from gameData later
-            drawWordPoolVisualization(totalWords, selectedIndices);
-            
+            // 8 Jan 2026
+            if (gameData.wordPoolInfo) {
+                drawWordPoolVisualization(
+                    gameData.wordPoolInfo.totalWords,
+                    gameData.wordPoolInfo.selectedIndices
+                );
+            }
             
             // Generate clues for all words
             console.log('startGame gen CLUES', gameData.words);
