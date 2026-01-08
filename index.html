@@ -1118,6 +1118,22 @@ async function launchThemeFromBrowser(cacheKey) {
             document.getElementById('gameScreen').classList.remove('hidden');
             document.getElementById('selectedTheme').textContent = `${selectedThemeWord} (${currentWordIndex + 1}/${wordList.length})`;
             
+            // Added 9 Jan 2026
+            // ADD WORD POOL VISUALIZATION
+            const gameScreen = document.getElementById('gameScreen');
+            const oldViz = document.getElementById('wordPoolContainer');
+            if (oldViz) oldViz.remove();
+
+            const visualization = createWordPoolCanvas();
+            const themeElement = document.getElementById('selectedTheme');
+            themeElement.parentNode.insertBefore(visualization, themeElement.nextSibling);
+
+            // Draw visualization (using dummy data for now - will update from backend later)
+            const totalWords = 50;
+            const selectedIndices = [0, 1, 2, 3, 4, 5, 6]; // Will get real data from gameData later
+            drawWordPoolVisualization(totalWords, selectedIndices);
+            
+            
             // Generate clues for all words
             console.log('startGame gen CLUES', gameData.words);
             await generateAllClues();
@@ -2080,6 +2096,98 @@ function closeSummaryAndReset() {
     });
     
     updateThemeCounter();
+}
+
+/**
+ * ============================================================================
+ * WORD POOL VISUALIZATION
+ * Shows where in the theme the selected words come from
+ * ============================================================================
+ */
+
+function createWordPoolCanvas() {
+  const container = document.createElement('div');
+  container.id = 'wordPoolContainer';
+  container.style.cssText = `
+    margin: 20px auto;
+    padding: 15px;
+    max-width: 600px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  `;
+  
+  const canvas = document.createElement('canvas');
+  canvas.id = 'wordPoolCanvas';
+  canvas.width = 550;
+  canvas.height = 60;
+  canvas.style.cssText = `
+    display: block;
+    margin: 0 auto;
+  `;
+  
+  const label = document.createElement('div');
+  label.id = 'wordPoolLabel';
+  label.style.cssText = `
+    font-size: 14px;
+    color: #718096;
+    margin-top: 10px;
+    display: flex;
+    justify-content: space-between;
+    font-weight: 600;
+  `;
+  label.innerHTML = '<span>Easy</span><span>Hard</span>';
+  
+  container.appendChild(canvas);
+  container.appendChild(label);
+  
+  return container;
+}
+
+function drawWordPoolVisualization(totalWords, selectedIndices, canvasId = 'wordPoolCanvas') {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  
+  const ctx = canvas.getContext('2d');
+  const width = canvas.width;
+  const height = canvas.height;
+  const padding = 6;
+  
+  // Clear canvas
+  ctx.clearRect(0, 0, width, height);
+  
+  // Draw light grey FILLED background
+  ctx.fillStyle = '#F7FAFC';
+  ctx.fillRect(padding, padding, width - padding * 2, height - padding * 2);
+  
+  // Draw grey pattern/dots for unused words
+  ctx.fillStyle = '#E2E8F0';
+  for (let x = padding; x < width - padding; x += 4) {
+    for (let y = padding; y < height - padding; y += 4) {
+      ctx.fillRect(x, y, 2, 2);
+    }
+  }
+  
+  // Draw BORDER (hollow rectangle)
+  ctx.strokeStyle = '#2D3748';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(padding, padding, width - padding * 2, height - padding * 2);
+  
+  // Calculate selected range
+  if (selectedIndices.length === 0) return;
+  
+  const minIndex = Math.min(...selectedIndices);
+  const maxIndex = Math.max(...selectedIndices);
+  
+  // Calculate bar position
+  const innerWidth = width - padding * 4;
+  const innerHeight = height - padding * 4;
+  const barStart = padding * 2 + (minIndex / totalWords) * innerWidth;
+  const barWidth = ((maxIndex - minIndex + 1) / totalWords) * innerWidth;
+  
+  // Draw filled dark bar (selected words)
+  ctx.fillStyle = '#2D3748';
+  ctx.fillRect(barStart, padding * 2, barWidth, innerHeight);
 }
 
 
