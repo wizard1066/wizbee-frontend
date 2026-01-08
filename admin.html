@@ -386,6 +386,50 @@
         window.location.href = 'index.html';
     }
 
+    async function saveAndPlay(cacheKey) {
+        try {
+            // Mark as complete
+            const completeResponse = await fetch(`${API_URL}/api/complete-theme`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${authToken}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ cacheKey })
+            });
+            
+            if (!completeResponse.ok) {
+                alert('Failed to save theme');
+                return;
+            }
+            
+            // Now play it
+            const playResponse = await fetch(`${API_URL}/api/play-theme`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${authToken}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ cacheKey })
+            });
+            
+            const data = await playResponse.json();
+            
+            if (!playResponse.ok) {
+                alert(data.message || 'Failed to load theme');
+                return;
+            }
+            
+            // Start game
+            localStorage.setItem('pendingGame', JSON.stringify(data));
+            window.location.href = 'index.html?play=true';
+            
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Failed to start game');
+        }
+    }
+
     async function renameTheme(cacheKey, index, currentName) {
         const newName = prompt(`Rename theme:`, currentName);
 
@@ -506,6 +550,9 @@
                             <button id="done-btn-${index}" class="btn btn-primary hidden" onclick="doneEditing('${theme.cache_key}')">
                                 ✓ Done
                             </button>
+                           <button id="done-btn-${index}" class="btn btn-primary hidden" onclick="saveAndPlay('${theme.cache_key}')">
+                               ✓ Save & Play
+                            </button> 
                             <button class="btn btn-danger" onclick="deleteTheme('${theme.cache_key}', ${index})">🗑️ Delete</button>
                         </div>
                     </div>
