@@ -550,7 +550,7 @@
                             <button id="done-btn-${index}" class="btn btn-primary hidden" onclick="doneEditing('${theme.cache_key}')">
                                 ✓ Done
                             </button>
-                           <button id="done-btn-${index}" class="btn btn-primary hidden" onclick="saveAndPlay('${theme.cache_key}')">
+                           <button id="play-btn-${index}" class="btn btn-primary hidden" onclick="saveAndPlay('${theme.cache_key}')">
                                ✓ Save & Play
                             </button> 
                             <button class="btn btn-danger" onclick="deleteTheme('${theme.cache_key}', ${index})">🗑️ Delete</button>
@@ -630,17 +630,20 @@
         const wordsDiv = document.getElementById(`words-${index}`);
         const editBtn = document.getElementById(`edit-btn-${index}`);
         const doneBtn = document.getElementById(`done-btn-${index}`);
+        const playBtn = document.getElementById(`play-btn-${index}`);
         const card = document.getElementById(`theme-${index}`);
         
         if (wordsDiv.style.display === 'none') {
             wordsDiv.style.display = 'block';
             editBtn.textContent = '✓ Close';
             doneBtn.classList.remove('hidden');
+            playBtn.classList.remove('hidden');
             card.classList.add('editing');
         } else {
             wordsDiv.style.display = 'none';
             editBtn.textContent = '✏️ Edit Words';
             doneBtn.classList.add('hidden');
+            playBtn.classList.add('hidden');
             card.classList.remove('editing');
             clearThemeSelections(index);
         }
