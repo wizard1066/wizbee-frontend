@@ -547,8 +547,8 @@ async function generateTheme() {
 
 function displayPreview(words) {
     document.getElementById('previewSection').classList.remove('hidden');
-    document.getElementById('wordCount').textContent = words.length;
-    document.getElementById('themeName').textContent = currentThemeText; 
+    //document.getElementById('wordCount').textContent = words.length;
+    //document.getElementById('themeName').textContent = currentThemeText; 
 
     // Add current refinement to history
     if (refineAttempts === 0) {
