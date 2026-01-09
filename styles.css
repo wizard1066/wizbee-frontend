@@ -9,6 +9,15 @@
     	    from { transform: rotate(0deg); }
     	    to { transform: rotate(360deg); }
 	}
+
+    @keyframes rotate3d {
+    0% {
+        transform: rotateY(0deg);
+    }
+    100% {
+        transform: rotateY(360deg);
+    }
+    }
 	.loading { animation: spin 1s linear infinite; }
 
 	body {
