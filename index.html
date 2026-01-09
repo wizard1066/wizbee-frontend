@@ -78,7 +78,7 @@
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                         <div>
                             <div style="font-size: 18px; font-weight: 600; color: #2d3748;">
-                                Generated: <span id="wordCount">0</span> words
+                                 [<span id="themeName"></span>] (<span id="wordCount">0</span> words)
                             </div>
                             <div style="font-size: 14px; color: #718096; margin-top: 5px;">
                                 💡 Words ordered easy→hard. Check last section for trickiest words.
@@ -547,6 +547,7 @@ async function generateTheme() {
 function displayPreview(words) {
     document.getElementById('previewSection').classList.remove('hidden');
     document.getElementById('wordCount').textContent = words.length;
+    document.getElementById('themeName').textContent = currentThemeText; 
     
     const quartileSize = Math.ceil(words.length / 4);
     const lastQuartile = words.slice(-quartileSize);
