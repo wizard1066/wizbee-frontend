@@ -418,16 +418,6 @@
     margin-bottom: 30px;
 }
 
-.upgrade-btn {
-    background: #22c55e;
-    color: white;
-    border: none;
-    padding: 15px 40px;
-    font-size: 20px;
-    border-radius: 10px;
-    cursor: pointer;
-    margin-right: 10px;
-}
 
 .upgrade-btn:hover {
     background: #16a34a;
@@ -890,7 +880,7 @@
             color: #dc3545;
         }
 
-        .play-again {
+        .play-again, .upgrade-btn {
             background: #667eea;
             color: white;
             border: none;
@@ -899,6 +889,11 @@
             border-radius: 10px;
             cursor: pointer;
             margin-top: 20px;
+        }
+
+        .upgrade-btn {
+            background: #48bb78;
+            color: white;
         }
 
         .hidden {
