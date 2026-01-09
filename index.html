@@ -1824,6 +1824,20 @@ async function launchThemeFromBrowser(cacheKey) {
         
         updateThemeCounter();
         isResetting = false;
+
+        wordClues = [];
+
+        // Clear refine state
+        refineAttempts = 0;
+        refinements = [];
+        baseTheme = '';
+        currentThemeText = '';
+        refinementHistory = [];
+        document.getElementById('refineCounter').textContent = '';
+        document.getElementById('previewSection').classList.add('hidden');
+        document.getElementById('themeInput').disabled = false;
+        document.getElementById('editWordsBtn').disabled = true;
+        document.getElementById('playBtn').disabled = true;
     }
 
     function resetToThemeDepreciatedAgain() {
