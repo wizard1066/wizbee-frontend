@@ -603,6 +603,13 @@ function displayPreview(words) {
     
     document.getElementById('editWordsBtn').disabled = false;
     document.getElementById('playBtn').disabled = false;
+    // Scroll to preview section smoothly
+    setTimeout(() => {
+        document.getElementById('previewSection').scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'start' 
+        });
+    }, 100);
 } 
 
 async function refineTheme() {
