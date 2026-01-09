@@ -489,7 +489,7 @@
             if (wasEditing) {
                 document.getElementById(`words-${index}`).style.display = 'block';
                 document.getElementById(`edit-btn-${index}`).textContent = '✓ Close';
-                document.getElementById(`done-btn-${index}`).classList.remove('hidden');
+                //document.getElementById(`done-btn-${index}`).classList.remove('hidden');
                 document.getElementById(`theme-${index}`).classList.add('editing');
             }
             
@@ -569,9 +569,9 @@
                             <button class="btn btn-secondary" onclick="toggleEdit(${index})">
                                 <span id="edit-btn-${index}">✏️ Edit Words</span>
                             </button>
-                           <button id="play-btn-${index}" class="btn btn-primary hidden" onclick="saveAndPlay('${theme.cache_key}')">
-                               ✓ Save & Play
-                            </button> 
+                           <button id="publish-btn-${index}" class="btn btn-success hidden" onclick="publishTheme('${theme.cache_key}', ${index})">
+                             ✓ Publish
+                            </button>
                             <button class="btn btn-danger" onclick="deleteTheme('${theme.cache_key}', ${index})">🗑️ Delete</button>
                         </div>
                     </div>
@@ -645,21 +645,21 @@
         container.innerHTML = html;
     }
 
-    function toggleEdit(index) {
+   function toggleEdit(index) {
         const wordsDiv = document.getElementById(`words-${index}`);
         const editBtn = document.getElementById(`edit-btn-${index}`);
-        const playBtn = document.getElementById(`play-btn-${index}`);
+        const publishBtn = document.getElementById(`publish-btn-${index}`);
         const card = document.getElementById(`theme-${index}`);
         
         if (wordsDiv.style.display === 'none') {
             wordsDiv.style.display = 'block';
             editBtn.textContent = '✓ Close';
-            playBtn.classList.remove('hidden');  // ← Show Save & Play button
+            publishBtn.classList.remove('hidden');
             card.classList.add('editing');
         } else {
             wordsDiv.style.display = 'none';
             editBtn.textContent = '✏️ Edit Words';
-            playBtn.classList.add('hidden');     // ← Hide Save & Play button
+            publishBtn.classList.add('hidden');
             card.classList.remove('editing');
             clearThemeSelections(index);
         }
@@ -760,6 +760,39 @@
     function clearThemeSelections(themeIndex) {
         const keysToDelete = Array.from(selectedWords).filter(key => key.startsWith(`${themeIndex}-`));
         keysToDelete.forEach(key => selectedWords.delete(key));
+    }
+
+    async function publishTheme(cacheKey, index) {
+        try {
+            const response = await fetch(`${API_URL}/api/complete-theme`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${authToken}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ cacheKey })
+            });
+            
+            if (!response.ok) {
+                alert('Failed to publish theme');
+                return;
+            }
+            
+            alert('✅ Theme published! You can now play it from the Browse menu.');
+            
+            // Remove from admin list (it's now complete)
+            themes.splice(index, 1);
+            
+            if (themes.length === 0) {
+                loadMyThemes(); // Reload to show empty state
+            } else {
+                renderThemes();
+            }
+            
+        } catch (error) {
+            console.error('Error publishing theme:', error);
+            alert('Failed to publish theme');
+        }
     }
 
     async function deleteSelectedWords(themeIndex) {
