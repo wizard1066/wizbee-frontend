@@ -18,7 +18,7 @@
         transform: rotateY(360deg);
     }
     }
-	.loading { animation: spin 1s linear infinite; }
+	.loading { animation: spin 8s linear infinite; }
 
 	body {
     font-family: 'Montserrat', sans-serif;
