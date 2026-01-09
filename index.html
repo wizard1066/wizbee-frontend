@@ -77,8 +77,8 @@
                 <div id="previewSection" class="hidden" style="margin-top: 30px; border: 2px solid #e2e8f0; border-radius: 8px; padding: 20px; background: #f7fafc;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                         <div>
-                            <div style="font-size: 18px; font-weight: 600; color: #2d3748;">
-                                 [<span id="themeName"></span>] (<span id="wordCount">0</span> words)
+                            <div id="refinementChain" style="font-size: 18px; font-weight: 600; color: #2d3748;">
+                             <!-- Populated by JS -->
                             </div>
                             <div style="font-size: 14px; color: #718096; margin-top: 5px;">
                                 💡 Words ordered easy→hard. Check last section for trickiest words.
@@ -159,6 +159,7 @@
         const API_URL = 'https://api.wizbee.app'
         const GOOGLE_CLIENT_ID = '635584185020-emmqudvevrf1j01lpu6nha4tfneju6t2.apps.googleusercontent.com';
 
+        let refinementHistory = [];
         let authToken = null;
         let userEmail = null;
         let currentWord = '';
@@ -548,6 +549,25 @@ function displayPreview(words) {
     document.getElementById('previewSection').classList.remove('hidden');
     document.getElementById('wordCount').textContent = words.length;
     document.getElementById('themeName').textContent = currentThemeText; 
+
+    // Add current refinement to history
+    if (refineAttempts === 0) {
+        // First generation
+        refinementHistory = [{prompt: baseTheme, wordCount: words.length}];
+    } else {
+        // Add refinement
+        refinementHistory.push({
+            prompt: '+ ' + refinements[refinements.length - 1],
+            wordCount: words.length
+        });
+    }
+    
+    // Build chain display
+    let chainHTML = refinementHistory.map(step => 
+        `[${step.prompt}] (${step.wordCount})`
+    ).join(' → ');
+    document.getElementById('refinementChain').innerHTML = chainHTML;
+
     
     const quartileSize = Math.ceil(words.length / 4);
     const lastQuartile = words.slice(-quartileSize);
