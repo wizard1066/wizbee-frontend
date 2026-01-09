@@ -1624,20 +1624,27 @@ async function launchThemeFromBrowser(cacheKey) {
             document.getElementById('showClueBtn').classList.add('hidden');
             document.getElementById('submitGuess').classList.add('hidden');
 
-	    if (won) {
- 	   	celebrateWin();
-		messageDiv.textContent = `🎉 ${winMessage} ${currentWord}`;
-    		messageDiv.className = 'message win';
-	    } else {
-		messageDiv.textContent = `${loseMessage} ${currentWord}`;
-    		messageDiv.className = 'message lose';
-	    }
+            if (won) {
+                celebrateWin();
+                messageDiv.textContent = `🎉 ${winMessage} ${currentWord}`;
+                    messageDiv.className = 'message win';
+                } else {
+                messageDiv.textContent = `${loseMessage} ${currentWord}`;
+                    messageDiv.className = 'message lose';
+                }
 
-	    if (currentWordIndex < wordList.length - 1) {
-    		document.getElementById('resetButton').textContent = 'Next Word →';
-	    } else {
-    		document.getElementById('resetButton').textContent = 'New Theme';
-	    }
+                if (currentWordIndex < wordList.length - 1) {
+                    document.getElementById('resetButton').textContent = 'Next Word →';
+                } else {
+                    document.getElementById('resetButton').textContent = 'New Theme';
+            }
+            // Scroll to show the message
+            setTimeout(() => {
+                messageDiv.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'center' 
+                });
+            }, 100);
         }
 
         function celebrateWin() {
