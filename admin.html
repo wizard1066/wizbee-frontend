@@ -259,15 +259,16 @@
         }
 
         .back-btn {
-        background: #667eea;
-        color: white;
-        border: none;
-        padding: 10px 20px;
-        border-radius: 8px;
-        cursor: pointer;
-        font-weight: 600;
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;      /* Same as logout-btn */
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 16px;         /* Same as logout-btn */
         }
-    
+
         .back-btn:hover {
             background: #5a67d8;
         }
@@ -403,7 +404,7 @@
 
     function logout() {
         localStorage.removeItem('authToken');
-       localStorage.removeItem('userEmail');
+        localStorage.removeItem('userEmail');
         window.location.href = 'index.html';
     }
 
