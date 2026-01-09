@@ -648,21 +648,18 @@
     function toggleEdit(index) {
         const wordsDiv = document.getElementById(`words-${index}`);
         const editBtn = document.getElementById(`edit-btn-${index}`);
-        const doneBtn = document.getElementById(`done-btn-${index}`);
         const playBtn = document.getElementById(`play-btn-${index}`);
         const card = document.getElementById(`theme-${index}`);
         
         if (wordsDiv.style.display === 'none') {
             wordsDiv.style.display = 'block';
             editBtn.textContent = '✓ Close';
-            doneBtn.classList.remove('hidden');
-            playBtn.classList.remove('hidden');
+            playBtn.classList.remove('hidden');  // ← Show Save & Play button
             card.classList.add('editing');
         } else {
             wordsDiv.style.display = 'none';
             editBtn.textContent = '✏️ Edit Words';
-            doneBtn.classList.add('hidden');
-            playBtn.classList.add('hidden');
+            playBtn.classList.add('hidden');     // ← Hide Save & Play button
             card.classList.remove('editing');
             clearThemeSelections(index);
         }
