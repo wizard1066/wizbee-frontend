@@ -1204,6 +1204,13 @@ async function launchThemeFromBrowser(cacheKey) {
             if (wordClues.length > 0) {
                 showClueAuto(20000); // Show for 20 seconds
             }
+            // Scroll to game screen
+            setTimeout(() => {
+                document.getElementById('gameScreen').scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'start' 
+                });
+            }, 300);
         }
 
         async function generateAllClues() {
