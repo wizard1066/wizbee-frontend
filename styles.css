@@ -906,5 +906,28 @@
     z-index: 1001;
     max-width: 300px;
 }
+.back-btn {
+    		width: 180px;
+    		padding: 20px;
+    		font-size: 24px;
+    		border-radius: 20px;
+    		cursor: pointer;
+    		transition: background 0.3s;
+    		border: none;
+    		color: white;
+    		background: #667eea;
+            font-family: "Helvetica Neue";
+  			font-size: 32px;
+            border-style: solid;
+  			border-color: white;
+            border-left-width: 0px;
+			border-right-width: 0px;
+			border-top-width: 10px;
+			border-bottom-width: 10px;
+			border-style: solid;
+			margin: 10px 10px 10px 10px;
+            min-height: 50px;
+	}
+
 
     </style>
