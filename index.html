@@ -269,6 +269,12 @@
         showError('No theme to edit');
         return;
     }
+    // Save current theme info
+    localStorage.setItem('lastEditedTheme', JSON.stringify({
+        cacheKey: currentCacheKey,
+        themeName: selectedThemeWord
+    }));
+
     window.location.href = `admin.html?edit=${currentCacheKey}`;
 }
 
@@ -303,6 +309,24 @@
                 showThemeInput();
             } else {
                 initializeGoogleSignIn();
+            }
+            // Check if user was editing a theme
+            const lastEditedTheme = localStorage.getItem('lastEditedTheme');
+            if (lastEditedTheme) {
+                try {
+                    const themeData = JSON.parse(lastEditedTheme);
+                    currentCacheKey = themeData.cacheKey;
+                    selectedThemeWord = themeData.themeName;
+                    
+                    // Enable Play button
+                    document.getElementById('playBtn').disabled = false;
+                    
+                    // Show message
+                    document.getElementById('themeInput').placeholder = `Ready to play: ${themeData.themeName}`;
+                    
+                } catch (e) {
+                    console.error('Error loading last edited theme:', e);
+                }
             }
         };
 
@@ -948,7 +972,37 @@ async function acceptAndPlay() {
 // END: Complete acceptAndPlay function
 // ============================================================================
 
-
+async function playExistingTheme() {
+    if (!currentCacheKey) {
+        showError('No theme selected');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${API_URL}/api/play-theme`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${authToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ cacheKey: currentCacheKey })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+            showError(data.message || 'Failed to load theme');
+            return;
+        }
+        
+        localStorage.removeItem('lastEditedTheme');
+        startGame(data);
+        
+    } catch (error) {
+        console.error('Error loading theme:', error);
+        showError('Failed to load theme');
+    }
+}
 
 
 
