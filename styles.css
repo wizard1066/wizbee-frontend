@@ -21,7 +21,7 @@
 	.loading { animation: spin 8s linear infinite; }
 
 	body {
-    font-family: 'Montserrat', sans-serif;
+    /*font-family: 'Montserrat', sans-serif;*/
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);  /* Purple gradient */
     min-height: 100vh;
     display: flex;
@@ -107,7 +107,7 @@
     border-radius: 6px; 
     padding: 15px; 
     margin-bottom: 20px; 
-    font-family: 'Montserrat', sans-serif;  /* ← Changed from monospace */
+    /*font-family: 'Montserrat', sans-serif;  /* ← Changed from monospace */
     font-size: 20px;                         /* ← Same as themes purchased */
     font-weight: 400;                        /* ← Same weight */
 }
