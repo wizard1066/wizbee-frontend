@@ -931,11 +931,25 @@
     .back-btn {
             background: #667eea;
             color: white;
-            border: none;
-            padding: 8px 16px;      /* Same as logout-btn */
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;         /* Same as logout-btn */
+            width: 200px;
+    		padding: 20px;
+    		font-size: 24px;
+    		border-radius: 20px;
+    		cursor: pointer;
+    		transition: background 0.3s;
+    		border: none;
+    		background: #f59e0b;
+            font-family: "Helvetica Neue";
+  			font-size: 32px;
+            border-style: solid;
+  			border-color: white;
+            border-left-width: 10px;
+			border-right-width: 10px;
+			border-top-width: 10px;
+			border-bottom-width: 10px;
+			border-style: solid;
+			margin: 10px 10px 10px 10px;
+            min-height: 50px;
         }
 
         .back-btn:hover {
