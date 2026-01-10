@@ -929,8 +929,6 @@
 }
 
     .back-btn {
-            background: #667eea;
-            color: white;
             width: 200px;
     		padding: 20px;
     		font-size: 24px;
@@ -938,13 +936,14 @@
     		cursor: pointer;
     		transition: background 0.3s;
     		border: none;
-    		background: #f59e0b;
+    		color: white;
+    		background: #667eea;
             font-family: "Helvetica Neue";
   			font-size: 32px;
             border-style: solid;
   			border-color: white;
-            border-left-width: 10px;
-			border-right-width: 10px;
+            border-left-width: 0px;
+			border-right-width: 0px;
 			border-top-width: 10px;
 			border-bottom-width: 10px;
 			border-style: solid;
