@@ -888,6 +888,69 @@ async function generateWordlist() {
 // ============================================================================
 
 async function acceptAndPlay() {
+    const playBtn = document.getElementById('playBtn');
+    if (playBtn.disabled) return;
+    playBtn.disabled = true;
+    
+    // Check if we have a theme to play
+    if (!currentCacheKey) {
+        showError('No theme selected!');
+        playBtn.disabled = false;
+        return;
+    }
+    
+    try {
+        // If we have generated words in memory, use accept-theme
+        if (currentGeneratedWords && currentGeneratedWords.length > 0) {
+            const response = await fetch(`${API_URL}/api/accept-theme`, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`
+                },
+                body: JSON.stringify({ cacheKey: currentCacheKey })
+            });
+            
+            const data = await response.json();
+            
+            if (!response.ok) {
+                showError(data.message || 'Failed to create theme');
+                playBtn.disabled = false;
+                return;
+            }
+            
+            startGame(data);
+            
+        } else {
+            // If returning from edit, load the theme from backend
+            const response = await fetch(`${API_URL}/api/play-theme`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${authToken}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ cacheKey: currentCacheKey })
+            });
+            
+            const data = await response.json();
+            
+            if (!response.ok) {
+                showError(data.message || 'Failed to load theme');
+                playBtn.disabled = false;
+                return;
+            }
+            
+            startGame(data);
+        }
+        
+    } catch (error) {
+        console.error('Error:', error);
+        showError('Connection error');
+        playBtn.disabled = false;
+    }
+}
+
+async function acceptAndPlayDepreciated() {
     // Validate BEFORE clearing anything
     const playBtn = document.getElementById('playBtn');
     if (playBtn.disabled) return;  // Already processing
