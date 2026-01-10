@@ -74,8 +74,8 @@
                             Generate
                         </button>
                         
-                        <button onclick="window.location.href='edit.html'" class="btn btn-secondary">
-                           Edit
+                        <button id="editWordsBtn" onclick="editWords()" disabled class="btn btn-secondary">
+                            Edit
                         </button>
                         <button id="playBtn" onclick="acceptAndPlay()" disabled style="padding: 16px 40px; border-radius: 8px; font-weight: 600; cursor: pointer; border: none; background: #48bb78; color: white; font-size: 18px; max-width: 200px;">
                             Play
@@ -262,7 +262,7 @@
 	    ]
         };
 
-        function editWords() {
+    function editWords() {
     if (!currentCacheKey) {
         showError('No theme to edit');
         return;
@@ -273,7 +273,8 @@
         themeName: selectedThemeWord
     }));
 
-    window.location.href = `admin.html?edit=${currentCacheKey}`;
+    
+    window.location.href = `edit.html?edit=${currentCacheKey}`;
 }
 
         function initializeGoogleSignIn() {
