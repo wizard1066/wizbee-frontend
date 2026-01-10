@@ -909,7 +909,7 @@
 .back-btn {
     		width: 180px;
     		padding: 20px;
-    		font-size: 24px;
+    		font-size: 16px;
     		border-radius: 20px;
     		cursor: pointer;
     		transition: background 0.3s;
@@ -917,7 +917,7 @@
     		color: white;
     		background: #667eea;
             font-family: "Helvetica Neue";
-  			font-size: 16px;
+  			
             border-style: solid;
   			border-color: white;
             border-left-width: 0px;
