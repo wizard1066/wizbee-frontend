@@ -215,8 +215,8 @@
                 <div class="word-grid" id="wordGrid"></div>
 
                 <div class="action-buttons">
-                    <button class="btn btn-secondary" onclick="closeAsDraft()">
-                        ✓ Close as Draft
+                    <button class="btn btn-secondary" onclick="closeAndComplete()">
+                        ✓ Close as Complete
                     </button>
                     <button class="btn btn-success" onclick="publishTheme()">
                         ✓ Publish & Play
@@ -256,6 +256,37 @@
 
             loadTheme();
         };
+
+        async function closeAndComplete() {
+        try {
+        // Mark as complete
+            const response = await fetch(`${API_URL}/api/complete-theme`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${authToken}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ cacheKey })
+            });
+        
+            if (!response.ok) {
+                alert('Failed to save theme');
+                return;
+            }
+            
+            // Save for Play button to remember
+            localStorage.setItem('lastEditedTheme', JSON.stringify({
+                cacheKey: cacheKey,
+                themeName: theme.theme_name
+            }));
+        
+            window.location.href = 'index.html';
+        
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to save theme');
+            }
+        }
 
         async function loadTheme() {
             try {
