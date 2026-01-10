@@ -522,6 +522,8 @@
 	    display: block;  /* ADD */
         }
 
+        /*
+
 	.theme-input-screen button:not(.tab) {
     background: #667eea;
     color: white;
@@ -531,7 +533,7 @@
     border-radius: 10px;
     cursor: pointer;
     transition: background 0.3s;
-}
+    }*/
 
 .theme-input-screen button:not(.tab):hover {
     background: #5568d3;
