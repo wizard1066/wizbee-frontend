@@ -11,6 +11,16 @@
 	}
 	.loading { animation: spin 1s linear infinite; }
 
+    @keyframes rotate3d {
+    0% {
+        transform: rotateY(0deg);
+    }
+    100% {
+        transform: rotateY(360deg);
+    }
+    }
+        .loading { animation: spin 8s linear infinite; }
+
 	body {
     font-family: 'Montserrat', sans-serif;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);  /* Purple gradient */
