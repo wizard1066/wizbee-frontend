@@ -9,16 +9,40 @@
     	    from { transform: rotate(0deg); }
     	    to { transform: rotate(360deg); }
 	}
-	.loading { animation: spin 1s linear infinite; }
+
+    @keyframes rotate3d {
+    0% {
+        transform: rotateY(0deg);
+    }
+    100% {
+        transform: rotateY(360deg);
+    }
+    }
+	.loading { animation: spin 8s linear infinite; }
 
 	body {
-    font-family: 'Montserrat', sans-serif;
+    /*font-family: 'Montserrat', sans-serif;*/
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);  /* Purple gradient */
     min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
     padding: 20px;
+}
+
+.back-btn {
+    background: #667eea;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    
+    text-decoration: none;
+}
+
+.back-btn:hover {
+    background: black;
 }
 
 .summary-overlay {
@@ -83,9 +107,9 @@
     border-radius: 6px; 
     padding: 15px; 
     margin-bottom: 20px; 
-    font-family: 'Montserrat', sans-serif;  /* ← Changed from monospace */
+    /*font-family: 'Montserrat', sans-serif;  /* ← Changed from monospace */
     font-size: 20px;                         /* ← Same as themes purchased */
-    font-weight: 400;                        /* ← Same weight */
+    
 }
 
 /* Progress Tab Styles */
@@ -107,7 +131,7 @@
 
 .stat-value {
     font-size: 32px;
-    font-weight: bold;
+    
     margin-bottom: 5px;
 }
 
@@ -155,7 +179,7 @@
 .leaderboard-table th {
     padding: 15px;
     text-align: left;
-    font-weight: bold;
+    
 }
 
 .leaderboard-table td {
@@ -177,13 +201,13 @@
 .rank-3 { color: #cd7f32; } /* Bronze */
 
 .leaderboard-time {
-    font-weight: bold;
+    
     color: #667eea;
 }
 
 .leaderboard-word {
     color: #2d3748;
-    font-weight: 600;
+    
 }
 
 .leaderboard-empty {
@@ -206,7 +230,7 @@
     background: white;
     border: none;
     cursor: pointer;
-    font-weight: 400;           /* ← Changed from 900 to 400 (normal) */
+    
     font-size: 20px;            /* ← Changed from 16px to 20px (larger) */
     color: #667eea;             /* ← Changed from #2d3748 to purple */
     text-transform: lowercase;
@@ -219,7 +243,7 @@
 .tab.active {
     color: #667eea;
     border-bottom: 3px solid #667eea;
-    font-weight: 600;           /* ← Bold when active */
+    /*font-weight: 600;           /* ← Bold when active */
 }
     
     /* 
@@ -247,7 +271,7 @@
         color: white;
         padding: 10px 15px;
         border-radius: 10px;
-        font-weight: bold;
+        
         margin-bottom: 10px;
     }
     
@@ -258,7 +282,7 @@
     
     .difficulty-header {
         color: #667eea;
-        font-weight: bold;
+        /*font-weight: bold;*/
         margin-bottom: 8px;
         font-size: 0.9em;
     }
@@ -283,7 +307,7 @@
     }
     
     .theme-name {
-        font-weight: bold;
+        /*font-weight: bold;*/
         color: #2d3748;
     }
     
@@ -327,7 +351,7 @@
 
 .exhausted-warning p {
     color: #c53030;
-    font-weight: bold;
+    /*font-weight: bold;*/
     font-size: 18px;
     margin-bottom: 25px;
     line-height: 1.6;
@@ -348,7 +372,7 @@
     border-radius: 12px;
     cursor: pointer;
     font-size: 16px;
-    font-weight: bold;
+    
     box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
     transition: all 0.3s;
 }
@@ -366,7 +390,7 @@
     border-radius: 12px;
     cursor: pointer;
     font-size: 16px;
-    font-weight: bold;
+    /*font-weight: bold;*/
     box-shadow: 0 4px 15px rgba(113, 128, 150, 0.3);
     transition: all 0.3s;
 }
@@ -394,16 +418,6 @@
     margin-bottom: 30px;
 }
 
-.upgrade-btn {
-    background: #22c55e;
-    color: white;
-    border: none;
-    padding: 15px 40px;
-    font-size: 20px;
-    border-radius: 10px;
-    cursor: pointer;
-    margin-right: 10px;
-}
 
 .upgrade-btn:hover {
     background: #16a34a;
@@ -508,6 +522,8 @@
 	    display: block;  /* ADD */
         }
 
+        /*
+
 	.theme-input-screen button:not(.tab) {
     background: #667eea;
     color: white;
@@ -517,14 +533,14 @@
     border-radius: 10px;
     cursor: pointer;
     transition: background 0.3s;
-}
+    }*/
 
 .theme-input-screen button:not(.tab):hover {
     background: #5568d3;
 }
 
 	.back-btn {
-    		background: #6c757d;
+    		background: #667eea;
     		color: white;
     		border: none;
     		padding: 15px 40px;
@@ -551,7 +567,7 @@
 }
 
 .logout-btn {
-    background: #dc3545;
+    background: #667eea;
     color: white;
     border: none;
     padding: 8px 16px;
@@ -584,7 +600,7 @@
             border: 3px solid #667eea;
             padding: 30px 20px;
             font-size: 24px;
-            font-weight: bold;
+            /*font-weight: bold;*/
             border-radius: 10px;
             cursor: pointer;
             transition: all 0.3s;
@@ -606,7 +622,7 @@
             font-size: 28px;
             margin-bottom: 30px;
             color: #667eea;
-            font-weight: bold;
+            /*font-weight: bold;*/
         }
 
         .word-boxes {
@@ -626,7 +642,7 @@
             align-items: center;
             justify-content: center;
             font-size: 42px;
-            font-weight: bold;
+            
             background: white;
         }
 
@@ -727,7 +743,7 @@
             border: none;
             border-radius: 8px;
             font-size: 20px;
-            font-weight: bold;
+            
             cursor: pointer;
             transition: all 0.2s;
         }
@@ -855,7 +871,7 @@
         .message {
             font-size: 28px;
             margin: 20px 0;
-            font-weight: bold;
+            
         }
 
         .message.win {
@@ -866,7 +882,7 @@
             color: #dc3545;
         }
 
-        .play-again {
+        .play-again, .upgrade-btn {
             background: #667eea;
             color: white;
             border: none;
@@ -875,6 +891,11 @@
             border-radius: 10px;
             cursor: pointer;
             margin-top: 20px;
+        }
+
+        .upgrade-btn {
+            background: #48bb78;
+            color: white;
         }
 
         .hidden {
@@ -906,5 +927,32 @@
     z-index: 1001;
     max-width: 300px;
 }
+
+    .back-btn {
+            width: 200px;
+    		padding: 20px;
+    		font-size: 24px;
+    		border-radius: 20px;
+    		cursor: pointer;
+    		transition: background 0.3s;
+    		border: none;
+    		color: white;
+    		background: #667eea;
+            font-family: "Helvetica Neue";
+  			font-size: 32px;
+            border-style: solid;
+  			border-color: white;
+            border-left-width: 0px;
+			border-right-width: 0px;
+			border-top-width: 10px;
+			border-bottom-width: 10px;
+			border-style: solid;
+			margin: 10px 10px 10px 10px;
+            min-height: 50px;
+        }
+
+        .back-btn:hover {
+            background: #5a67d8;
+        }
 
     </style>
