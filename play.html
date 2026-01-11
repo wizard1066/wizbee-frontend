@@ -169,6 +169,67 @@
             }
         }
 
+        function updatePreviousGuesses() {
+            const container = document.getElementById('previousGuesses');
+            
+            if (guessHistory.length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+            
+            let html = '<h3>Previous Guesses:</h3>';
+            
+            guessHistory.forEach(guess => {
+                html += '<div class="guess-row">';
+                
+                const feedback = getFeedbackForGuess(guess);
+                
+                for (let i = 0; i < guess.length; i++) {
+                    const colorClass = feedback[i];
+                    html += `<div class="guess-letter ${colorClass}">${guess[i]}</div>`;
+                }
+                
+                html += '</div>';
+            });
+            
+            container.innerHTML = html;
+        }
+
+        function getFeedbackForGuess(guess) {
+            const feedback = [];
+            const wordArray = currentWord.split('');
+            const guessArray = guess.split('');
+            const usedIndices = new Set();
+
+            // Mark correct positions
+            for (let i = 0; i < guessArray.length; i++) {
+                if (guessArray[i] === wordArray[i]) {
+                    feedback[i] = 'correct';
+                    usedIndices.add(i);
+                }
+            }
+
+            // Mark present letters
+            for (let i = 0; i < guessArray.length; i++) {
+                if (feedback[i] !== 'correct') {
+                    let found = false;
+                    for (let j = 0; j < wordArray.length; j++) {
+                        if (!usedIndices.has(j) && guessArray[i] === wordArray[j]) {
+                            feedback[i] = 'present';
+                            usedIndices.add(j);
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found) {
+                        feedback[i] = 'incorrect';
+                    }
+                }
+            }
+
+            return feedback;
+        }
+
         function createWordPoolCanvas() {
             const container = document.createElement('div');
             container.id = 'wordPoolContainer';
@@ -371,7 +432,7 @@
             }
         }
 
-        function updatePreviousGuesses() {
+        function updatePreviousGuessesDepreciated() {
             const container = document.getElementById('previousGuesses');
             let html = '<h3>Previous Guesses:</h3>';
             
