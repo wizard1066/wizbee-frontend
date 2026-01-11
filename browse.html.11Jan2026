@@ -218,37 +218,6 @@
         }
 
         async function playTheme(cacheKey) {
-            console.log('[BROWSE] Playing theme:', cacheKey);
-            
-            try {
-                const response = await fetch(`${API_URL}/api/play-theme`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${authToken}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ cacheKey })
-                });
-                
-                const data = await response.json();
-                
-                if (!response.ok) {
-                    alert(data.message || 'Failed to load theme');
-                    return;
-                }
-                
-                // Save game data and redirect to play.html
-                localStorage.setItem('pendingGame', JSON.stringify(data));
-                window.location.href = 'play.html';  // ← Changed from index.html?play=true
-                
-            } catch (error) {
-                console.error('Error:', error);
-                alert('Failed to load theme');
-            }
-        }
-
-        /*
-        async function playTheme(cacheKey) {
             try {
                 console.log('Playing theme:', cacheKey);
 
@@ -275,7 +244,7 @@
                 console.error('Error playing theme:', error);
                 alert('Failed to load theme. Please try again.');
             }
-        }*/
+        }
 
         function editTheme(cacheKey) {
             window.location.href = `admin.html?edit=${cacheKey}`;
