@@ -171,6 +171,56 @@
 
         function updatePreviousGuesses() {
             const container = document.getElementById('previousGuesses');
+            container.innerHTML = ''; // Clear existing
+            
+            guessHistory.forEach(guess => {
+                showGuessFeedback(guess);
+            });
+        }
+
+        function showGuessFeedback(guess) {
+            const container = document.getElementById('previousGuesses');
+            const guessDiv = document.createElement('div');
+            guessDiv.className = 'previous-guess';
+
+            const wordCopy = currentWord.split('');
+            const guessCopy = guess.split('');
+            const feedback = new Array(guess.length).fill('absent');
+
+            for (let i = 0; i < guess.length; i++) {
+                if (guess[i] === currentWord[i]) {
+                    feedback[i] = 'correct';
+                    wordCopy[i] = null;
+                    guessCopy[i] = null;
+                }
+            }
+
+            for (let i = 0; i < guess.length; i++) {
+                if (guessCopy[i] !== null) {
+                    const index = wordCopy.indexOf(guessCopy[i]);
+                    if (index !== -1) {
+                        feedback[i] = 'present';
+                        wordCopy[index] = null;
+                    }
+                }
+            }
+
+            let fontSizeClass = '';
+            if (currentWord.length > 9) fontSizeClass = 'tiny-font';
+            else if (currentWord.length > 6) fontSizeClass = 'small-font';
+
+            for (let i = 0; i < guess.length; i++) {
+            const box = document.createElement('div');
+            box.className = `letter-box ${feedback[i]} ${fontSizeClass}`;
+            box.textContent = guess[i];
+            guessDiv.appendChild(box);
+            }
+
+            container.appendChild(guessDiv);
+    }
+/*
+        function updatePreviousGuesses() {
+            const container = document.getElementById('previousGuesses');
             
             if (guessHistory.length === 0) {
                 container.innerHTML = '';
@@ -195,6 +245,7 @@
             container.innerHTML = html;
         }
 
+        */
         function getFeedbackForGuess(guess) {
             const feedback = [];
             const wordArray = currentWord.split('');
@@ -432,15 +483,54 @@
             }
         }
 
-        function updatePreviousGuessesDepreciated() {
+        function updatePreviousGuesses() {
             const container = document.getElementById('previousGuesses');
-            let html = '<h3>Previous Guesses:</h3>';
+            container.innerHTML = ''; // Clear existing
             
             guessHistory.forEach(guess => {
-                html += `<div class="guess-item">${guess}</div>`;
+                showGuessFeedback(guess);
             });
+        }
+
+        function showGuessFeedback(guess) {
+            const container = document.getElementById('previousGuesses');
+            const guessDiv = document.createElement('div');
+            guessDiv.className = 'previous-guess';
             
-            container.innerHTML = html;
+            const wordCopy = currentWord.split('');
+            const guessCopy = guess.split('');
+            const feedback = new Array(guess.length).fill('absent');
+            
+            for (let i = 0; i < guess.length; i++) {
+                if (guess[i] === currentWord[i]) {
+                    feedback[i] = 'correct';
+                    wordCopy[i] = null;
+                    guessCopy[i] = null;
+                }
+            }
+            
+            for (let i = 0; i < guess.length; i++) {
+                if (guessCopy[i] !== null) {
+                    const index = wordCopy.indexOf(guessCopy[i]);
+                    if (index !== -1) {
+                        feedback[i] = 'present';
+                        wordCopy[index] = null;
+                    }
+                }
+            }
+            
+            let fontSizeClass = '';
+            if (currentWord.length > 9) fontSizeClass = 'tiny-font';
+            else if (currentWord.length > 6) fontSizeClass = 'small-font';
+            
+            for (let i = 0; i < guess.length; i++) {
+                const box = document.createElement('div');
+                box.className = `letter-box ${feedback[i]} ${fontSizeClass}`;
+                box.textContent = guess[i];
+                guessDiv.appendChild(box);
+            }
+            
+            container.appendChild(guessDiv);
         }
 
         function updateGuessCount() {
