@@ -27,6 +27,8 @@
         <!-- Game Board (EXACT COPY FROM INDEX.HTML) -->
         <div id="gameScreen" class="game-screen">
             <div class="theme-display">Theme: <span id="selectedTheme"></span></div>
+
+            
             
             <!-- CLUE DISPLAY -->
             <div id="clueDisplay" class="clue-display hidden" style="
@@ -119,7 +121,7 @@
             }
         };
 
-        // COPY ALL GAME FUNCTIONS FROM INDEX.HTML
+            // COPY ALL GAME FUNCTIONS FROM INDEX.HTML
         async function startGame(gameData) {
             console.log('=== START GAME ===');
             
@@ -151,6 +153,63 @@
             }
         }
 
+        function createWordPoolCanvas() {
+            const container = document.createElement('div');
+            container.id = 'wordPoolContainer';
+            container.style.cssText = 'margin: 20px 0; text-align: center;';
+            
+            const canvas = document.createElement('canvas');
+            canvas.id = 'wordPoolCanvas';
+            canvas.width = 800;
+            canvas.height = 60;
+            canvas.style.cssText = 'max-width: 100%; height: auto; border-radius: 8px;';
+            
+            container.appendChild(canvas);
+            return container;
+        }
+
+        function drawWordPoolVisualization(totalWords, selectedIndices) {
+            const canvas = document.getElementById('wordPoolCanvas');
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            ctx.clearRect(0, 0, width, height);
+            
+            // Draw gradient background (easy -> hard)
+            const gradient = ctx.createLinearGradient(0, 0, width, 0);
+            gradient.addColorStop(0, '#48bb78');
+            gradient.addColorStop(0.5, '#ed8936');
+            gradient.addColorStop(1, '#f56565');
+            
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 20, width, 20);
+            
+            // Draw labels
+            ctx.fillStyle = '#718096';
+            ctx.font = '12px Arial';
+            ctx.fillText('Easy', 10, 15);
+            ctx.fillText('Hard', width - 35, 15);
+            
+            // Draw selected word markers
+            if (selectedIndices && selectedIndices.length > 0) {
+                selectedIndices.forEach(index => {
+                    const x = (index / totalWords) * width;
+                    
+                    ctx.fillStyle = '#2d3748';
+                    ctx.beginPath();
+                    ctx.arc(x, 30, 4, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.strokeStyle = 'white';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                });
+            }
+        }
+
         function createKeyboard(language = 'en') {
             const keyboard = document.getElementById('keyboard');
             const layouts = {
@@ -178,6 +237,23 @@
             });
 
             keyboard.innerHTML = html;
+
+            // ADD WORD POOL VISUALIZATION
+            const gameScreen = document.getElementById('gameScreen');
+            const oldViz = document.getElementById('wordPoolContainer');
+            if (oldViz) oldViz.remove();
+
+            const visualization = createWordPoolCanvas();
+            const themeElement = document.querySelector('.theme-display');
+            themeElement.parentNode.insertBefore(visualization, themeElement.nextSibling);
+
+            // Draw visualization
+            if (gameData.wordPoolInfo) {
+                drawWordPoolVisualization(
+                    gameData.wordPoolInfo.totalWords,
+                    gameData.wordPoolInfo.selectedIndices
+                );
+            }
         }
 
         function handleKeyPress(key) {
