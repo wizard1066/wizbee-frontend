@@ -1282,6 +1282,10 @@ async function launchThemeFromBrowser(cacheKey) {
                     return;
                 }
 
+                 // CRITICAL: Hide theme input, show game
+                 document.getElementById('themeInputScreen').classList.add('hidden');
+                 document.getElementById('gameScreen').classList.remove('hidden');
+
                 startGame(data);
                 
             } catch (error) {

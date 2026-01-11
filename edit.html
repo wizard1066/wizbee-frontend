@@ -258,6 +258,41 @@
         };
 
         async function closeAndComplete() {
+            try {
+                // Mark as complete
+                const response = await fetch(`${API_URL}/api/complete-theme`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ cacheKey })
+                });
+                
+                if (!response.ok) {
+                    alert('Failed to save theme');
+                    return;
+                }
+                
+                // Clear any preview state
+               // localStorage.removeItem('lastEditedTheme');
+                 localStorage.setItem('lastEditedTheme', JSON.stringify({
+                cacheKey: cacheKey,
+                themeName: theme.theme_name
+             }));
+                
+                // Add flag to tell index.html to clear preview
+                localStorage.setItem('clearPreview', 'true');
+                
+                window.location.href = 'index.html';
+                
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to save theme');
+            }
+        }
+
+        async function closeAndCompleteDepreciated() {
         try {
         // Mark as complete
             const response = await fetch(`${API_URL}/api/complete-theme`, {
