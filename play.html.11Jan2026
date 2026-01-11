@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Play - Wizbee</title>
+    
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Montserrat', sans-serif;
+        }
+        
+        .game-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .theme-display {
+            font-size: 24px;
+            font-weight: 600;
+            color: #2d3748;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .clue-display {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            text-align: center;
+            font-size: 18px;
+            font-weight: 600;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .word-boxes {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+        
+        .letter-box {
+            width: 60px;
+            height: 60px;
+            border: 3px solid #e2e8f0;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: 700;
+            color: #2d3748;
+            background: white;
+        }
+        
+        .letter-box.filled {
+            border-color: #667eea;
+            background: #f7fafc;
+        }
+        
+        .letter-box.correct {
+            border-color: #48bb78;
+            background: #c6f6d5;
+            color: #22543d;
+        }
+        
+        .letter-box.present {
+            border-color: #ed8936;
+            background: #feebc8;
+            color: #7c2d12;
+        }
+        
+        .letter-box.incorrect {
+            border-color: #cbd5e0;
+            background: #edf2f7;
+            color: #a0aec0;
+        }
+        
+        .keyboard {
+            max-width: 600px;
+            margin: 30px auto;
+        }
+        
+        .keyboard-row {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+        
+        .key {
+            padding: 15px;
+            min-width: 40px;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            color: #2d3748;
+            transition: all 0.2s;
+        }
+        
+        .key:hover {
+            background: #f7fafc;
+            border-color: #cbd5e0;
+        }
+        
+        .key.correct {
+            background: #48bb78;
+            color: white;
+            border-color: #48bb78;
+        }
+        
+        .key.present {
+            background: #ed8936;
+            color: white;
+            border-color: #ed8936;
+        }
+        
+        .key.used {
+            background: #cbd5e0;
+            color: #718096;
+            border-color: #cbd5e0;
+        }
+        
+        .key.wide {
+            min-width: 80px;
+        }
+        
+        .guesses-remaining {
+            text-align: center;
+            font-size: 18px;
+            color: #667eea;
+            font-weight: 600;
+            margin: 20px 0;
+        }
+        
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 16px;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #5a67d8;
+        }
+        
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #2d3748;
+        }
+        
+        .btn-secondary:hover {
+            background: #cbd5e0;
+        }
+        
+        .btn-danger {
+            background: #f56565;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #e53e3e;
+        }
+        
+        .message {
+            text-align: center;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .message.win {
+            background: #c6f6d5;
+            color: #22543d;
+            border: 2px solid #48bb78;
+        }
+        
+        .message.lose {
+            background: #fed7d7;
+            color: #742a2a;
+            border: 2px solid #f56565;
+        }
+        
+        .previous-guesses {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 15px;
+            background: #f7fafc;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .guess-item {
+            padding: 8px 12px;
+            margin: 5px 0;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #cbd5e0;
+            font-family: monospace;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="header">
+            <h1>
+                <a href="index.html" style="text-decoration: none; color: inherit;">
+                    <img src="bee3.gif" alt="Wizbee" style="height: 48px; vertical-align: middle;"> 
+                    <span style="color: #f59e0b;">Wizbee</span>
+                </a>
+            </h1>
+        </div>
+
+        <div id="loadingMessage" style="text-align: center; padding: 60px; color: #718096;">
+            <img src="bee2.gif" style="height: 60px;"><br>
+            Loading game...
+        </div>
+
+        <div id="gameContent" class="hidden">
+            <div class="theme-display" id="themeDisplay"></div>
+            
+            <div id="clueDisplay" class="clue-display hidden">
+                <div style="font-size: 14px; opacity: 0.9; margin-bottom: 8px;">💡 Clue</div>
+                <div id="clueText"></div>
+            </div>
+            
+            <div id="wordBoxes" class="word-boxes"></div>
+            
+            <div class="guesses-remaining">
+                Guesses remaining: <span id="guessesRemaining"></span>
+            </div>
+            
+            <div id="keyboard" class="keyboard"></div>
+            
+            <div class="action-buttons">
+                <button id="submitGuess" class="btn btn-primary" onclick="submitGuess()">Submit Word</button>
+                <button id="showClueBtn" class="btn btn-secondary" onclick="showClue()">💡 Show Clue</button>
+                <button id="giveUpBtn" class="btn btn-danger" onclick="giveUp()">Give Up</button>
+            </div>
+            
+            <div id="previousGuesses" class="previous-guesses hidden"></div>
+            <div id="gameMessage" class="message hidden"></div>
+            
+            <div class="action-buttons hidden" id="nextButtons">
+                <button class="btn btn-primary" onclick="nextWord()">Next Word →</button>
+                <button class="btn btn-secondary" onclick="returnToBrowse()">← Back to Browse</button>
+            </div>
+        </div>
+
+        <div id="errorMessage" class="hidden" style="text-align: center; padding: 60px; color: #e53e3e;">
+            Failed to load game. <a href="browse.html">Return to browse</a>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://api.wizbee.app';
+        let authToken = null;
+        
+        // Game state
+        let wordList = [];
+        let currentWordIndex = 0;
+        let currentWord = '';
+        let currentGuess = '';
+        let remainingGuesses = 0;
+        let maxGuesses = 8;
+        let guessHistory = [];
+        let gameOver = false;
+        let selectedThemeWord = '';
+        let currentLanguage = 'en';
+        let winMessage = 'Correct!';
+        let loseMessage = 'Not quite! The word was';
+        let wordClues = [];
+        let currentClueTimeout = null;
+
+        window.onload = function() {
+            authToken = localStorage.getItem('authToken');
+            
+            if (!authToken) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            // Get game data from localStorage
+            const pendingGame = localStorage.getItem('pendingGame');
+            if (!pendingGame) {
+                showError('No game data found');
+                return;
+            }
+
+            try {
+                const gameData = JSON.parse(pendingGame);
+                localStorage.removeItem('pendingGame');
+                startGame(gameData);
+            } catch (error) {
+                console.error('Error loading game:', error);
+                showError('Failed to load game');
+            }
+        };
+
+        async function startGame(gameData) {
+            console.log('=== PLAY.HTML START GAME ===', gameData);
+
+            wordList = gameData.words;
+            currentWordIndex = 0;
+            selectedThemeWord = gameData.theme;
+            currentWord = wordList[currentWordIndex];
+            maxGuesses = gameData.guesses || 8;
+            remainingGuesses = maxGuesses;
+            currentLanguage = gameData.language || 'en';
+            winMessage = gameData.winMessage || 'Correct!';
+            loseMessage = gameData.loseMessage || 'Not quite! The word was';
+
+            document.getElementById('themeDisplay').textContent = 
+                `[${selectedThemeWord}] (${wordList.length} words) - Playing ${currentWordIndex + 1}/${wordList.length}`;
+
+            createKeyboard(currentLanguage);
+            
+            // Generate clues
+            await generateAllClues();
+            
+            createWordBoxes();
+            updateGuessCount();
+            
+            // Show game
+            document.getElementById('loadingMessage').classList.add('hidden');
+            document.getElementById('gameContent').classList.remove('hidden');
+            
+            // Show first clue
+            if (wordClues.length > 0) {
+                showClueAuto(20000);
+            }
+        }
+
+        function createKeyboard(language = 'en') {
+            const keyboard = document.getElementById('keyboard');
+            const layouts = {
+                'en': [
+                    ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
+                    ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
+                    ['ENTER', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', 'BACK']
+                ],
+                'fr': [
+                    ['A', 'Z', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
+                    ['Q', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'M'],
+                    ['ENTER', 'W', 'X', 'C', 'V', 'B', 'N', 'BACK']
+                ]
+            };
+
+            const layout = layouts[language] || layouts['en'];
+            let html = '';
+
+            layout.forEach(row => {
+                html += '<div class="keyboard-row">';
+                row.forEach(key => {
+                    const wide = (key === 'ENTER' || key === 'BACK') ? 'wide' : '';
+                    const displayKey = key === 'BACK' ? '⌫' : key;
+                    html += `<button class="key ${wide}" onclick="handleKeyPress('${key}')">${displayKey}</button>`;
+                });
+                html += '</div>';
+            });
+
+            keyboard.innerHTML = html;
+        }
+
+        function handleKeyPress(key) {
+            if (gameOver) return;
+
+            if (key === 'ENTER') {
+                submitGuess();
+                return;
+            }
+
+            if (key === 'BACK') {
+                if (currentGuess.length > 0) {
+                    currentGuess = currentGuess.slice(0, -1);
+                    updateWordBoxes();
+                }
+                return;
+            }
+
+            if (currentGuess.length < currentWord.length) {
+                currentGuess += key;
+                updateWordBoxes();
+            }
+        }
+
+        function createWordBoxes() {
+            const container = document.getElementById('wordBoxes');
+            let html = '';
+
+            for (let i = 0; i < currentWord.length; i++) {
+                html += '<div class="letter-box" id="box-' + i + '"></div>';
+            }
+
+            container.innerHTML = html;
+        }
+
+        function updateWordBoxes() {
+            for (let i = 0; i < currentWord.length; i++) {
+                const box = document.getElementById('box-' + i);
+                if (i < currentGuess.length) {
+                    box.textContent = currentGuess[i];
+                    box.classList.add('filled');
+                } else {
+                    box.textContent = '';
+                    box.classList.remove('filled');
+                }
+            }
+        }
+
+        function submitGuess() {
+            if (currentGuess.length !== currentWord.length) return;
+            if (gameOver) return;
+
+            const guess = currentGuess.toUpperCase();
+            guessHistory.push(guess);
+
+            // Check guess
+            const feedback = checkGuess(guess);
+            updateKeyboard(guess, feedback);
+            displayGuessHistory();
+
+            remainingGuesses--;
+            updateGuessCount();
+
+            if (guess === currentWord) {
+                endGame(true);
+            } else if (remainingGuesses === 0) {
+                endGame(false);
+            }
+
+            currentGuess = '';
+            updateWordBoxes();
+        }
+
+        function checkGuess(guess) {
+            const feedback = [];
+            const wordArray = currentWord.split('');
+            const guessArray = guess.split('');
+
+            // Mark correct positions
+            for (let i = 0; i < guessArray.length; i++) {
+                if (guessArray[i] === wordArray[i]) {
+                    feedback[i] = 'correct';
+                    wordArray[i] = null;
+                }
+            }
+
+            // Mark present letters
+            for (let i = 0; i < guessArray.length; i++) {
+                if (feedback[i] !== 'correct') {
+                    const index = wordArray.indexOf(guessArray[i]);
+                    if (index !== -1) {
+                        feedback[i] = 'present';
+                        wordArray[index] = null;
+                    } else {
+                        feedback[i] = 'incorrect';
+                    }
+                }
+            }
+
+            return feedback;
+        }
+
+        function updateKeyboard(guess, feedback) {
+            for (let i = 0; i < guess.length; i++) {
+                const letter = guess[i];
+                const keys = document.querySelectorAll('.key');
+
+                keys.forEach(key => {
+                    if (key.textContent === letter) {
+                        if (feedback[i] === 'correct') {
+                            key.classList.remove('present', 'used');
+                            key.classList.add('correct');
+                        } else if (feedback[i] === 'present' && !key.classList.contains('correct')) {
+                            key.classList.remove('used');
+                            key.classList.add('present');
+                        } else if (feedback[i] === 'incorrect' && !key.classList.contains('correct') && !key.classList.contains('present')) {
+                            key.classList.add('used');
+                        }
+                    }
+                });
+            }
+        }
+
+        function displayGuessHistory() {
+            const container = document.getElementById('previousGuesses');
+            container.classList.remove('hidden');
+
+            let html = '<div style="font-weight: 600; margin-bottom: 10px;">Previous Guesses:</div>';
+            guessHistory.forEach(guess => {
+                html += `<div class="guess-item">${guess}</div>`;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function updateGuessCount() {
+            document.getElementById('guessesRemaining').textContent = remainingGuesses;
+        }
+
+        function endGame(won) {
+            gameOver = true;
+            hideClue();
+
+            const messageDiv = document.getElementById('gameMessage');
+            messageDiv.classList.remove('hidden');
+
+            if (won) {
+                messageDiv.textContent = `🎉 ${winMessage} The word was ${currentWord}`;
+                messageDiv.className = 'message win';
+            } else {
+                messageDiv.textContent = `${loseMessage} ${currentWord}`;
+                messageDiv.className = 'message lose';
+            }
+
+            // Show next buttons
+            document.getElementById('nextButtons').classList.remove('hidden');
+            document.getElementById('submitGuess').disabled = true;
+            document.getElementById('giveUpBtn').classList.add('hidden');
+            document.getElementById('showClueBtn').classList.add('hidden');
+
+            // Scroll to message
+            setTimeout(() => {
+                messageDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
+        }
+
+        function nextWord() {
+            if (currentWordIndex >= wordList.length - 1) {
+                alert('🎉 You completed all words!');
+                returnToBrowse();
+                return;
+            }
+
+            // Reset for next word
+            currentWordIndex++;
+            currentWord = wordList[currentWordIndex];
+            currentGuess = '';
+            guessHistory = [];
+            remainingGuesses = maxGuesses;
+            gameOver = false;
+
+            document.getElementById('themeDisplay').textContent = 
+                `[${selectedThemeWord}] (${wordList.length} words) - Playing ${currentWordIndex + 1}/${wordList.length}`;
+
+            document.getElementById('gameMessage').classList.add('hidden');
+            document.getElementById('nextButtons').classList.add('hidden');
+            document.getElementById('previousGuesses').classList.add('hidden');
+            document.getElementById('submitGuess').disabled = false;
+            document.getElementById('giveUpBtn').classList.remove('hidden');
+            document.getElementById('showClueBtn').classList.remove('hidden');
+
+            // Reset keyboard
+            document.querySelectorAll('.key').forEach(key => {
+                key.classList.remove('correct', 'present', 'used');
+            });
+
+            createWordBoxes();
+            updateGuessCount();
+
+            if (wordClues.length > currentWordIndex) {
+                showClueAuto(20000);
+            }
+        }
+
+        function giveUp() {
+            if (confirm('Are you sure you want to give up on this word?')) {
+                endGame(false);
+            }
+        }
+
+        function returnToBrowse() {
+            window.location.href = 'browse.html';
+        }
+
+        async function generateAllClues() {
+            try {
+                const response = await fetch(`${API_URL}/api/generate-clues`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        words: wordList,
+                        theme: selectedThemeWord,
+                        language: currentLanguage
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.clues) {
+                    wordClues = data.clues;
+                }
+            } catch (error) {
+                console.error('Error generating clues:', error);
+            }
+        }
+
+        function showClue() {
+            if (wordClues.length > currentWordIndex) {
+                const clueDiv = document.getElementById('clueDisplay');
+                document.getElementById('clueText').textContent = wordClues[currentWordIndex];
+                clueDiv.classList.remove('hidden');
+            }
+        }
+
+        function showClueAuto(duration) {
+            if (currentClueTimeout) {
+                clearTimeout(currentClueTimeout);
+            }
+
+            showClue();
+
+            currentClueTimeout = setTimeout(() => {
+                hideClue();
+            }, duration);
+        }
+
+        function hideClue() {
+            document.getElementById('clueDisplay').classList.add('hidden');
+            if (currentClueTimeout) {
+                clearTimeout(currentClueTimeout);
+                currentClueTimeout = null;
+            }
+        }
+
+        function showError(message) {
+            document.getElementById('loadingMessage').classList.add('hidden');
+            document.getElementById('gameContent').classList.add('hidden');
+            document.getElementById('errorMessage').classList.remove('hidden');
+            document.getElementById('errorMessage').innerHTML = `${message}. <a href="browse.html">Return to browse</a>`;
+        }
+    </script>
+</body>
+</html>

@@ -8,286 +8,61 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
-    
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Montserrat', sans-serif;
-        }
-        
-        .game-container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        
-        .theme-display {
-            font-size: 24px;
-            font-weight: 600;
-            color: #2d3748;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        
-        .clue-display {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px;
-            border-radius: 12px;
-            margin: 20px 0;
-            text-align: center;
-            font-size: 18px;
-            font-weight: 600;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        
-        .hidden {
-            display: none;
-        }
-        
-        .word-boxes {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin: 30px 0;
-            flex-wrap: wrap;
-        }
-        
-        .letter-box {
-            width: 60px;
-            height: 60px;
-            border: 3px solid #e2e8f0;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 32px;
-            font-weight: 700;
-            color: #2d3748;
-            background: white;
-        }
-        
-        .letter-box.filled {
-            border-color: #667eea;
-            background: #f7fafc;
-        }
-        
-        .letter-box.correct {
-            border-color: #48bb78;
-            background: #c6f6d5;
-            color: #22543d;
-        }
-        
-        .letter-box.present {
-            border-color: #ed8936;
-            background: #feebc8;
-            color: #7c2d12;
-        }
-        
-        .letter-box.incorrect {
-            border-color: #cbd5e0;
-            background: #edf2f7;
-            color: #a0aec0;
-        }
-        
-        .keyboard {
-            max-width: 600px;
-            margin: 30px auto;
-        }
-        
-        .keyboard-row {
-            display: flex;
-            justify-content: center;
-            gap: 6px;
-            margin-bottom: 8px;
-        }
-        
-        .key {
-            padding: 15px;
-            min-width: 40px;
-            border: 2px solid #e2e8f0;
-            border-radius: 6px;
-            background: white;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 14px;
-            color: #2d3748;
-            transition: all 0.2s;
-        }
-        
-        .key:hover {
-            background: #f7fafc;
-            border-color: #cbd5e0;
-        }
-        
-        .key.correct {
-            background: #48bb78;
-            color: white;
-            border-color: #48bb78;
-        }
-        
-        .key.present {
-            background: #ed8936;
-            color: white;
-            border-color: #ed8936;
-        }
-        
-        .key.used {
-            background: #cbd5e0;
-            color: #718096;
-            border-color: #cbd5e0;
-        }
-        
-        .key.wide {
-            min-width: 80px;
-        }
-        
-        .guesses-remaining {
-            text-align: center;
-            font-size: 18px;
-            color: #667eea;
-            font-weight: 600;
-            margin: 20px 0;
-        }
-        
-        .action-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin: 30px 0;
-            flex-wrap: wrap;
-        }
-        
-        .btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 16px;
-        }
-        
-        .btn-primary {
-            background: #667eea;
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            background: #5a67d8;
-        }
-        
-        .btn-secondary {
-            background: #e2e8f0;
-            color: #2d3748;
-        }
-        
-        .btn-secondary:hover {
-            background: #cbd5e0;
-        }
-        
-        .btn-danger {
-            background: #f56565;
-            color: white;
-        }
-        
-        .btn-danger:hover {
-            background: #e53e3e;
-        }
-        
-        .message {
-            text-align: center;
-            padding: 20px;
-            border-radius: 8px;
-            margin: 20px 0;
-            font-size: 18px;
-            font-weight: 600;
-        }
-        
-        .message.win {
-            background: #c6f6d5;
-            color: #22543d;
-            border: 2px solid #48bb78;
-        }
-        
-        .message.lose {
-            background: #fed7d7;
-            color: #742a2a;
-            border: 2px solid #f56565;
-        }
-        
-        .previous-guesses {
-            max-width: 600px;
-            margin: 20px auto;
-            padding: 15px;
-            background: #f7fafc;
-            border-radius: 8px;
-            border: 1px solid #e2e8f0;
-        }
-        
-        .guess-item {
-            padding: 8px 12px;
-            margin: 5px 0;
-            background: white;
-            border-radius: 6px;
-            border: 1px solid #cbd5e0;
-            font-family: monospace;
-            font-size: 16px;
-        }
-    </style>
 </head>
 <body>
-    <div class="game-container">
-        <div class="header">
-            <h1>
-                <a href="index.html" style="text-decoration: none; color: inherit;">
-                    <img src="bee3.gif" alt="Wizbee" style="height: 48px; vertical-align: middle;"> 
-                    <span style="color: #f59e0b;">Wizbee</span>
-                </a>
-            </h1>
-        </div>
+    <div class="container">
+        <h1>
+            <a href="index.html" style="text-decoration: none; color: inherit;">
+                <img src="bee3.gif" alt="Wizbee" style="height: 48px; vertical-align: middle;"> 
+                <span style="color: #f59e0b;">Wizbee</span>
+            </a>
+        </h1>
 
+        <!-- Loading Message -->
         <div id="loadingMessage" style="text-align: center; padding: 60px; color: #718096;">
             <img src="bee2.gif" style="height: 60px;"><br>
             Loading game...
         </div>
 
-        <div id="gameContent" class="hidden">
-            <div class="theme-display" id="themeDisplay"></div>
+        <!-- Game Board (EXACT COPY FROM INDEX.HTML) -->
+        <div id="gameScreen" class="game-screen">
+            <div class="theme-display">Theme: <span id="selectedTheme"></span></div>
             
-            <div id="clueDisplay" class="clue-display hidden">
+            <!-- CLUE DISPLAY -->
+            <div id="clueDisplay" class="clue-display hidden" style="
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                padding: 20px;
+                border-radius: 12px;
+                margin: 20px 0;
+                text-align: center;
+                font-size: 18px;
+                font-weight: 600;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+            ">
                 <div style="font-size: 14px; opacity: 0.9; margin-bottom: 8px;">💡 Clue</div>
                 <div id="clueText"></div>
             </div>
             
             <div id="wordBoxes" class="word-boxes"></div>
-            
-            <div class="guesses-remaining">
-                Guesses remaining: <span id="guessesRemaining"></span>
-            </div>
-            
+            <div class="guesses-remaining">Guesses remaining: <span id="guessesRemaining"></span></div>
             <div id="keyboard" class="keyboard"></div>
-            
-            <div class="action-buttons">
-                <button id="submitGuess" class="btn btn-primary" onclick="submitGuess()">Submit Word</button>
-                <button id="showClueBtn" class="btn btn-secondary" onclick="showClue()">💡 Show Clue</button>
-                <button id="giveUpBtn" class="btn btn-danger" onclick="giveUp()">Give Up</button>
+
+            <div class="guess-input-container">
+                <button id="submitGuess" class="submit-guess" onclick="submitGuess()">Submit Word</button>
+                <button id="showClueBtn" class="hint-btn" onclick="showClue()">💡 Show Clue</button>
+                <button id="giveUpBtn" class="give-up-btn" onclick="giveUp()">Give Up</button>
             </div>
-            
-            <div id="previousGuesses" class="previous-guesses hidden"></div>
-            <div id="gameMessage" class="message hidden"></div>
-            
-            <div class="action-buttons hidden" id="nextButtons">
-                <button class="btn btn-primary" onclick="nextWord()">Next Word →</button>
-                <button class="btn btn-secondary" onclick="returnToBrowse()">← Back to Browse</button>
-            </div>
+
+            <div id="hintDisplay" class="hint-display hidden"></div>
+            <div id="previousGuesses" class="previous-guesses"></div>
+            <div id="gameMessage" class="message"></div>
+            <button id="resetButton" class="play-again hidden" onclick="nextWord()">Next Word →</button>
+            <button id="backButton" class="play-again hidden" onclick="returnToBrowse()" style="background: #e2e8f0; color: #2d3748;">← Back to Browse</button>
         </div>
 
+        <!-- Error Message -->
         <div id="errorMessage" class="hidden" style="text-align: center; padding: 60px; color: #e53e3e;">
             Failed to load game. <a href="browse.html">Return to browse</a>
         </div>
@@ -297,7 +72,7 @@
         const API_URL = 'https://api.wizbee.app';
         let authToken = null;
         
-        // Game state
+        // Game state (EXACT COPY FROM INDEX.HTML)
         let wordList = [];
         let currentWordIndex = 0;
         let currentWord = '';
@@ -312,6 +87,11 @@
         let loseMessage = 'Not quite! The word was';
         let wordClues = [];
         let currentClueTimeout = null;
+        let hintsUsed = 0;
+        let clueViewCount = 0;
+        let wordStartTime = null;
+        let letterSwapCount = 0;
+        let gameResults = [];
 
         window.onload = function() {
             authToken = localStorage.getItem('authToken');
@@ -321,7 +101,6 @@
                 return;
             }
 
-            // Get game data from localStorage
             const pendingGame = localStorage.getItem('pendingGame');
             if (!pendingGame) {
                 showError('No game data found');
@@ -331,6 +110,8 @@
             try {
                 const gameData = JSON.parse(pendingGame);
                 localStorage.removeItem('pendingGame');
+                
+                document.getElementById('loadingMessage').style.display = 'none';
                 startGame(gameData);
             } catch (error) {
                 console.error('Error loading game:', error);
@@ -338,9 +119,11 @@
             }
         };
 
+        // COPY ALL GAME FUNCTIONS FROM INDEX.HTML
         async function startGame(gameData) {
-            console.log('=== PLAY.HTML START GAME ===', gameData);
-
+            console.log('=== START GAME ===');
+            
+            gameResults = [];
             wordList = gameData.words;
             currentWordIndex = 0;
             selectedThemeWord = gameData.theme;
@@ -350,23 +133,19 @@
             currentLanguage = gameData.language || 'en';
             winMessage = gameData.winMessage || 'Correct!';
             loseMessage = gameData.loseMessage || 'Not quite! The word was';
-
-            document.getElementById('themeDisplay').textContent = 
-                `[${selectedThemeWord}] (${wordList.length} words) - Playing ${currentWordIndex + 1}/${wordList.length}`;
-
+            wordStartTime = Date.now();
+            letterSwapCount = 0;
+            wordClues = [];
+            
+            document.getElementById('selectedTheme').textContent = `${selectedThemeWord} (${currentWordIndex + 1}/${wordList.length})`;
+            
             createKeyboard(currentLanguage);
             
-            // Generate clues
             await generateAllClues();
             
             createWordBoxes();
             updateGuessCount();
             
-            // Show game
-            document.getElementById('loadingMessage').classList.add('hidden');
-            document.getElementById('gameContent').classList.remove('hidden');
-            
-            // Show first clue
             if (wordClues.length > 0) {
                 showClueAuto(20000);
             }
@@ -378,12 +157,12 @@
                 'en': [
                     ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
                     ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
-                    ['ENTER', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', 'BACK']
+                    ['ENTER', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', '⌫']
                 ],
                 'fr': [
                     ['A', 'Z', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
                     ['Q', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'M'],
-                    ['ENTER', 'W', 'X', 'C', 'V', 'B', 'N', 'BACK']
+                    ['ENTER', 'W', 'X', 'C', 'V', 'B', 'N', '⌫']
                 ]
             };
 
@@ -393,9 +172,7 @@
             layout.forEach(row => {
                 html += '<div class="keyboard-row">';
                 row.forEach(key => {
-                    const wide = (key === 'ENTER' || key === 'BACK') ? 'wide' : '';
-                    const displayKey = key === 'BACK' ? '⌫' : key;
-                    html += `<button class="key ${wide}" onclick="handleKeyPress('${key}')">${displayKey}</button>`;
+                    html += `<button class="key" onclick="handleKeyPress('${key === '⌫' ? 'BACKSPACE' : key}')">${key}</button>`;
                 });
                 html += '</div>';
             });
@@ -411,7 +188,7 @@
                 return;
             }
 
-            if (key === 'BACK') {
+            if (key === 'BACKSPACE') {
                 if (currentGuess.length > 0) {
                     currentGuess = currentGuess.slice(0, -1);
                     updateWordBoxes();
@@ -430,7 +207,7 @@
             let html = '';
 
             for (let i = 0; i < currentWord.length; i++) {
-                html += '<div class="letter-box" id="box-' + i + '"></div>';
+                html += `<div class="letter-box" id="box-${i}"></div>`;
             }
 
             container.innerHTML = html;
@@ -438,13 +215,9 @@
 
         function updateWordBoxes() {
             for (let i = 0; i < currentWord.length; i++) {
-                const box = document.getElementById('box-' + i);
-                if (i < currentGuess.length) {
-                    box.textContent = currentGuess[i];
-                    box.classList.add('filled');
-                } else {
-                    box.textContent = '';
-                    box.classList.remove('filled');
+                const box = document.getElementById(`box-${i}`);
+                if (box) {
+                    box.textContent = i < currentGuess.length ? currentGuess[i] : '';
                 }
             }
         }
@@ -456,10 +229,38 @@
             const guess = currentGuess.toUpperCase();
             guessHistory.push(guess);
 
-            // Check guess
-            const feedback = checkGuess(guess);
+            updatePreviousGuesses();
+            
+            const feedback = [];
+            const wordArray = currentWord.split('');
+            const guessArray = guess.split('');
+            const usedIndices = new Set();
+
+            for (let i = 0; i < guessArray.length; i++) {
+                if (guessArray[i] === wordArray[i]) {
+                    feedback[i] = 'correct';
+                    usedIndices.add(i);
+                }
+            }
+
+            for (let i = 0; i < guessArray.length; i++) {
+                if (feedback[i] !== 'correct') {
+                    let found = false;
+                    for (let j = 0; j < wordArray.length; j++) {
+                        if (!usedIndices.has(j) && guessArray[i] === wordArray[j]) {
+                            feedback[i] = 'present';
+                            usedIndices.add(j);
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found) {
+                        feedback[i] = 'incorrect';
+                    }
+                }
+            }
+
             updateKeyboard(guess, feedback);
-            displayGuessHistory();
 
             remainingGuesses--;
             updateGuessCount();
@@ -474,35 +275,6 @@
             updateWordBoxes();
         }
 
-        function checkGuess(guess) {
-            const feedback = [];
-            const wordArray = currentWord.split('');
-            const guessArray = guess.split('');
-
-            // Mark correct positions
-            for (let i = 0; i < guessArray.length; i++) {
-                if (guessArray[i] === wordArray[i]) {
-                    feedback[i] = 'correct';
-                    wordArray[i] = null;
-                }
-            }
-
-            // Mark present letters
-            for (let i = 0; i < guessArray.length; i++) {
-                if (feedback[i] !== 'correct') {
-                    const index = wordArray.indexOf(guessArray[i]);
-                    if (index !== -1) {
-                        feedback[i] = 'present';
-                        wordArray[index] = null;
-                    } else {
-                        feedback[i] = 'incorrect';
-                    }
-                }
-            }
-
-            return feedback;
-        }
-
         function updateKeyboard(guess, feedback) {
             for (let i = 0; i < guess.length; i++) {
                 const letter = guess[i];
@@ -510,7 +282,7 @@
 
                 keys.forEach(key => {
                     if (key.textContent === letter) {
-                        if (feedback[i] === 'correct') {
+                        if (feedback[i] === 'correct' && !key.classList.contains('correct')) {
                             key.classList.remove('present', 'used');
                             key.classList.add('correct');
                         } else if (feedback[i] === 'present' && !key.classList.contains('correct')) {
@@ -524,15 +296,14 @@
             }
         }
 
-        function displayGuessHistory() {
+        function updatePreviousGuesses() {
             const container = document.getElementById('previousGuesses');
-            container.classList.remove('hidden');
-
-            let html = '<div style="font-weight: 600; margin-bottom: 10px;">Previous Guesses:</div>';
+            let html = '<h3>Previous Guesses:</h3>';
+            
             guessHistory.forEach(guess => {
                 html += `<div class="guess-item">${guess}</div>`;
             });
-
+            
             container.innerHTML = html;
         }
 
@@ -545,23 +316,25 @@
             hideClue();
 
             const messageDiv = document.getElementById('gameMessage');
-            messageDiv.classList.remove('hidden');
 
             if (won) {
-                messageDiv.textContent = `🎉 ${winMessage} The word was ${currentWord}`;
+                messageDiv.textContent = `🎉 ${winMessage} ${currentWord}`;
                 messageDiv.className = 'message win';
             } else {
                 messageDiv.textContent = `${loseMessage} ${currentWord}`;
                 messageDiv.className = 'message lose';
             }
 
-            // Show next buttons
-            document.getElementById('nextButtons').classList.remove('hidden');
-            document.getElementById('submitGuess').disabled = true;
-            document.getElementById('giveUpBtn').classList.add('hidden');
+            document.getElementById('submitGuess').classList.add('hidden');
             document.getElementById('showClueBtn').classList.add('hidden');
+            document.getElementById('giveUpBtn').classList.add('hidden');
+            
+            if (currentWordIndex < wordList.length - 1) {
+                document.getElementById('resetButton').classList.remove('hidden');
+            }
+            
+            document.getElementById('backButton').classList.remove('hidden');
 
-            // Scroll to message
             setTimeout(() => {
                 messageDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }, 100);
@@ -574,25 +347,23 @@
                 return;
             }
 
-            // Reset for next word
             currentWordIndex++;
             currentWord = wordList[currentWordIndex];
             currentGuess = '';
             guessHistory = [];
             remainingGuesses = maxGuesses;
             gameOver = false;
+            wordStartTime = Date.now();
 
-            document.getElementById('themeDisplay').textContent = 
-                `[${selectedThemeWord}] (${wordList.length} words) - Playing ${currentWordIndex + 1}/${wordList.length}`;
-
-            document.getElementById('gameMessage').classList.add('hidden');
-            document.getElementById('nextButtons').classList.add('hidden');
-            document.getElementById('previousGuesses').classList.add('hidden');
-            document.getElementById('submitGuess').disabled = false;
-            document.getElementById('giveUpBtn').classList.remove('hidden');
+            document.getElementById('selectedTheme').textContent = `${selectedThemeWord} (${currentWordIndex + 1}/${wordList.length})`;
+            document.getElementById('gameMessage').textContent = '';
+            document.getElementById('previousGuesses').innerHTML = '';
+            document.getElementById('resetButton').classList.add('hidden');
+            document.getElementById('backButton').classList.add('hidden');
+            document.getElementById('submitGuess').classList.remove('hidden');
             document.getElementById('showClueBtn').classList.remove('hidden');
+            document.getElementById('giveUpBtn').classList.remove('hidden');
 
-            // Reset keyboard
             document.querySelectorAll('.key').forEach(key => {
                 key.classList.remove('correct', 'present', 'used');
             });
@@ -606,7 +377,7 @@
         }
 
         function giveUp() {
-            if (confirm('Are you sure you want to give up on this word?')) {
+            if (confirm('Give up on this word?')) {
                 endGame(false);
             }
         }
@@ -634,6 +405,8 @@
                 
                 if (data.clues) {
                     wordClues = data.clues;
+                    if (data.winMessage) winMessage = data.winMessage;
+                    if (data.loseMessage) loseMessage = data.loseMessage;
                 }
             } catch (error) {
                 console.error('Error generating clues:', error);
@@ -642,9 +415,9 @@
 
         function showClue() {
             if (wordClues.length > currentWordIndex) {
-                const clueDiv = document.getElementById('clueDisplay');
                 document.getElementById('clueText').textContent = wordClues[currentWordIndex];
-                clueDiv.classList.remove('hidden');
+                document.getElementById('clueDisplay').classList.remove('hidden');
+                clueViewCount++;
             }
         }
 
@@ -669,11 +442,24 @@
         }
 
         function showError(message) {
-            document.getElementById('loadingMessage').classList.add('hidden');
-            document.getElementById('gameContent').classList.add('hidden');
+            document.getElementById('loadingMessage').style.display = 'none';
+            document.getElementById('gameScreen').style.display = 'none';
             document.getElementById('errorMessage').classList.remove('hidden');
             document.getElementById('errorMessage').innerHTML = `${message}. <a href="browse.html">Return to browse</a>`;
         }
+
+        // Keyboard support
+        document.addEventListener('keydown', function(e) {
+            if (gameOver) return;
+            
+            if (e.key === 'Enter') {
+                submitGuess();
+            } else if (e.key === 'Backspace') {
+                handleKeyPress('BACKSPACE');
+            } else if (/^[a-zA-Z]$/.test(e.key)) {
+                handleKeyPress(e.key.toUpperCase());
+            }
+        });
     </script>
 </body>
 </html>
