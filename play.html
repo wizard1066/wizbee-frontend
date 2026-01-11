@@ -137,6 +137,7 @@
             wordStartTime = Date.now();
             letterSwapCount = 0;
             wordClues = [];
+            console.log('Language:', currentLanguage);
             
             document.getElementById('selectedTheme').textContent = `${selectedThemeWord} (${currentWordIndex + 1}/${wordList.length})`;
             
@@ -340,6 +341,7 @@
 
         function createKeyboard(language = 'en') {
             const keyboard = document.getElementById('keyboard');
+            console.log('[KEYBOARD] Creating keyboard for language:', language);
             const layouts = {
                 'en': [
                     ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
