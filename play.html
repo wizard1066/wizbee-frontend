@@ -24,11 +24,9 @@
             Loading game...
         </div>
 
-        <!-- Game Board (EXACT COPY FROM INDEX.HTML) -->
+        <!-- Game Board -->
         <div id="gameScreen" class="game-screen">
             <div class="theme-display">Theme: <span id="selectedTheme"></span></div>
-
-            
             
             <!-- CLUE DISPLAY -->
             <div id="clueDisplay" class="clue-display hidden" style="
@@ -74,7 +72,7 @@
         const API_URL = 'https://api.wizbee.app';
         let authToken = null;
         
-        // Game state (EXACT COPY FROM INDEX.HTML)
+        // Game state
         let wordList = [];
         let currentWordIndex = 0;
         let currentWord = '';
@@ -94,6 +92,7 @@
         let wordStartTime = null;
         let letterSwapCount = 0;
         let gameResults = [];
+        let currentGameData = null;
 
         window.onload = function() {
             authToken = localStorage.getItem('authToken');
@@ -121,10 +120,10 @@
             }
         };
 
-            // COPY ALL GAME FUNCTIONS FROM INDEX.HTML
         async function startGame(gameData) {
             console.log('=== START GAME ===');
             
+            currentGameData = gameData;
             gameResults = [];
             wordList = gameData.words;
             currentWordIndex = 0;
@@ -142,6 +141,23 @@
             document.getElementById('selectedTheme').textContent = `${selectedThemeWord} (${currentWordIndex + 1}/${wordList.length})`;
             
             createKeyboard(currentLanguage);
+            
+            // ADD WORD POOL VISUALIZATION
+            const gameScreen = document.getElementById('gameScreen');
+            const oldViz = document.getElementById('wordPoolContainer');
+            if (oldViz) oldViz.remove();
+
+            const visualization = createWordPoolCanvas();
+            const themeElement = document.querySelector('.theme-display');
+            themeElement.parentNode.insertBefore(visualization, themeElement.nextSibling);
+
+            // Draw visualization
+            if (gameData.wordPoolInfo) {
+                drawWordPoolVisualization(
+                    gameData.wordPoolInfo.totalWords,
+                    gameData.wordPoolInfo.selectedIndices
+                );
+            }
             
             await generateAllClues();
             
@@ -237,23 +253,6 @@
             });
 
             keyboard.innerHTML = html;
-
-            // ADD WORD POOL VISUALIZATION
-            const gameScreen = document.getElementById('gameScreen');
-            const oldViz = document.getElementById('wordPoolContainer');
-            if (oldViz) oldViz.remove();
-
-            const visualization = createWordPoolCanvas();
-            const themeElement = document.querySelector('.theme-display');
-            themeElement.parentNode.insertBefore(visualization, themeElement.nextSibling);
-
-            // Draw visualization
-            if (gameData.wordPoolInfo) {
-                drawWordPoolVisualization(
-                    gameData.wordPoolInfo.totalWords,
-                    gameData.wordPoolInfo.selectedIndices
-                );
-            }
         }
 
         function handleKeyPress(key) {
