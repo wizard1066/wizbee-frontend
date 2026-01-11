@@ -326,6 +326,25 @@
                     console.error('Error loading last edited theme:', e);
                 }
             }
+
+            if (localStorage.getItem('clearPreview') === 'true') {
+                localStorage.removeItem('clearPreview');
+                
+                // Reset to initial state
+                currentGeneratedWords = null;
+                currentCacheKey = null;
+                refineAttempts = 0;
+                baseTheme = '';
+                refinements = [];
+                
+                document.getElementById('previewSection').classList.add('hidden');
+                document.getElementById('themeInput').value = '';
+                document.getElementById('themeInput').placeholder = 'e.g., household pets, common colors, European capitals';
+                document.getElementById('generateBtn').textContent = 'Generate';
+                document.getElementById('generateBtn').disabled = false;
+                document.getElementById('editWordsBtn').disabled = true;
+                document.getElementById('playBtn').disabled = true;
+            }
         };
 
         window.addEventListener('DOMContentLoaded', function() {
