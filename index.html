@@ -362,7 +362,7 @@
             
             // Check authentication
             if (authToken && userEmail) {
-                showThemeInput();
+                
                 
                 // Check for pending game from browse/edit (HIGHEST PRIORITY)
                 const shouldPlay = urlParams.get('play');
@@ -384,6 +384,8 @@
                         }
                     }
                 }
+
+                showThemeInput();
                 
                 // Check if returning from edit with clear preview flag
                 if (localStorage.getItem('clearPreview') === 'true') {
