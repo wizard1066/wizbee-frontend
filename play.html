@@ -613,6 +613,47 @@
         }
 
         async function generateAllClues() {
+            // Disable and show "thinking" on clue button
+            const clueBtn = document.getElementById('showClueBtn');
+            const originalText = clueBtn.textContent;
+            clueBtn.disabled = true;
+            clueBtn.textContent = '💭 Thinking...';
+            clueBtn.style.background = '#cbd5e0';
+            clueBtn.style.cursor = 'not-allowed';
+            
+            try {
+                const response = await fetch(`${API_URL}/api/generate-clues`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        words: wordList,
+                        theme: selectedThemeWord,
+                        language: currentLanguage
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.clues) {
+                    wordClues = data.clues;
+                    if (data.winMessage) winMessage = data.winMessage;
+                    if (data.loseMessage) loseMessage = data.loseMessage;
+                }
+            } catch (error) {
+                console.error('Error generating clues:', error);
+            } finally {
+                // Re-enable button
+                clueBtn.disabled = false;
+                clueBtn.textContent = originalText;
+                clueBtn.style.background = '';
+                clueBtn.style.cursor = '';
+            }
+        }
+
+        async function generateAllCluesDepareciated() {
             try {
                 const response = await fetch(`${API_URL}/api/generate-clues`, {
                     method: 'POST',
