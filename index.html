@@ -346,7 +346,7 @@
                 document.getElementById('playBtn').disabled = true;
             }
         };
-        */
+        
 
         window.onload = function() {
             authToken = localStorage.getItem('authToken');
@@ -385,6 +385,92 @@
                     }
                 }
 
+                showThemeInput();
+                
+                // Check if returning from edit with clear preview flag
+                if (localStorage.getItem('clearPreview') === 'true') {
+                    localStorage.removeItem('clearPreview');
+                    
+                    // Reset to initial state
+                    currentGeneratedWords = null;
+                    currentCacheKey = null;
+                    refineAttempts = 0;
+                    baseTheme = '';
+                    refinements = [];
+                    
+                    document.getElementById('previewSection').classList.add('hidden');
+                    document.getElementById('themeInput').value = '';
+                    document.getElementById('themeInput').placeholder = 'e.g., household pets, common colors, European capitals';
+                    document.getElementById('generateBtn').textContent = 'Generate';
+                    document.getElementById('generateBtn').disabled = false;
+                    document.getElementById('editWordsBtn').disabled = true;
+                    document.getElementById('playBtn').disabled = true;
+                    return; // Exit early
+                }
+                
+                // Check if user was editing a theme (for Play button memory)
+                const lastEditedTheme = localStorage.getItem('lastEditedTheme');
+                if (lastEditedTheme) {
+                    try {
+                        const themeData = JSON.parse(lastEditedTheme);
+                        currentCacheKey = themeData.cacheKey;
+                        selectedThemeWord = themeData.themeName;
+                        
+                        // Enable Play button
+                        document.getElementById('playBtn').disabled = false;
+                        
+                        // Show message
+                        document.getElementById('themeInput').placeholder = `Ready to play: ${themeData.themeName}`;
+                        
+                    } catch (e) {
+                        console.error('Error loading last edited theme:', e);
+                    }
+                }
+                
+            } else {
+                // Not authenticated - show login
+                initializeGoogleSignIn();
+            }
+        };*/
+
+        window.onload = function() {
+            authToken = localStorage.getItem('authToken');
+            userEmail = localStorage.getItem('userEmail');
+
+            // Handle payment success
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('success') === 'true') {
+                showError('🎉 Payment successful! 4 more themes added to your account.');
+                updateThemeCounter();
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+            
+            // Check authentication
+            if (authToken && userEmail) {
+                // Check for pending game from browse/edit (HIGHEST PRIORITY)
+                const shouldPlay = urlParams.get('play');
+                if (shouldPlay === 'true') {
+                    const pendingGame = localStorage.getItem('pendingGame');
+                    if (pendingGame) {
+                        try {
+                            const gameData = JSON.parse(pendingGame);
+                            localStorage.removeItem('pendingGame');
+                            
+                            // DON'T call showThemeInput() - go straight to game
+                            document.getElementById('loginScreen').classList.add('hidden');
+                            document.getElementById('themeInputScreen').classList.add('hidden');
+                            document.getElementById('gameScreen').classList.remove('hidden');
+                            
+                            // Start game
+                            startGame(gameData);
+                            return; // Exit early - don't process other logic
+                        } catch (e) {
+                            console.error('Error loading pending game:', e);
+                        }
+                    }
+                }
+
+                // Only show theme input if NOT playing game
                 showThemeInput();
                 
                 // Check if returning from edit with clear preview flag
