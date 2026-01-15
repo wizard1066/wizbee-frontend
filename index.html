@@ -536,7 +536,7 @@
   	    }
 	}
 
-	function createKeyboard(language) {
+	function createKeyboardDepreciated(language) {
     	    const container = document.getElementById('keyboard');
     	    container.innerHTML = '';
     	    const layout = keyboardLayouts[language] || keyboardLayouts['en'];
@@ -1173,7 +1173,7 @@ async function launchThemeFromBrowser(cacheKey) {
             }
         }
 
-        async function startGame(gameData) {
+        async function startGameDepreciated(gameData) {
             console.log('=== START GAME ===');
             console.log('gameData:', gameData);
             console.log('gameData.theme:', gameData.theme);
@@ -1245,7 +1245,7 @@ async function launchThemeFromBrowser(cacheKey) {
             }, 300);
         }
 
-        async function generateAllClues() {
+        async function generateAllCluesDepreciated15Jan2026() {
             console.log('[CLUES] Generating clues for', wordList.length, 'words');
             
             const clueBtn = document.getElementById('showClueBtn');
@@ -1404,7 +1404,7 @@ async function launchThemeFromBrowser(cacheKey) {
 
         
 
-        function createWordBoxes() {
+        function createWordBoxesDepreciated() {
             const container = document.getElementById('wordBoxes');
             container.innerHTML = '';
     
@@ -1442,7 +1442,7 @@ async function launchThemeFromBrowser(cacheKey) {
             }
         }
 
-        function submitGuess() {
+        function submitGuessDepreciated() {
             if (gameOver) return;
 
             const guess = currentGuess.toUpperCase();
@@ -1575,7 +1575,7 @@ async function launchThemeFromBrowser(cacheKey) {
 
         
 
-        async function endGame(won) {
+        async function endGameDepreciated(won) {
             gameOver = true;
             await recordWordAttempt(won);
 
@@ -1693,7 +1693,7 @@ async function launchThemeFromBrowser(cacheKey) {
             }
         }
 
-    function resetToTheme() {
+    function resetToThemeDepreciated15012026() {
         console.trace('[RESET] resetToTheme called from:');
 
         if (isResetting) {
@@ -1819,112 +1819,7 @@ async function launchThemeFromBrowser(cacheKey) {
         document.getElementById('playBtn').disabled = true;
     }
 
-    function resetToThemeDepreciatedAgain() {
-            console.trace('[RESET] resetToTheme called from:'); // ← This will show the call stack
-
-        if (isResetting) {
-        console.log('[RESET] Already resetting, ignoring duplicate call');
-        return;
-        }
-    isResetting = true;
-    if (currentWordIndex < wordList.length - 1 && wordList.length > 0) {
-        // Next word logic
-        currentWordIndex++;
-        currentWord = wordList[currentWordIndex];
-        maxGuesses = 8;
-        remainingGuesses = maxGuesses;
-        currentGuess = '';
-        guessHistory = [];
-        gameOver = false;
-        hintsUsed = 0;
-        clueViewCount = 0;
-        wordStartTime = Date.now();
-        letterSwapCount = 0;
-
-        // Clear any existing timeout FIRST
-        console.log('[RESET] Clearing old clue timeout:', currentClueTimeout); // ← ADD
-        if (currentClueTimeout) {
-            clearTimeout(currentClueTimeout);
-            currentClueTimeout = null;
-        }
-        
-        //hideClue();
-        
-        document.getElementById('selectedTheme').textContent = `${selectedThemeWord} (${currentWordIndex + 1}/${wordList.length})`;
-        document.getElementById('previousGuesses').innerHTML = '';
-        document.getElementById('gameMessage').textContent = '';
-        document.getElementById('resetButton').classList.add('hidden');
-        document.getElementById('giveUpBtn').classList.remove('hidden');
-        document.getElementById('submitGuess').classList.remove('hidden');
-        document.getElementById('submitGuess').disabled = false;
-        document.getElementById('showClueBtn').classList.remove('hidden');
-        document.getElementById('showClueBtn').disabled = false;
-        document.getElementById('hintDisplay').classList.add('hidden');
-        
-        document.querySelectorAll('.key').forEach(key => {
-            key.classList.remove('correct', 'present', 'used');
-        });
-        
-        createWordBoxes();
-        updateGuessCount();
-        
-        if (wordClues.length > currentWordIndex) {
-            showClueAuto(20000);
-        }
-
-        // Show new clue
-        console.log('[RESET] About to show clue. wordClues.length:', wordClues.length, 'currentWordIndex:', currentWordIndex); // ← ADD
-        if (wordClues.length > currentWordIndex) {
-            console.log('[RESET] Calling showClueAuto(20000)'); // ← ADD
-            showClueAuto(20000);
-        } else {
-            console.log('[RESET] NOT showing clue - no clue available'); // ← ADD
-        }
-        
-        isResetting = false; 
-        return;
-    }
     
-    // Reset to theme input (THIS WAS MISSING!)
-    currentWord = '';
-    wordList = [];
-    currentWordIndex = 0;
-    maxGuesses = 0;
-    remainingGuesses = 0;
-    currentGuess = '';
-    guessHistory = [];
-    gameOver = false;
-    selectedThemeWord = '';
-    hintsUsed = 0;
-    currentThemeId = null;
-    wordStartTime = null;
-    letterSwapCount = 0;
-    wordClues = [];
-    
-    //hideClue();
-    
-    document.getElementById('generateBtn').textContent = 'Generate';
-    document.getElementById('generateBtn').onclick = generateTheme;
-    document.getElementById('generateBtn').disabled = false;
-    
-    document.getElementById('hintDisplay').classList.add('hidden');
-    document.getElementById('themeInput').value = '';
-    document.getElementById('gameScreen').classList.add('hidden');
-    document.getElementById('themeInputScreen').classList.remove('hidden');
-    document.getElementById('previousGuesses').innerHTML = '';
-    document.getElementById('gameMessage').textContent = '';
-    document.getElementById('resetButton').classList.add('hidden');
-    document.getElementById('resetButton').textContent = 'Reset';
-    document.getElementById('giveUpBtn').classList.remove('hidden');
-    document.getElementById('submitGuess').disabled = false;
-    document.getElementById('submitGuess').classList.remove('hidden');
-    
-    document.querySelectorAll('.key').forEach(key => {
-        key.classList.remove('correct', 'present', 'used');
-    });
-    
-    updateThemeCounter();
-}
 
 function showGameSummary() {
     const totalWords = gameResults.length;
