@@ -674,7 +674,8 @@
                     body: JSON.stringify({
                         words: wordList,
                         theme: selectedThemeWord,
-                        language: currentLanguage
+                        language: currentLanguage,
+                        difficulty: currentGameData.difficulty || 'medium' 
                     })
                 });
 
