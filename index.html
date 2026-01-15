@@ -291,147 +291,7 @@
                 setTimeout(initializeGoogleSignIn, 100);
             }
         }
-        /*
-        window.onload = function() {
-            authToken = localStorage.getItem('authToken');
-            userEmail = localStorage.getItem('userEmail');
-
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('success') === 'true') {
-                showError('🎉 Payment successful! 4 more themes added to your account.');
-                updateThemeCounter();
-                window.history.replaceState({}, document.title, window.location.pathname);
-            }
-            
-            if (authToken && userEmail) {
-                showThemeInput();
-            } else {
-                initializeGoogleSignIn();
-            }
-            // Check if user was editing a theme
-            const lastEditedTheme = localStorage.getItem('lastEditedTheme');
-            if (lastEditedTheme) {
-                try {
-                    const themeData = JSON.parse(lastEditedTheme);
-                    currentCacheKey = themeData.cacheKey;
-                    selectedThemeWord = themeData.themeName;
-                    
-                    // Enable Play button
-                    document.getElementById('playBtn').disabled = false;
-                    
-                    // Show message
-                    document.getElementById('themeInput').placeholder = `Ready to play: ${themeData.themeName}`;
-                    
-                } catch (e) {
-                    console.error('Error loading last edited theme:', e);
-                }
-            }
-
-            if (localStorage.getItem('clearPreview') === 'true') {
-                localStorage.removeItem('clearPreview');
-                
-                // Reset to initial state
-                currentGeneratedWords = null;
-                currentCacheKey = null;
-                refineAttempts = 0;
-                baseTheme = '';
-                refinements = [];
-                
-                document.getElementById('previewSection').classList.add('hidden');
-                document.getElementById('themeInput').value = '';
-                document.getElementById('themeInput').placeholder = 'e.g., household pets, common colors, European capitals';
-                document.getElementById('generateBtn').textContent = 'Generate';
-                document.getElementById('generateBtn').disabled = false;
-                document.getElementById('editWordsBtn').disabled = true;
-                document.getElementById('playBtn').disabled = true;
-            }
-        };
-        
-
-        window.onload = function() {
-            authToken = localStorage.getItem('authToken');
-            userEmail = localStorage.getItem('userEmail');
-
-            // Handle payment success
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('success') === 'true') {
-                showError('🎉 Payment successful! 4 more themes added to your account.');
-                updateThemeCounter();
-                window.history.replaceState({}, document.title, window.location.pathname);
-            }
-            
-            // Check authentication
-            if (authToken && userEmail) {
-                
-                
-                // Check for pending game from browse/edit (HIGHEST PRIORITY)
-                const shouldPlay = urlParams.get('play');
-                if (shouldPlay === 'true') {
-                    const pendingGame = localStorage.getItem('pendingGame');
-                    if (pendingGame) {
-                        try {
-                            const gameData = JSON.parse(pendingGame);
-                            localStorage.removeItem('pendingGame');
-                            
-                            // Hide theme input screen
-                            document.getElementById('themeInputScreen').classList.add('hidden');
-                            
-                            // Start game
-                            startGame(gameData);
-                            return; // Exit early - don't process other logic
-                        } catch (e) {
-                            console.error('Error loading pending game:', e);
-                        }
-                    }
-                }
-
-                showThemeInput();
-                
-                // Check if returning from edit with clear preview flag
-                if (localStorage.getItem('clearPreview') === 'true') {
-                    localStorage.removeItem('clearPreview');
-                    
-                    // Reset to initial state
-                    currentGeneratedWords = null;
-                    currentCacheKey = null;
-                    refineAttempts = 0;
-                    baseTheme = '';
-                    refinements = [];
-                    
-                    document.getElementById('previewSection').classList.add('hidden');
-                    document.getElementById('themeInput').value = '';
-                    document.getElementById('themeInput').placeholder = 'e.g., household pets, common colors, European capitals';
-                    document.getElementById('generateBtn').textContent = 'Generate';
-                    document.getElementById('generateBtn').disabled = false;
-                    document.getElementById('editWordsBtn').disabled = true;
-                    document.getElementById('playBtn').disabled = true;
-                    return; // Exit early
-                }
-                
-                // Check if user was editing a theme (for Play button memory)
-                const lastEditedTheme = localStorage.getItem('lastEditedTheme');
-                if (lastEditedTheme) {
-                    try {
-                        const themeData = JSON.parse(lastEditedTheme);
-                        currentCacheKey = themeData.cacheKey;
-                        selectedThemeWord = themeData.themeName;
-                        
-                        // Enable Play button
-                        document.getElementById('playBtn').disabled = false;
-                        
-                        // Show message
-                        document.getElementById('themeInput').placeholder = `Ready to play: ${themeData.themeName}`;
-                        
-                    } catch (e) {
-                        console.error('Error loading last edited theme:', e);
-                    }
-                }
-                
-            } else {
-                // Not authenticated - show login
-                initializeGoogleSignIn();
-            }
-        };*/
+      
 
         window.onload = function() {
             authToken = localStorage.getItem('authToken');
@@ -745,18 +605,6 @@
 
 
 
-	function switchTabDepreciated(tabName) {
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            event.target.classList.add('active');
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            
-            if (tabName === 'newTheme') {
-                document.getElementById('newThemeTab').classList.add('active');
-                updateThemeCounter();
-            } else if (tabName === 'browseThemes') {
-                document.getElementById('browseThemesTab').classList.add('active');
-            }
-        }
 
         // ========================================================================
         // REFINE SYSTEM - NEW FUNCTIONS
@@ -1083,6 +931,49 @@ async function acceptAndPlay() {
     if (playBtn.disabled) return;
     playBtn.disabled = true;
     
+    if (!currentCacheKey) {
+        showError('No theme selected!');
+        playBtn.disabled = false;
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${API_URL}/api/accept-theme`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify({ 
+                cacheKey: currentCacheKey
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok || data.error) {
+            showError(data.message || 'Failed to create theme');
+            playBtn.disabled = false;
+            return;
+        }
+        
+        // Redirect to play.html
+        localStorage.setItem('pendingGame', JSON.stringify(data));
+        window.location.href = 'play.html';
+        
+    } catch (error) {
+        console.error('Error:', error);
+        showError('Connection error');
+        playBtn.disabled = false;
+    }
+}
+
+
+async function acceptAndPlayDepreciated() {
+    const playBtn = document.getElementById('playBtn');
+    if (playBtn.disabled) return;
+    playBtn.disabled = true;
+    
     // Check if we have a theme to play
     if (!currentCacheKey) {
         showError('No theme selected!');
@@ -1141,84 +1032,7 @@ async function acceptAndPlay() {
     }
 }
 
-async function acceptAndPlayDepreciated() {
-    // Validate BEFORE clearing anything
-    const playBtn = document.getElementById('playBtn');
-    if (playBtn.disabled) return;  // Already processing
-    playBtn.disabled = true;  // Disable IMMEDIATELY
-    if (!currentGeneratedWords || currentGeneratedWords.length === 0) {
-        showError('No words to use!');
-        return;
-    }
-    
-    if (!currentCacheKey) {
-        showError('Cache key missing!');
-        return;
-    }
-    
-    try {
-        const response = await fetch(`${API_URL}/api/accept-theme`, {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${authToken}`
-            },
-            body: JSON.stringify({ 
-                cacheKey: currentCacheKey
-            })
-        });
 
-	console.log('=== ACCEPT-THEME REQUEST ===');
-        
-        const data = await response.json();
-
-	console.log('=== ACCEPT-THEME RESPONSE ===');
-	console.log('Response OK:', response.ok);
-	console.log('Response status:', response.status);
-	console.log('Data:', data);
-	console.log('Has words:', !!data.words);
-	console.log('Words array:', data.words);
-        
-        // Check for errors BEFORE resetting state
-        if (!response.ok || data.error) {
-            showError(data.message || 'Failed to create theme');
-            return;  // Keep state so user can retry
-        }
-        
-        // ONLY reset state AFTER successful response
-        currentGeneratedWords = null;
-        currentCacheKey = null;
-        refineAttempts = 0;
-        baseTheme = '';
-        refinements = [];
-        document.getElementById('promptDisplayContainer').style.display = 'none';
-        document.getElementById('previewSection').classList.add('hidden');
-        document.getElementById('themeInput').value = '';
-        
-        // Reset Generate button
-        const generateBtn = document.getElementById('generateBtn');
-        generateBtn.textContent = 'Generate';
-        generateBtn.onclick = generateTheme;
-        generateBtn.disabled = false;
-        
-        document.getElementById('editWordsBtn').disabled = true;
-        document.getElementById('playBtn').disabled = true;
-        
-        updateThemeCounter();
-        
-        // Reload browse themes to show newly created theme
-        if (typeof loadBrowseThemes === 'function') {
-            loadBrowseThemes();
-        }
-        
-        startGame(data);
-        
-    } catch (error) {
-        console.error('Error:', error);
-        showError('Connection error');
-        // Don't reset state on error - user can retry
-    }
-}
 
 // ============================================================================
 // END: Complete acceptAndPlay function
@@ -1260,69 +1074,7 @@ async function playExistingTheme() {
 
 
 
-async function acceptAndPlayD2() {
-    if (!currentGeneratedWords || currentGeneratedWords.length === 0) {
-        showError('No words to use!');
-        return;
-    }
-    
-    if (!currentCacheKey) {
-        showError('Cache key missing!');
-        return;
-    }
-    
-    try {
-        const response = await fetch(`${API_URL}/api/accept-theme`, {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${authToken}`
-            },
-            body: JSON.stringify({ 
-                cacheKey: currentCacheKey
-            })
-        });
-        
-        const data = await response.json();
-        
-        if (!response.ok || data.error) {
-            showError(data.message || 'Failed to create theme');
-            return;
-        }
-        
-        // Reset state
-        currentGeneratedWords = null;
-        currentCacheKey = null;
-        refineAttempts = 0;
-	baseTheme = '';                    // ← ADD
-	refinements = [];                   // ← ADD
-	document.getElementById('promptDisplayContainer').style.display = 'none';  // ← ADD
-        document.getElementById('previewSection').classList.add('hidden');
-        document.getElementById('themeInput').value = '';
-        
-        // Reset Generate button
-        const generateBtn = document.getElementById('generateBtn');
-        generateBtn.textContent = 'Generate';
-        generateBtn.onclick = generateTheme;
-        generateBtn.disabled = false;
-        
-        document.getElementById('editWordsBtn').disabled = true;
-        document.getElementById('playBtn').disabled = true;
-        
-        updateThemeCounter();
-        
-        // Reload browse themes to show newly created theme
-        if (typeof loadBrowseThemes === 'function') {
-            loadBrowseThemes();
-        }
-        
-        startGame(data);
-        
-    } catch (error) {
-        console.error('Error:', error);
-        showError('Connection error');
-    }
-}
+
 
 // ============================================================================
 // 3. REPLACE: async function launchThemeFromBrowser(cacheKey)
@@ -1363,52 +1115,9 @@ async function launchThemeFromBrowser(cacheKey) {
 // END: Complete function replacements
 // ============================================================================
 
-	async function launchThemeFromBrowserD(cacheKey, displayName) {
-    console.log(`Launching cached theme: ${cacheKey}`);
-    
-    try {
-        const response = await fetch(`${API_URL}/api/play-cached-theme`, {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${authToken}`
-            },
-            body: JSON.stringify({ cacheKey })
-        });
-        
-        const data = await response.json();
+	
 
-        if (response.status === 429 || response.status === 503) {
-            showError(data.message || 'Theme limit reached!');
-            updateThemeCounter();
-            return;
-        }
 
-        if (response.status === 400 && data.error === 'Theme exhausted') {
-            showError(data.message || 'Theme exhausted!');
-            return;
-        }
-
-        if (data.error) {
-            showError(data.message || 'Failed to load theme');
-            return;
-        }
-
-        startGame(data);
-        
-    } catch (error) {
-        console.error('Error loading cached theme:', error);
-        showError('Connection error');
-    }
-}
-
-	async function launchThemeFromBrowserD(cacheKey, displayName) {
-            const parts = cacheKey.split('_');
-            const ageMap = { easy: '5 year old', medium: '9 year old', hard: '12 year old' };
-            const themeString = `${parts[0]} ${ageMap[parts[2]] || ''}`.trim();
-            console.log(`Launching: ${themeString} (${cacheKey})`);
-            fetchAndStartGame(themeString);
-        }
 
         function logout() {
             localStorage.removeItem('authToken');
@@ -1580,50 +1289,7 @@ async function launchThemeFromBrowser(cacheKey) {
             }
         }
 
-        async function generateAllCluesDepreciated() {
-            console.log('[CLUES] Generating clues for', wordList.length, 'words');
-            
-            // Show loading message
-            const clueBtn = document.getElementById('showClueBtn');
-            const originalText = clueBtn.textContent;
-            clueBtn.textContent = '⏳ Loading clues...';
-            clueBtn.disabled = true;
-            
-            try {
-                const response = await fetch(`${API_URL}/api/generate-clues`, {
-                    method: 'POST',
-                    headers: {
-                        /*'Authorization': `Bearer ${authToken}`,*/
-                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        words: wordList,
-                        theme: selectedThemeWord,
-                        difficulty: 'medium' // Could make this dynamic
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (!response.ok || data.error) {
-                    console.error('[CLUES] Failed to generate:', data.message);
-                    showError('Failed to generate clues, but you can still play!');
-                    wordClues = []; // Empty array
-                } else {
-                    wordClues = data.clues || [];
-                    console.log('[CLUES] Successfully generated', wordClues.length, 'clues');
-                }
-                
-            } catch (error) {
-                console.error('[CLUES] Error:', error);
-                showError('Failed to generate clues, but you can still play!');
-                wordClues = [];
-            } finally {
-                clueBtn.textContent = '💡 Show Clue';
-                clueBtn.disabled = false;
-            }
-        }
+        
 
         function showClueAuto(duration = 20000) {
             if (!wordClues || wordClues.length === 0 || currentWordIndex >= wordClues.length) {
@@ -1736,31 +1402,7 @@ async function launchThemeFromBrowser(cacheKey) {
             }, 500); // Wait for fade out animation
         }
 
-        function startGameDepreciated(gameData) {
-            console.log('=== START GAME ===');
-            console.log('gameData:', gameData);
-            console.log('gameData.theme:', gameData.theme);
-	    wordList = gameData.words;
-    	    currentWordIndex = 0;
-            selectedThemeWord = gameData.theme;
-	    currentWord = wordList[currentWordIndex];
-            maxGuesses = gameData.guesses;
-            remainingGuesses = maxGuesses;
-	    currentLanguage = gameData.language || 'en';
-	    winMessage = gameData.winMessage;  
-    	    loseMessage = gameData.loseMessage;
-    	    currentThemeId = gameData.themeId || null;
-            wordStartTime = Date.now();
-            letterSwapCount = 0;
-	    createKeyboard(currentLanguage);
-            
-            document.getElementById('themeInputScreen').classList.add('hidden');
-            document.getElementById('gameScreen').classList.remove('hidden');
-	    document.getElementById('selectedTheme').textContent = `${selectedThemeWord} (${currentWordIndex + 1}/${wordList.length})`;
-
-            createWordBoxes();
-            updateGuessCount();
-        }
+        
 
         function createWordBoxes() {
             const container = document.getElementById('wordBoxes');
