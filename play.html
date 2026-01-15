@@ -49,6 +49,21 @@
             <div class="guesses-remaining">Guesses remaining: <span id="guessesRemaining"></span></div>
             <div id="keyboard" class="keyboard" hidden></div>
 
+            <input 
+            type="text" 
+            id="guessInput" 
+            autocomplete="off"
+            autocorrect="off"
+            autocapitalize="characters"
+            style="
+                position: absolute;
+                left: -9999px;
+                width: 1px;
+                height: 1px;
+                opacity: 0;
+            "
+            />
+
             <div class="guess-input-container">
                 <button id="submitGuess" class="submit-guess" onclick="submitGuess()">Submit Word</button>
                 <button id="showClueBtn" class="hint-btn" onclick="showClue()">💡 Show Clue</button>
@@ -441,6 +456,13 @@
             }
 
             container.innerHTML = html;
+                // Make boxes clickable to focus input (shows keyboard on mobile)
+            container.addEventListener('click', () => {
+            const guessInput = document.getElementById('guessInput');
+            if (guessInput) {
+                guessInput.focus();
+            }
+    });
         }
 
         function updateWordBoxes() {
@@ -642,6 +664,24 @@
 
             if (wordClues.length > currentWordIndex) {
                 showClueAuto(20000);
+                // Wire up hidden input for mobile keyboard
+                const guessInput = document.getElementById('guessInput');
+                if (guessInput) {
+                    guessInput.value = '';
+                    guessInput.maxLength = currentWord.length;
+                    
+                    guessInput.addEventListener('input', (e) => {
+                        currentGuess = e.target.value.toUpperCase();
+                        e.target.value = currentGuess;
+                        updateWordBoxes();
+                    });
+                    
+                    guessInput.addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter') {
+                            submitGuess();
+                        }
+                    });
+}
             }
         }
 
