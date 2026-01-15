@@ -948,6 +948,16 @@
     /* ===== MOBILE RESPONSIVE - ADD TO BOTTOM OF styles.css ===== */
 @media (max-width: 768px) {
     /* Container padding */
+    .game-screen,
+    .word-boxes,
+    .guess-input-container,
+    .previous-guesses,
+    .theme-display,
+    .guesses-remaining {
+        margin-left: auto;
+        margin-right: auto;
+        text-align: center;
+    }
     .container {
         padding: 15px;
         max-width: 100%;
@@ -970,7 +980,9 @@
     }
     
     /* Word boxes - smaller and tighter */
-    .word-boxes {
+    .word-boxes,
+    .previous-guess {
+        justify-content: center;
         gap: 6px;
         margin: 20px 0;
     }
