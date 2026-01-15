@@ -1,4 +1,31 @@
     <style>
+/* FORCE MOBILE STYLES FOR TESTING */
+.container {
+    padding: 10px !important;
+}
+
+.letter-box {
+    width: 50px !important;
+    height: 50px !important;
+    font-size: 28px !important;
+    border-width: 2px !important;
+}
+
+.guess-input-container {
+    flex-direction: column !important;
+    gap: 10px !important;
+}
+
+.submit-guess,
+.hint-btn,
+.give-up-btn {
+    width: 100% !important;
+    max-width: 300px !important;
+    padding: 16px !important;
+    font-size: 18px !important;
+}
+
+
         * {
             margin: 0;
             padding: 0;
@@ -939,6 +966,127 @@
             min-height: 50px;
             text-align: center;
 	}
+
+    /* ===== MOBILE RESPONSIVE ===== */
+@media (max-width: 768px) {
+    /* Container padding */
+    .container {
+        padding: 10px;
+    }
+    
+    /* Theme display */
+    .theme-display {
+        font-size: 16px;
+        margin-bottom: 15px;
+    }
+    
+    /* Word boxes - smaller and tighter */
+    .word-boxes {
+        gap: 6px;
+        margin: 20px 0;
+    }
+    
+    .letter-box {
+        width: 50px;
+        height: 50px;
+        font-size: 28px;
+        border-width: 2px;
+    }
+    
+    /* Guesses remaining */
+    .guesses-remaining {
+        font-size: 16px;
+        margin: 15px 0;
+    }
+    
+    /* Buttons - stack vertically */
+    .guess-input-container {
+        flex-direction: column;
+        gap: 10px;
+        padding: 0 10px;
+    }
+    
+    .submit-guess,
+    .hint-btn,
+    .give-up-btn {
+        width: 100%;
+        max-width: 300px;
+        padding: 16px;
+        font-size: 18px;
+    }
+    
+    /* Keyboard keys - smaller */
+    .key {
+        min-width: 28px;
+        min-height: 44px;
+        padding: 8px 4px;
+        font-size: 16px;
+    }
+    
+    /* Previous guesses */
+    .previous-guess {
+        gap: 4px;
+        margin: 8px 0;
+    }
+    
+    .previous-guess .letter-box {
+        width: 35px;
+        height: 35px;
+        font-size: 20px;
+    }
+    
+    /* Clue display */
+    #clueDisplay {
+        font-size: 16px !important;
+        padding: 15px !important;
+        margin: 15px 0 !important;
+    }
+    
+    /* Word pool visualization */
+    #wordPoolCanvas {
+        height: 40px;
+    }
+    
+    /* Game message */
+    .message {
+        font-size: 18px;
+        padding: 15px;
+        margin: 15px 0;
+    }
+    
+    /* Play again buttons */
+    .play-again {
+        width: 100%;
+        max-width: 300px;
+        margin: 10px auto;
+        display: block;
+    }
+}
+
+/* Extra small phones */
+@media (max-width: 375px) {
+    .letter-box {
+        width: 45px;
+        height: 45px;
+        font-size: 24px;
+    }
+    
+    .previous-guess .letter-box {
+        width: 30px;
+        height: 30px;
+        font-size: 18px;
+    }
+    
+    .theme-display {
+        font-size: 14px;
+    }
+    
+    .key {
+        min-width: 24px;
+        min-height: 42px;
+        font-size: 14px;
+    }
+}
 
 
     </style>
