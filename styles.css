@@ -939,8 +939,8 @@
         font-size: 14px 
         margin: 8px 5px 
         display: inline-block 
-        min-width: 100px 
-        max-width: 150px 
+        min-width: 100px !important;
+        max-width: 150px !important;
     }
 
     .game-screen,
