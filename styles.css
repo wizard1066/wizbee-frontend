@@ -548,12 +548,12 @@
     		border: none;
     		font-size: 18px;
     		border-radius: 10px;
-    		cursor: pointer;
+    		cursor: crosshair;
     		transition: background 0.3s;
-            width: auto 
-            padding: 12px 20px 
-            font-size: 14px 
-            margin: 8px auto 
+            width: auto;
+            padding: 12px 20px;
+            font-size: 14px;
+            margin: 8px auto;
             display: block 
 	}
 
@@ -935,10 +935,10 @@
 
     .back-btn {
         width: auto;
-        font-size: 5px;
+        font-size: 6px;
         display: inline-block;
-        min-width: 50px !important;
-        max-width: 80px !important;
+        min-width: 40px !important;
+        max-width: 40px !important;
         background: black !important;
         text-align: center !important;
     }
