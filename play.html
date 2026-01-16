@@ -561,8 +561,11 @@
                 endGame(false);
             }
 
-            //currentGuess = '';
-            updateWordBoxes();
+            if (guess != currentWord) {
+                currentGuess = '';
+                updateWordBoxes();
+            }
+            
         }
 
         function updateKeyboard(guess, feedback) {
