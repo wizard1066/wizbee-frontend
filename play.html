@@ -602,13 +602,61 @@
             document.getElementById('guessesRemaining').textContent = remainingGuesses;
         }
 
+        async function recordWordAttempt(won) {
+            if (!currentThemeId) return;
+            
+            try {
+                await fetch(`${API_URL}/api/record-word-attempt`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({
+                        themeId: currentThemeId,
+                        word: currentWord,
+                        guesses: maxGuesses - remainingGuesses,
+                        hintsUsed: hintsUsed,
+                        won: won,
+                        letterSwaps: letterSwapCount,
+                        guessHistory: guessHistory,
+                        timeSeconds: Math.floor((Date.now() - wordStartTime) / 1000)
+                    })
+                });
+            } catch (error) {
+                console.error('Failed to record:', error);
+            }
+        }
+
+        function celebrateWin() {
+            for (let i = 0; i < currentWord.length; i++) {
+                const box = document.getElementById(`box-${i}`);
+                setTimeout(() => box.classList.add('flash'), i * 150);
+                setTimeout(() => box.classList.remove('flash'), i * 150 + 1000);
+                setTimeout(() => box.classList.add('flash'), i * 150 + 1200);
+                setTimeout(() => box.classList.remove('flash'), i * 150 + 2200);
+            }
+        }
+
         function endGame(won) {
             gameOver = true;
             hideClue();
 
+            await recordWordAttempt(won);
+
+             // Track result for summary
+            gameResults.push({
+                word: currentWord,
+                won: won,
+                guesses: maxGuesses - remainingGuesses,
+                timeSeconds: Math.floor((Date.now() - wordStartTime) / 1000),
+                cluesViewed: clueViewCount
+            });
+
             const messageDiv = document.getElementById('gameMessage');
 
             if (won) {
+                celebrateWin();
                 messageDiv.textContent = `🎉 ${winMessage} ${currentWord}`;
                 messageDiv.className = 'message win';
             } else {
