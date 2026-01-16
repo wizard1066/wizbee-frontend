@@ -546,12 +546,16 @@
     		background: #6c757d;
     		color: white;
     		border: none;
-    		padding: 15px 40px;
     		font-size: 18px;
     		border-radius: 10px;
     		cursor: pointer;
-    		margin-top: 20px;
     		transition: background 0.3s;
+            width: auto !important;
+            max-width: 200px !important;
+            padding: 12px 20px !important;
+            font-size: 14px !important;
+            margin: 8px auto !important;
+            display: block !important;
 	}
 
 	.back-btn:hover {
@@ -925,33 +929,16 @@
     z-index: 1001;
     max-width: 300px;
 }
-.back-btn {
-    		width: 220px;
-    		padding: 20px;
-    		font-size: 16px;
-    		border-radius: 20px;
-    		cursor: pointer;
-    		transition: background 0.3s;
-    		border: none;
-    		color: white;
-    		background: #667eea;
-            font-family: "Helvetica Neue";
-  			
-            border-style: solid;
-  			border-color: white;
-            border-left-width: 0px;
-			border-right-width: 0px;
-			border-top-width: 10px;
-			border-bottom-width: 10px;
-			border-style: solid;
-			margin: 10px 10px 10px 10px;
-            min-height: 50px;
-            text-align: center;
-	}
 
     /* ===== MOBILE RESPONSIVE ===== */
 @media (max-width: 768px) {
     /* Center everything */
+
+    .back-btn {
+        padding: 10px 16px !important;
+        font-size: 13px !important;
+    }
+
     .game-screen,
     .word-boxes,
     .guess-input-container,
