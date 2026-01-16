@@ -670,6 +670,28 @@
         }
 
         function celebrateWin() {
+            const colors = ['#ff0000', '#ff7700', '#ffff00', '#00ff00', '#0000ff', '#9400d3'];
+            
+            for (let i = 0; i < currentWord.length; i++) {
+                const box = document.getElementById(`box-${i}`);
+                if (box) {
+                    box.textContent = currentWord[i];
+                    box.classList.add('correct');
+                    
+                    // Cycle through colors
+                    setTimeout(() => {
+                        box.style.background = colors[i % colors.length];
+                        box.style.transform = 'scale(1.2)';
+                    }, i * 100);
+                    
+                    setTimeout(() => {
+                        box.style.transform = 'scale(1)';
+                    }, i * 100 + 500);
+                }
+            }
+        }
+
+        function celebrateWinDefunct() {
             for (let i = 0; i < currentWord.length; i++) {
                 const box = document.getElementById(`box-${i}`);
                 setTimeout(() => box.classList.add('flash'), i * 150);
