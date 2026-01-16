@@ -204,9 +204,14 @@
                     gameData.wordPoolInfo.selectedIndices
                 );
             }
-            
-            await generateAllClues();
-            
+            try {
+                await generateAllClues();
+            } catch (error) {
+                console.error('ERROR generating clues:', error);
+                alert('Clue generation failed: ' + error.message);
+                wordClues = []; // Continue without clues
+            }
+                
             createWordBoxes();
             updateGuessCount();
             
