@@ -1089,15 +1089,15 @@
         flex-direction: row !important;  /* Override any flex column */
     }
     
-    /* Force buttons to fit */
     .submit-guess,
     .hint-btn,
     .give-up-btn {
-        width: 100% !important;
-        max-width: none !important;
-        padding: 16px 4px !important;
+        width: auto !important;  /* Remove fixed 250px width */
+        flex: 1 !important;      /* Share space equally */
+        padding: 14px 8px !important;
         font-size: 15px !important;
-        margin: 0 !important;
+        min-width: 0 !important;  /* Allow buttons to shrink */
+        max-width: none !important;
     }
 }
 
@@ -1106,8 +1106,8 @@
     .submit-guess,
     .hint-btn,
     .give-up-btn {
-        padding: 14px 2px !important;
-        font-size: 14px !important;
+        padding: 12px 4px !important;
+        font-size: 13px !important;
     }
 }
 
