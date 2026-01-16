@@ -935,12 +935,10 @@
 
     .back-btn {
         width: auto;
-        padding: 12px 15px;
         font-size: 14px;
-        margin: 8px 5px;
         display: inline-block;
         min-width: 50px !important;
-        max-width: 100px !important;
+        max-width: 80px !important;
         background: orange !important;
         text-align: center !important;
     }
