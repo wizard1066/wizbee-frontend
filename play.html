@@ -654,6 +654,8 @@
         }
 
         function showGameSummary() {
+            console.log('=== SHOW GAME SUMMARY ===');
+            console.log('gameResults:', gameResults);
             const totalWords = gameResults.length;
             const wordsWon = gameResults.filter(r => r.won).length;
             const totalTime = gameResults.reduce((sum, r) => sum + r.timeSeconds, 0);
@@ -734,12 +736,16 @@
             document.getElementById('resetButton').classList.add('hidden');
             document.getElementById('backButton').classList.add('hidden');
 
-            
-            if (currentWordIndex < wordList.length - 1) {
-                document.getElementById('resetButton').classList.remove('hidden');
+           // Always show Next Word button (it will trigger summary on last word)
+            document.getElementById('resetButton').classList.remove('hidden');
+            document.getElementById('backButton').classList.add('hidden');
+
+            // Change button text if it's the last word
+            if (currentWordIndex >= wordList.length - 1) {
+                document.getElementById('resetButton').textContent = '🎉 View Summary';
+            } else {
+                document.getElementById('resetButton').textContent = 'Next Word →';
             }
-            
-            document.getElementById('backButton').classList.remove('hidden');
 
             setTimeout(() => {
                 messageDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -747,6 +753,10 @@
         }
 
         function nextWord() {
+            console.log('=== NEXT WORD CALLED ===');
+            console.log('currentWordIndex:', currentWordIndex);
+            console.log('wordList.length:', wordList.length);
+
             // Check if game is complete
             if (currentWordIndex >= wordList.length - 1) {
                 showGameSummary();
