@@ -965,6 +965,8 @@
     
     .word-boxes,
     .previous-guess {
+        gap: 4px;
+        margin: 15px 0;
         justify-content: center;
     }
     
