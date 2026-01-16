@@ -935,8 +935,13 @@
     /* Center everything */
 
     .back-btn {
-        padding: 10px 16px !important;
-        font-size: 13px !important;
+        width: auto !important;
+        padding: 12px 15px !important;
+        font-size: 14px !important;
+        margin: 8px 5px !important;
+        display: inline-block !important;
+        min-width: 100px !important;
+        max-width: 150px !important;
     }
 
     .game-screen,
