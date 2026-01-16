@@ -77,6 +77,17 @@
             <button id="backButton" class="play-again hidden" onclick="returnToBrowse()" style="background: #e2e8f0; color: #2d3748;">← Back to Browse</button>
         </div>
 
+        <!-- Game Summary Modal -->
+        <div id="summaryOverlay" class="summary-overlay hidden">
+            <div class="summary-modal">
+                <h2>🎮 Game Complete!</h2>
+                <div id="summaryContent"></div>
+                <button onclick="closeSummary()" class="play-again" style="margin-top: 20px;">
+                    Back to Browse
+                </button>
+            </div>
+        </div>
+
         <!-- Error Message -->
         <div id="errorMessage" class="hidden" style="text-align: center; padding: 60px; color: #e53e3e;">
             Failed to load game. <a href="browse.html">Return to browse</a>
@@ -141,6 +152,7 @@
         async function startGame(gameData) {
             console.log('=== START GAME ===');
             
+            clueViewCount = 0;  // ← ADD THIS
             currentGameData = gameData;
             gameResults = [];
             wordList = gameData.words;
@@ -641,6 +653,53 @@
             }
         }
 
+        function showGameSummary() {
+            const totalWords = gameResults.length;
+            const wordsWon = gameResults.filter(r => r.won).length;
+            const totalTime = gameResults.reduce((sum, r) => sum + r.timeSeconds, 0);
+            const totalGuesses = gameResults.reduce((sum, r) => sum + r.guesses, 0);
+            const totalClues = gameResults.reduce((sum, r) => sum + r.cluesViewed, 0);
+            
+            const avgTime = Math.round(totalTime / totalWords);
+            const avgGuesses = (totalGuesses / totalWords).toFixed(1);
+            
+            let html = `
+                <div class="summary-stats">
+                    <h3>📊 Overall Stats</h3>
+                    <p><strong>Words Won:</strong> ${wordsWon}/${totalWords}</p>
+                    <p><strong>Success Rate:</strong> ${Math.round((wordsWon/totalWords)*100)}%</p>
+                    <p><strong>Average Time:</strong> ${avgTime}s per word</p>
+                    <p><strong>Average Guesses:</strong> ${avgGuesses}</p>
+                    <p><strong>Total Clues Used:</strong> ${totalClues}</p>
+                </div>
+                
+                <div class="summary-results">
+                    <h3>📝 Word by Word</h3>
+            `;
+            
+            gameResults.forEach((result, index) => {
+                const icon = result.won ? '✅' : '❌';
+                html += `
+                    <div style="padding: 10px; border-bottom: 1px solid #e2e8f0;">
+                        ${icon} <strong>${result.word}</strong> - 
+                        ${result.guesses} guesses, 
+                        ${result.timeSeconds}s, 
+                        ${result.cluesViewed} clues
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            
+            document.getElementById('summaryContent').innerHTML = html;
+            document.getElementById('summaryOverlay').classList.remove('hidden');
+        }
+
+        function closeSummary() {
+            document.getElementById('summaryOverlay').classList.add('hidden');
+            window.location.href = 'browse.html';
+        }
+
         async function endGame(won) {
             gameOver = true;
             hideClue();
@@ -684,6 +743,11 @@
 
         function nextWord() {
             if (currentWordIndex >= wordList.length - 1) {
+                // Game complete - show summary
+                showGameSummary();
+                return;
+            }
+            if (currentWordIndex >= wordList.length - 1) {
                 alert('🎉 You completed all words!');
                 returnToBrowse();
                 return;
@@ -696,6 +760,7 @@
             remainingGuesses = maxGuesses;
             gameOver = false;
             wordStartTime = Date.now();
+            clueViewCount = 0;  // ← ADD THIS
 
             document.getElementById('selectedTheme').textContent = `${selectedThemeWord} (${currentWordIndex + 1}/${wordList.length})`;
             document.getElementById('gameMessage').textContent = '';
