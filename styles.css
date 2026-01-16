@@ -1079,35 +1079,21 @@
 }
 
 @media (max-width: 768px) {
-    /* Force button container to be horizontal */
+    /* Stack buttons vertically */
     .guess-input-container {
-        display: grid !important;
-        grid-template-columns: 1fr 1fr 1fr !important;
-        gap: 8px !important;
-        padding: 0 10px !important;
-        width: 100% !important;
-        flex-direction: row !important;  /* Override any flex column */
+        flex-direction: column !important;
+        align-items: center !important;
+        gap: 10px !important;
+        padding: 0 20px !important;
     }
     
     .submit-guess,
     .hint-btn,
     .give-up-btn {
-        width: auto !important;  /* Remove fixed 250px width */
-        flex: 1 !important;      /* Share space equally */
-        padding: 14px 8px !important;
-        font-size: 15px !important;
-        min-width: 0 !important;  /* Allow buttons to shrink */
-        max-width: none !important;
-    }
-}
-
-/* Extra small phones */
-@media (max-width: 375px) {
-    .submit-guess,
-    .hint-btn,
-    .give-up-btn {
-        padding: 12px 4px !important;
-        font-size: 13px !important;
+        width: 100% !important;
+        max-width: 300px !important;
+        padding: 16px !important;
+        font-size: 18px !important;
     }
 }
 
