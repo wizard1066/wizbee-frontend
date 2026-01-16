@@ -670,6 +670,28 @@
         }
 
         function celebrateWin() {
+            // Make boxes show the correct letters first!
+            for (let i = 0; i < currentWord.length; i++) {
+                const box = document.getElementById(`box-${i}`);
+                if (box) {
+                    box.textContent = currentWord[i];  // ← ADD THIS
+                    box.classList.add('correct');       // ← ADD THIS
+                }
+            }
+            
+            // Then animate
+            for (let i = 0; i < currentWord.length; i++) {
+                const box = document.getElementById(`box-${i}`);
+                if (box) {
+                    setTimeout(() => box.classList.add('flash'), i * 150);
+                    setTimeout(() => box.classList.remove('flash'), i * 150 + 1000);
+                    setTimeout(() => box.classList.add('flash'), i * 150 + 1200);
+                    setTimeout(() => box.classList.remove('flash'), i * 150 + 2200);
+                }
+            }
+        }
+
+        function celebrateWinDepreciated() {
             const colors = ['#ff0000', '#ff7700', '#ffff00', '#00ff00', '#0000ff', '#9400d3'];
             
             for (let i = 0; i < currentWord.length; i++) {
