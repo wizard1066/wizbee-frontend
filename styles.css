@@ -992,14 +992,14 @@
     
     /* Word boxes - MUCH SMALLER */
     .word-boxes {
-        gap: 4px;
-        margin: 15px 0;
+        gap: 2px;
+        margin: 10px 0;
     }
     
     .letter-box {
-        width: 38px !important;
-        height: 38px !important;
-        font-size: 22px !important;
+        width: 24px !important;
+        height: 24px !important;
+        font-size: 16px !important;
         border-width: 2px !important;
     }
     
