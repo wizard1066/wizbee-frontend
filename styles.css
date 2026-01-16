@@ -935,8 +935,9 @@
 
     .back-btn {
         width: 120px !important;
-        font-size: 20px !important;
-        background: rgb(200, 50, 11) !important;
+        font-size: 24px !important;
+        font-weight: bold;
+        background: rgb(200, 58, 43) !important;
         text-align: center !important;
     }
 
