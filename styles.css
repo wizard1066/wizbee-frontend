@@ -36,6 +36,10 @@
     padding: 20px;
 }
 
+.summary-overlay.hidden {
+    display: none;  /* This hides it */
+}
+
 .summary-overlay {
     position: fixed;
     top: 0;
