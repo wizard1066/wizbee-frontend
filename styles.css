@@ -935,13 +935,13 @@
     /* Center everything */
 
     .back-btn {
-        width: auto !important;
-        padding: 12px 15px !important;
-        font-size: 14px !important;
-        margin: 8px 5px !important;
-        display: inline-block !important;
-        min-width: 100px !important;
-        max-width: 150px !important;
+        width: auto 
+        padding: 12px 15px 
+        font-size: 14px 
+        margin: 8px 5px 
+        display: inline-block 
+        min-width: 100px 
+        max-width: 150px 
     }
 
     .game-screen,
