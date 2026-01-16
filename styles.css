@@ -935,11 +935,11 @@
 
     .back-btn {
         width: auto;
-        font-size: 14px;
+        font-size: 10px;
         display: inline-block;
         min-width: 50px !important;
         max-width: 80px !important;
-        background: orange !important;
+        background: yellow!important;
         text-align: center !important;
     }
 
