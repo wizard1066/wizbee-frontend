@@ -928,6 +928,25 @@
     z-index: 1001;
     max-width: 300px;
 }
+/* ===== DESKTOP - Keep buttons in a row ===== */
+@media (min-width: 769px) {
+    .back-btn {
+        display: inline-block !important;
+        width: 220px !important;
+        margin: 10px 10px !important;
+    }
+    
+    /* If buttons are in a container, make it flex row */
+    .button-container,
+    .theme-input-screen,
+    .theme-selection-screen {
+        display: flex !important;
+        flex-direction: row !important;
+        gap: 10px !important;
+        justify-content: center !important;
+        flex-wrap: wrap !important;
+    }
+}
 
     /* ===== MOBILE RESPONSIVE ===== */
 @media (max-width: 768px) {
