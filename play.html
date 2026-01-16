@@ -186,7 +186,7 @@
             
             document.getElementById('selectedTheme').textContent = `${selectedThemeWord} (${currentWordIndex + 1}/${wordList.length})`;
             
-            //createKeyboard(currentLanguage);
+            createKeyboard(currentLanguage);
             
             // ADD WORD POOL VISUALIZATION
             const gameScreen = document.getElementById('gameScreen');
@@ -212,7 +212,9 @@
                 wordClues = []; // Continue without clues
             }
 
+            console.log('createWordBoxes');
             createWordBoxes();
+            console.log('updateGuessCount');
             updateGuessCount();
             
             if (wordClues.length > 0) {
