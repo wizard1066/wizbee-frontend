@@ -1078,23 +1078,22 @@
     margin: 0;
 }
 
-    /* Buttons - keep horizontal but smaller */
+@media (max-width: 768px) {
     .guess-input-container {
-        flex-direction: row;  /* Keep them in a row */
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;  /* Three equal columns */
         gap: 8px;
         padding: 0 10px;
-        justify-content: center;
-        flex-wrap: wrap;  /* Wrap if needed */
+        width: 100%;
     }
     
     .submit-guess,
     .hint-btn,
     .give-up-btn {
-        flex: 1;  /* Equal width, share space */
-        min-width: 100px;  /* Minimum size */
-        max-width: 150px;  /* Maximum size */
-        padding: 14px 8px;  /* Less horizontal padding */
-        font-size: 16px;  /* Smaller text */
+        width: 100%;
+        padding: 16px 4px;
+        font-size: 15px;
     }
+}
 
     </style>
