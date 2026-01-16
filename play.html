@@ -679,6 +679,11 @@
         function showGameSummary() {
             console.log('=== SHOW GAME SUMMARY ===');
             console.log('gameResults:', gameResults);
+
+            console.trace('Call stack:'); // Shows WHO called this function
+    
+            console.log('gameResults:', gameResults);
+             console.log('gameResults.length:', gameResults.length);
             const totalWords = gameResults.length;
             const wordsWon = gameResults.filter(r => r.won).length;
             const totalTime = gameResults.reduce((sum, r) => sum + r.timeSeconds, 0);
