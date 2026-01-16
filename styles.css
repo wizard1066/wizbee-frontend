@@ -934,7 +934,6 @@
     /* Center everything */
 
     .back-btn {
-        width: auto;
         font-size: 6px !important;
         display: inline-block;
         min-width: 40px !important;
