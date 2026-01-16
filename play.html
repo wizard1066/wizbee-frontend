@@ -742,14 +742,55 @@
         }
 
         function nextWord() {
+            // Check if game is complete
             if (currentWordIndex >= wordList.length - 1) {
-                // Game complete - show summary
                 showGameSummary();
                 return;
             }
+
+            // Move to next word
+            currentWordIndex++;
+            currentWord = wordList[currentWordIndex];
+            currentGuess = '';
+            guessHistory = [];
+            remainingGuesses = maxGuesses;
+            gameOver = false;
+            wordStartTime = Date.now();
+            clueViewCount = 0;
+
+            document.getElementById('selectedTheme').textContent = `${selectedThemeWord} (${currentWordIndex + 1}/${wordList.length})`;
+            document.getElementById('gameMessage').textContent = '';
+            document.getElementById('previousGuesses').innerHTML = '';
+            document.getElementById('resetButton').classList.add('hidden');
+            document.getElementById('backButton').classList.add('hidden');
+            document.getElementById('submitGuess').classList.remove('hidden');
+            document.getElementById('showClueBtn').classList.remove('hidden');
+            document.getElementById('giveUpBtn').classList.remove('hidden');
+
+            document.querySelectorAll('.key').forEach(key => {
+                key.classList.remove('correct', 'present', 'used');
+            });
+
+            createWordBoxes();
+            updateGuessCount();
+
+            // Wire up hidden input for mobile keyboard
+            const guessInput = document.getElementById('guessInput');
+            if (guessInput) {
+                guessInput.value = '';
+                guessInput.maxLength = currentWord.length;
+                guessInput.focus();
+            }
+
+            if (wordClues.length > currentWordIndex) {
+                showClueAuto(20000);
+            }
+        }
+
+        function nextWordDepreciated() {
             if (currentWordIndex >= wordList.length - 1) {
-                alert('🎉 You completed all words!');
-                returnToBrowse();
+                // Game complete - show summary
+                showGameSummary();
                 return;
             }
 
