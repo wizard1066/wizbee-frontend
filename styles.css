@@ -934,12 +934,10 @@
     /* Center everything */
 
     .back-btn {
-        width: 30px !important;
+        width: 120px !important;
         font-size: 14px !important;
         display: inline-block;
-        min-width: 40px !important;
-        max-width: 40px !important;
-        background: rgb(36, 149, 11) !important;
+        background: rgb(200, 149, 11) !important;
         text-align: center !important;
     }
 
