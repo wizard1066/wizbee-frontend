@@ -729,6 +729,11 @@
             document.getElementById('submitGuess').classList.add('hidden');
             document.getElementById('showClueBtn').classList.add('hidden');
             document.getElementById('giveUpBtn').classList.add('hidden');
+
+            // Hide both buttons initially
+            document.getElementById('resetButton').classList.add('hidden');
+            document.getElementById('backButton').classList.add('hidden');
+
             
             if (currentWordIndex < wordList.length - 1) {
                 document.getElementById('resetButton').classList.remove('hidden');
