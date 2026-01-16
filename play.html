@@ -82,6 +82,10 @@
             <div class="summary-modal">
                 <h2>🎮 Game Complete!</h2>
                 <div id="summaryContent"></div>
+                <button onclick="shareResults()" class="play-again" style="background: #22c55e; margin-top: 10px;">
+                    Share Results
+                </button>
+
                 <button onclick="closeSummary()" class="play-again" style="margin-top: 20px;">
                     Back to Browse
                 </button>
@@ -221,6 +225,32 @@
             if (wordClues.length > 0) {
                 showClueAuto(20000);
             }
+        }
+
+        function shareResults() {
+            const totalWords = gameResults.length;
+            const wordsWon = gameResults.filter(r => r.won).length;
+            const successRate = Math.round((wordsWon/totalWords)*100);
+            
+            // Create emoji grid (like Wordle)
+            let shareText = `🐝 Wizbee - ${selectedThemeWord}\n`;
+            shareText += `${wordsWon}/${totalWords} words (${successRate}%)\n\n`;
+            
+            gameResults.forEach((result, index) => {
+                const icon = result.won ? '✅' : '❌';
+                shareText += `${icon} ${result.word}: ${result.guesses} guesses in ${result.timeSeconds}s\n`;
+            });
+            
+            shareText += `\nPlay at: https://wizbee.app`;
+            
+            // Copy to clipboard
+            navigator.clipboard.writeText(shareText).then(() => {
+                alert('Results copied to clipboard! 📋');
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+                // Fallback - show text in alert
+                alert('Copy this:\n\n' + shareText);
+            });
         }
 
         function updatePreviousGuesses() {
