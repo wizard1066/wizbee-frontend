@@ -1078,4 +1078,23 @@
     margin: 0;
 }
 
+    /* Buttons - keep horizontal but smaller */
+    .guess-input-container {
+        flex-direction: row;  /* Keep them in a row */
+        gap: 8px;
+        padding: 0 10px;
+        justify-content: center;
+        flex-wrap: wrap;  /* Wrap if needed */
+    }
+    
+    .submit-guess,
+    .hint-btn,
+    .give-up-btn {
+        flex: 1;  /* Equal width, share space */
+        min-width: 100px;  /* Minimum size */
+        max-width: 150px;  /* Maximum size */
+        padding: 14px 8px;  /* Less horizontal padding */
+        font-size: 16px;  /* Smaller text */
+    }
+
     </style>
