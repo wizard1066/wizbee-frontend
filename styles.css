@@ -949,7 +949,7 @@
             text-align: center;
 	}
 
- /* ===== MOBILE RESPONSIVE ===== */
+    /* ===== MOBILE RESPONSIVE ===== */
 @media (max-width: 768px) {
     /* Center everything */
     .game-screen,
@@ -1116,5 +1116,7 @@
         padding: 14px !important;
     }
 }
+ 
+
 
     </style>
