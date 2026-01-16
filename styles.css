@@ -949,9 +949,9 @@
             text-align: center;
 	}
 
-    /* ===== MOBILE RESPONSIVE - ADD TO BOTTOM OF styles.css ===== */
+ /* ===== MOBILE RESPONSIVE ===== */
 @media (max-width: 768px) {
-    /* Container padding */
+    /* Center everything */
     .game-screen,
     .word-boxes,
     .guess-input-container,
@@ -962,6 +962,13 @@
         margin-right: auto;
         text-align: center;
     }
+    
+    .word-boxes,
+    .previous-guess {
+        justify-content: center;
+    }
+    
+    /* Container padding */
     .container {
         padding: 15px;
         max-width: 100%;
@@ -983,10 +990,8 @@
         margin-bottom: 15px;
     }
     
-    /* Word boxes - smaller and tighter */
-    .word-boxes,
-    .previous-guess {
-        justify-content: center;
+    /* Word boxes */
+    .word-boxes {
         gap: 6px;
         margin: 20px 0;
     }
@@ -1016,70 +1021,7 @@
         margin: 15px 0;
     }
     
-    /* Buttons - stack vertically */
-
-    .summary-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.8);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-}
-
-.summary-modal {
-    background: white;
-    border-radius: 16px;
-    padding: 30px;
-    max-width: 500px;
-    width: 90%;
-    max-height: 80vh;
-    overflow-y: auto;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-}
-
-.summary-modal h2 {
-    text-align: center;
-    color: #667eea;
-    margin-bottom: 20px;
-}
-
-.summary-stats {
-    background: #f7fafc;
-    padding: 20px;
-    border-radius: 12px;
-    margin-bottom: 20px;
-}
-
-.summary-stats h3 {
-    color: #2d3748;
-    margin-bottom: 15px;
-}
-
-.summary-stats p {
-    margin: 10px 0;
-    font-size: 16px;
-}
-
-.summary-results {
-    background: #f7fafc;
-    border-radius: 12px;
-    overflow: hidden;
-}
-
-.summary-results h3 {
-    background: #667eea;
-    color: white;
-    padding: 15px;
-    margin: 0;
-}
-
-@media (max-width: 768px) {
-    /* Stack buttons vertically */
+    /* BUTTONS - Stack vertically */
     .guess-input-container {
         flex-direction: column !important;
         align-items: center !important;
@@ -1094,6 +1036,84 @@
         max-width: 300px !important;
         padding: 16px !important;
         font-size: 18px !important;
+    }
+    
+    /* Previous guesses */
+    .previous-guesses {
+        margin-top: 20px;
+    }
+    
+    .previous-guess {
+        gap: 4px;
+        margin: 8px 0;
+    }
+    
+    .previous-guess .letter-box {
+        width: 40px;
+        height: 40px;
+        font-size: 22px;
+    }
+    
+    .previous-guess .letter-box.small-font {
+        width: 32px;
+        height: 32px;
+        font-size: 18px;
+    }
+    
+    .previous-guess .letter-box.tiny-font {
+        width: 28px;
+        height: 28px;
+        font-size: 15px;
+    }
+    
+    /* Clue display */
+    #clueDisplay {
+        font-size: 16px !important;
+        padding: 15px !important;
+    }
+    
+    /* Word pool */
+    #wordPoolCanvas {
+        height: 50px;
+    }
+    
+    /* Message */
+    .message {
+        font-size: 20px;
+        padding: 15px;
+        margin: 15px 0;
+    }
+    
+    /* Play again buttons */
+    .play-again {
+        width: 100%;
+        max-width: 300px;
+        margin: 10px auto;
+        display: block;
+        font-size: 20px;
+        padding: 15px;
+    }
+}
+
+/* Extra small phones */
+@media (max-width: 375px) {
+    .letter-box {
+        width: 45px;
+        height: 45px;
+        font-size: 24px;
+    }
+    
+    .previous-guess .letter-box {
+        width: 35px;
+        height: 35px;
+        font-size: 20px;
+    }
+    
+    .submit-guess,
+    .hint-btn,
+    .give-up-btn {
+        font-size: 16px !important;
+        padding: 14px !important;
     }
 }
 
