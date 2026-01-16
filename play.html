@@ -123,6 +123,21 @@
         let currentThemeId = null;
 	    let currentCacheKey = null;
 
+        // Mobile debugging
+        window.onerror = function(msg, url, lineNo, columnNo, error) {
+            alert('ERROR: ' + msg + '\nLine: ' + lineNo);
+            console.error(msg, url, lineNo, columnNo, error);
+            return false;
+        };
+
+        // Log everything
+        console.log = (function(oldLog) {
+            return function(...args) {
+                alert('LOG: ' + args.join(' '));
+                oldLog.apply(console, args);
+            };
+        })(console.log);
+
         window.onload = function() {
             authToken = localStorage.getItem('authToken');
             
