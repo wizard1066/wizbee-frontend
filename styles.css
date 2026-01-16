@@ -941,7 +941,8 @@
         display: inline-block;
         min-width: 50px !important;
         max-width: 100px !important;
-        background: green !important;
+        background: orange !important;
+        text-align: center !important;
     }
 
     .game-screen,
