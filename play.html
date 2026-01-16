@@ -109,6 +109,11 @@
         let gameResults = [];
         let currentGameData = null;
 
+        let currentThemeId = null;
+        let wordStartTime = null;
+        let letterSwapCount = 0;
+	    let currentCacheKey = null;
+
         window.onload = function() {
             authToken = localStorage.getItem('authToken');
             
