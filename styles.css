@@ -933,6 +933,7 @@
         display: inline-block !important;
         width: 220px !important;
         margin: 10px 10px !important;
+        font-size: 20px !important;
     }
     
     /* If buttons are in a container, make it flex row */
