@@ -1088,12 +1088,10 @@
     .previous-guesses {
         margin-left: 1px;
         margin-right: 1px;
-        background-color: green;
     }
     
     
     .previous-guess {
-        font-size: 32px !important;
         margin-left: 1px;
         margin-right: 1px;
     }
