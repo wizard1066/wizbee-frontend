@@ -675,7 +675,7 @@ function displayPreview(words) {
     if (remaining > 0) {
         // Still have refines left
         //generateBtn.textContent = `🔄 Refine (${used}/${total} used)`;
-        generateBtn.textContent = `🔄 Refine ${used}`;
+        generateBtn.textContent = `Refine ${used}/${total}`;
         generateBtn.onclick = refineTheme;
         generateBtn.disabled = false;
         themeInput.placeholder = 'Refine search here (e.g., "only 5-letter words", "exclude colors")';
@@ -683,7 +683,7 @@ function displayPreview(words) {
     } else {
         // No refines left - disable
         //generateBtn.textContent = `🔄 Refine (${used}/${total} used)`;
-        generateBtn.textContent = `🔄 Refine ${used}`;
+        generateBtn.textContent = `Refine ${used}/${total}`;
         generateBtn.onclick = null;
         generateBtn.disabled = true;
         themeInput.placeholder = 'No more refines available - Edit or Play';
@@ -719,7 +719,7 @@ async function refineTheme() {
     refineAttempts++;
     
     // Build full prompt
-    currentThemeText = baseTheme + refinements.map(r => ' + ' + r).join('');
+    currentThemeText = baseTheme + refinements.map(r => ' and ' + r).join('');
     
     // Clear input for next refinement
     document.getElementById('themeInput').value = '';
