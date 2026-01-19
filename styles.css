@@ -1095,8 +1095,9 @@
     
     .previous-guess .letter-box {
         width: 24px;
-        height: 40px;
-        font-size: 20px;
+        height: 50px;
+        font-size: 12px;
+        background-color: red;
     }
     
     .previous-guess .letter-box.small-font {
