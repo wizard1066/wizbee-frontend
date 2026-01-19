@@ -665,7 +665,7 @@
         }
 
         .letter-box.correct {
-            //background: #6aaa64;
+            background: #6aaa64;
 	    background: #22c55e;
             color: #ffffff;
             border-color: #ffffff;
@@ -949,8 +949,8 @@
     }
 
         .letter-box {
-        width: 60px !important;
-        height: 60px !important;
+        width: 50px !important;
+        height: 80px !important;
         font-size: 36px !important;
         border-width: 3px !important;
     }
