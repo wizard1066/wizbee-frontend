@@ -864,14 +864,14 @@
 
         .previous-guess .letter-box.small-font {
             width: 40px;
-            height: 40px;
-            font-size: 20px;
+            height: 80px;
+            font-size: 24px;
         }
 
         .previous-guess .letter-box.tiny-font {
             width: 35px;
-            height: 35px;
-            font-size: 16px;
+            height: 70px;
+            font-size: 22px;
         }
 
         .message {
@@ -1086,8 +1086,8 @@
     
     /* Previous guesses */
     .previous-guesses {
-        margin-left: 100px;
-        margin-right: 100px;
+        margin-left: 1px;
+        margin-right: 1px;
         background-color: green;
     }
     
