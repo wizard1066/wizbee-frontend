@@ -1009,8 +1009,7 @@
         text-align: center;
     }
     
-    .word-boxes,
-    .previous-guess {
+    .word-boxes {
         justify-content: center;
     }
     
