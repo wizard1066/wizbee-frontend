@@ -674,14 +674,16 @@ function displayPreview(words) {
     
     if (remaining > 0) {
         // Still have refines left
-        generateBtn.textContent = `🔄 Refine (${used}/${total} used)`;
+        //generateBtn.textContent = `🔄 Refine (${used}/${total} used)`;
+        generateBtn.textContent = `🔄 Refine ${used}`;
         generateBtn.onclick = refineTheme;
         generateBtn.disabled = false;
         themeInput.placeholder = 'Refine search here (e.g., "only 5-letter words", "exclude colors")';
         themeInput.disabled = false;
     } else {
         // No refines left - disable
-        generateBtn.textContent = `🔄 Refine (${used}/${total} used)`;
+        //generateBtn.textContent = `🔄 Refine (${used}/${total} used)`;
+        generateBtn.textContent = `🔄 Refine ${used}`;
         generateBtn.onclick = null;
         generateBtn.disabled = true;
         themeInput.placeholder = 'No more refines available - Edit or Play';
