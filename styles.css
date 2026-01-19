@@ -1087,7 +1087,6 @@
     /* Previous guesses */
     .previous-guesses {
         margin-top: 20px;
-        background-color: orange;
     }
     
     .previous-guess {
@@ -1098,13 +1097,13 @@
     .previous-guess .letter-box {
         width: 22px;
         height: 40px;
-        font-size: 20px;
+        /*font-size: 20px;*/
     }
     
     .previous-guess .letter-box.small-font {
         width: 22px;
         height: 40px;
-        font-size: 20px;
+        /*font-size: 20px;*/
         background-color: red;
     }
     
@@ -1145,6 +1144,7 @@
 }
 
 /* Extra small phones */
+/*
 @media (max-width: 375px) {
     .letter-box {
         width: 45px;
@@ -1165,6 +1165,7 @@
         font-size: 16px !important;
         padding: 14px !important;
     }
+        */
 }
  
 
