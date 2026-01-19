@@ -1087,11 +1087,12 @@
     /* Previous guesses */
     .previous-guesses {
         margin-top: 20px;
+        background-color: orange;
     }
     
     .previous-guess {
-        gap: 4px;
-        margin: 8px 0;
+        gap: 2px;
+        margin: 4px 0;
     }
     
     .previous-guess .letter-box {
