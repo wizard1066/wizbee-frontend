@@ -1086,8 +1086,7 @@
     
     /* Previous guesses */
     .previous-guesses {
-        min-width: 20px;
-        min-height: 40px;
+        gap: 10px;
     }
     
     
