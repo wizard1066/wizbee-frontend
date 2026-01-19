@@ -666,9 +666,8 @@
 
         .letter-box.correct {
             background: #6aaa64;
-	    background: #22c55e;
             color: #ffffff;
-            border-color: #ffffff;
+            border-color: #6aaa64;
         }
 
         .letter-box.present {
