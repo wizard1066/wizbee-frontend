@@ -1094,8 +1094,6 @@
     .previous-guess {
         gap: 2px;
         margin: 2px 0;
-        background-color: turquoise;
-        min-width: 16px;
     }
 
     /*
