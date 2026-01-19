@@ -1095,15 +1095,15 @@
     }
     
     .previous-guess .letter-box {
-        width: 24px;
-        height: 50px;
-        font-size: 16px;
+        width: 22px;
+        height: 40px;
+        font-size: 20px;
     }
     
     .previous-guess .letter-box.small-font {
-        width: 32px;
-        height: 32px;
-        font-size: 18px;
+        width: 22px;
+        height: 40px;
+        font-size: 20px;
         background-color: red;
     }
     
@@ -1111,7 +1111,7 @@
         width: 28px;
         height: 28px;
         font-size: 15px;
-        background-color: red;
+        background-color: blue;
     }
     
     /* Clue display */
