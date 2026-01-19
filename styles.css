@@ -1045,8 +1045,8 @@
         width: 24px !important;
         height: 50px !important;
         font-size: 20px !important;
-        border-width: 1px !important;
-        background-color: violet;
+        border-width: 2px !important;
+        background-color: white;
     }
     
     .letter-box.small-font {
