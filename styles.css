@@ -1090,15 +1090,16 @@
         width: 20px;
         /*margin-top: 20px;*/
         font-size: 40px;
-        margin: 2px;
     }
     
-    /*
+    
     .previous-guess {
-        gap: 4px;
-        margin: 4px 0;
+        gap: 2px;
+        margin: 2px 0;
+        background-color: turquoise;
     }
-    
+
+    /*
     .previous-guess .letter-box {
         width: 22px;
         height: 40px;
