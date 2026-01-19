@@ -1086,7 +1086,11 @@
     
     /* Previous guesses */
     .previous-guesses {
+        width: 22px;
+        height: 40px;
         margin-top: 20px;
+        font-size: 20px;
+        background-color: magenta;
     }
     
     .previous-guess {
@@ -1104,14 +1108,13 @@
         width: 22px;
         height: 40px;
         /*font-size: 20px;*/
-        background-color: red;
+        
     }
     
     .previous-guess .letter-box.tiny-font {
         width: 22px;
         height: 40px;
         font-size: 20px;
-        background-color: blue;
     }
     
     /* Clue display */
