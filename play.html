@@ -13,7 +13,7 @@
     <div class="container">
         <h1>
             <a href="index.html" style="text-decoration: none; color: inherit;">
-                <img src="bee3.gif" alt="Wizbee" style="height: 48px; vertical-align: middle;"> 
+                <img src="bee4.png" alt="Wizbee" style="height: 48px; vertical-align: middle;"> 
                 <span style="color: #f59e0b;">Wizbee</span>
             </a>
         </h1>
@@ -1088,6 +1088,18 @@
                 handleKeyPress(e.key.toUpperCase());
             }
         });
+
+        // hint button support
+        function scramble(word) {
+            let arr = word.split("");
+            do {
+                for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+                }
+            } while (arr.join("") === word);
+            return arr.join("");
+        }
     </script>
 </body>
 </html>
