@@ -1064,8 +1064,7 @@
     /* Guesses remaining */
     .guesses-remaining {
         font-size: 20px;
-        margin-left: 100px;
-        margin-right: 100px;
+        
     }
     
     /* BUTTONS - Stack vertically */
@@ -1094,6 +1093,8 @@
     .previous-guess {
         background-color: lightgreen;
         font-size: 20px !important;
+        margin-left: 100px;
+        margin-right: 100px;
     }
 
     /*
