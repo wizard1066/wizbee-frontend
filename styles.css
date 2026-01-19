@@ -1086,13 +1086,12 @@
     
     /* Previous guesses */
     .previous-guesses {
-        gap: 10px;
+        background-color: lime;
     }
     
     
     .previous-guess {
-        gap: 2px;
-        margin: 2px 0;
+        background-color: tomato;
     }
 
     /*
