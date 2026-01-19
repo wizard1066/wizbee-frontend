@@ -1108,9 +1108,9 @@
     }
     
     .previous-guess .letter-box.tiny-font {
-        width: 28px;
-        height: 28px;
-        font-size: 15px;
+        width: 22px;
+        height: 40px;
+        font-size: 20px;
         background-color: blue;
     }
     
