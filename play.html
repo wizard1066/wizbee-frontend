@@ -534,6 +534,23 @@
         }
 
         function updateWordBoxes() {
+        for (let i = 0; i < currentWord.length; i++) {
+                const box = document.getElementById(`box-${i}`);
+                if (box) {
+                    // Set the letter
+                    box.textContent = i < currentGuess.length ? currentGuess[i] : '';
+                    
+                    // Add cursor to next empty box
+                    if (i === currentGuess.length && !gameOver) {
+                        box.classList.add('active-input');
+                    } else {
+                        box.classList.remove('active-input');
+                    }
+                }
+            }
+        }
+
+        function updateWordBoxesDepreciated() {
             for (let i = 0; i < currentWord.length; i++) {
                 const box = document.getElementById(`box-${i}`);
                 if (box) {
