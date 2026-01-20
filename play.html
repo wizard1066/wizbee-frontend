@@ -20,7 +20,7 @@
 
         <!-- Loading Message -->
         <div id="loadingMessage" style="text-align: center; padding: 60px; color: #718096;">
-            <img src="bee2.gif" style="height: 60px;"><br>
+            <img src="bee4.png" style="height: 60px;"><br>
             Loading game...
         </div>
 
@@ -531,6 +531,14 @@
             if (firstBox && !gameOver) {
                 firstBox.classList.add('active-input');
             }
+
+            setTimeout(() => {
+                const firstBox = document.getElementById('box-0');
+                if (firstBox) {
+                    firstBox.classList.add('active-input');
+                    console.log('Added active-input class to box-0');
+                }
+            }, 100);
         }
 
         function createWordBoxesDepreciated() {
