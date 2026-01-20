@@ -517,6 +517,24 @@
 
         function createWordBoxes() {
             const container = document.getElementById('wordBoxes');
+            container.innerHTML = '';
+            
+            for (let i = 0; i < currentWord.length; i++) {
+                const box = document.createElement('div');
+                box.className = 'letter-box';
+                box.id = `box-${i}`;
+                container.appendChild(box);
+            }
+            
+            // Show cursor on first box
+            const firstBox = document.getElementById('box-0');
+            if (firstBox && !gameOver) {
+                firstBox.classList.add('active-input');
+            }
+        }
+
+        function createWordBoxesDepreciated() {
+            const container = document.getElementById('wordBoxes');
             let html = '';
 
             for (let i = 0; i < currentWord.length; i++) {
@@ -530,7 +548,7 @@
             if (guessInput) {
                 guessInput.focus();
             }
-    });
+            });
         }
 
         function updateWordBoxes() {
