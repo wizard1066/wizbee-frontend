@@ -540,6 +540,11 @@
                     box.textContent = i < currentGuess.length ? currentGuess[i] : '';
                 }
             }
+            if (i === currentGuess.length && !gameOver) {
+                box.classList.add('active-input');
+            } else {
+                box.classList.remove('active-input');
+            }
         }
 
         function submitGuess() {
