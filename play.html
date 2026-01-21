@@ -149,7 +149,7 @@
                 // Change button to "Share Game"
                 const btn = document.getElementById('showClueBtn');
                 if (btn) {
-                    btn.textContent = '📤 Share Game';
+                    btn.textContent = 'Share Game';
                     btn.onclick = shareGame;
                 }
             }
@@ -1229,7 +1229,7 @@
             // Disable and show "thinking" on clue button
             const clueBtn = document.getElementById('showClueBtn');
             const originalText = clueBtn.textContent;
-            clueBtn.disabled = true;
+            clueBtn.disabled = false;
             clueBtn.textContent = '💭 Thinking...';
             clueBtn.style.background = '#cbd5e0';
             clueBtn.style.cursor = 'not-allowed';
