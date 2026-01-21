@@ -134,10 +134,23 @@
         let multiplayerCode = null;
         let pollInterval = null;
 
+        function initMultiplayer() {
+            multiplayerCode = localStorage.getItem('sharedGameCode');
+            isMultiplayerGame = !!multiplayerCode;
+            
+            if (isMultiplayerGame) {
+                console.log('[MULTIPLAYER] Joined game:', multiplayerCode);
+                startPolling(multiplayerCode);
+                // Button stays as "Show Clue" since clues already exist
+            }
+            // Don't change button here - let generateAllClues() handle it
+        }
+
+
         /**
          * Initialize multiplayer mode if needed
          */
-        function initMultiplayer() {
+        function initMultiplayerDepreciated() {
             multiplayerCode = localStorage.getItem('sharedGameCode');
             isMultiplayerGame = !!multiplayerCode;
             
@@ -388,6 +401,8 @@
             currentLanguage = gameData.language || 'en';
             winMessage = gameData.winMessage || 'Correct!';
             loseMessage = gameData.loseMessage || 'Not quite! The word was';
+            currentCacheKey = gameData.cacheKey || data.cacheKey;
+
             wordStartTime = Date.now();
             letterSwapCount = 0;
             wordClues = [];
