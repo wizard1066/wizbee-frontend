@@ -453,6 +453,8 @@
         async function joinSharedGame(code) {
             console.log('[JOIN] Starting join for code:', code);
 
+            localStorage.clear(); // ← Nuclear option
+
             document.getElementById('generatingMessage').classList.remove('hidden');
             document.getElementById('generatingMessage').innerHTML = `
                 <img src="bee2.gif" style="height: 60px; vertical-align: middle;"> 
