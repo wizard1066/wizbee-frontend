@@ -663,6 +663,14 @@
         // ========================================================================
 async function generateTheme() {
     const input = document.getElementById('themeInput').value.trim();
+
+    console.log('=================================');
+    console.log('GENERATE THEME CALLED');
+    console.log('Raw input:', `[${input}]`);
+    console.log('Input length:', input.length);
+    console.log('Input trimmed:', `[${input.trim()}]`);
+    console.log('Trimmed length:', input.trim().length);
+    console.log('=================================');
     
     if (!input) {
         showError('Please enter a theme!');
@@ -672,7 +680,7 @@ async function generateTheme() {
     // Remove the credit check - backend handles it
        // Check if it's a 4-digit hex code (0-9, A-F)
     const hexPattern = /^[0-9A-Fa-f]{4}$/;
-    
+
     
     if (hexPattern.test(input)) {
         // It's a join code!
