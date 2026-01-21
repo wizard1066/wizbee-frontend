@@ -1229,7 +1229,63 @@
             // Disable and show "thinking" on clue button
             const clueBtn = document.getElementById('showClueBtn');
             const originalText = clueBtn.textContent;
-            clueBtn.disabled = false;
+            clueBtn.disabled = true;
+            clueBtn.textContent = '💭 Thinking...';
+            clueBtn.style.background = '#cbd5e0';
+            clueBtn.style.cursor = 'not-allowed';
+            
+            try {
+                const response = await fetch(`${API_URL}/api/generate-clues`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        words: wordList,
+                        theme: selectedThemeWord,
+                        language: currentLanguage,
+                        difficulty: currentGameData.difficulty || 'medium' 
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.clues) {
+                    wordClues = data.clues;
+                    if (data.winMessage) winMessage = data.winMessage;
+                    if (data.loseMessage) loseMessage = data.loseMessage;
+                }
+            } catch (error) {
+                console.error('Error generating clues:', error);
+            } finally {
+                // Re-enable button
+                clueBtn.disabled = false;
+                
+                // Check if this is a multiplayer game or if clues now exist
+                const multiplayerCode = localStorage.getItem('sharedGameCode');
+                const isMultiplayerGame = !!multiplayerCode;
+                
+                if (!isMultiplayerGame && wordClues && wordClues.length > 0) {
+                    // Clues are ready, offer to share
+                    clueBtn.textContent = '📤 Share Game';
+                    clueBtn.onclick = shareGame;
+                } else {
+                    // Keep as show clue
+                    clueBtn.textContent = originalText;
+                }
+                
+                clueBtn.style.background = '';
+                clueBtn.style.cursor = '';
+            }
+        }
+
+
+        async function generateAllCluesDepreciated2() {
+            // Disable and show "thinking" on clue button
+            const clueBtn = document.getElementById('showClueBtn');
+            const originalText = clueBtn.textContent;
+            clueBtn.disabled = true;
             clueBtn.textContent = '💭 Thinking...';
             clueBtn.style.background = '#cbd5e0';
             clueBtn.style.cursor = 'not-allowed';
