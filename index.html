@@ -673,8 +673,10 @@ async function generateTheme() {
        // Check if it's a 4-digit hex code (0-9, A-F)
     const hexPattern = /^[0-9A-Fa-f]{4}$/;
     
+    
     if (hexPattern.test(input)) {
         // It's a join code!
+        debugger;
         await joinSharedGame(input.toUpperCase());
         return;
     }
