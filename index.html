@@ -485,8 +485,6 @@
                 localStorage.setItem('pendingGame', JSON.stringify(data.gameData));
                 console.log('[JOIN] Saved pendingGame:', localStorage.getItem('pendingGame'));
 
-                debugger;
-
                 
                 // Redirect to play
                 window.location.href = 'play.html';
@@ -684,7 +682,6 @@ async function generateTheme() {
     
     if (hexPattern.test(input)) {
         // It's a join code!
-        debugger;
         await joinSharedGame(input.toUpperCase());
         return;
     }
