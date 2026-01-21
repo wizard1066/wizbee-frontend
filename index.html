@@ -483,6 +483,10 @@
                 
                 // Save game data
                 localStorage.setItem('pendingGame', JSON.stringify(data.gameData));
+                console.log('[JOIN] Saved pendingGame:', localStorage.getItem('pendingGame'));
+
+                debugger;
+
                 
                 // Redirect to play
                 window.location.href = 'play.html';
