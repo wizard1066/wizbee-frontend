@@ -401,7 +401,7 @@
             currentLanguage = gameData.language || 'en';
             winMessage = gameData.winMessage || 'Correct!';
             loseMessage = gameData.loseMessage || 'Not quite! The word was';
-            currentCacheKey = gameData.cacheKey || data.cacheKey;
+            currentCacheKey = gameData.cacheKey || null;
 
             wordStartTime = Date.now();
             letterSwapCount = 0;
