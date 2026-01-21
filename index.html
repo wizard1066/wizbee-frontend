@@ -999,12 +999,6 @@ async function acceptAndPlay() {
     const playBtn = document.getElementById('playBtn');
     if (playBtn.disabled) return;
     playBtn.disabled = true;
-    
-    if (!currentCacheKey) {
-        showError('No theme selected!');
-        playBtn.disabled = false;
-        return;
-    }
 
     // Check if it's a 4-digit hex code
     const hexPattern = /^[0-9A-Fa-f]{4}$/;
@@ -1012,6 +1006,12 @@ async function acceptAndPlay() {
     if (hexPattern.test(input)) {
         console.log('[PLAY] Hex code detected, joining game:', input);
         await joinSharedGame(input.toUpperCase());
+        return;
+    }
+
+    if (!currentCacheKey) {
+        showError('No theme selected!');
+        playBtn.disabled = false;
         return;
     }
     
