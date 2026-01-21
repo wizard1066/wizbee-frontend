@@ -1005,7 +1005,22 @@ async function acceptAndPlay() {
         playBtn.disabled = false;
         return;
     }
+
+    // Check if it's a 4-digit hex code
+    const hexPattern = /^[0-9A-Fa-f]{4}$/;
     
+    if (hexPattern.test(input)) {
+        console.log('[PLAY] Hex code detected, joining game:', input);
+        await joinSharedGame(input.toUpperCase());
+        return;
+    }
+    
+    // Otherwise, proceed with normal accept/play flow
+    console.log('[PLAY] Normal theme, accepting...');
+
+    console.log('[ACCEPT] About to call accept-theme API');
+    console.log('[ACCEPT] cacheKey:', currentCacheKey);
+
     try {
         const response = await fetch(`${API_URL}/api/accept-theme`, {
             method: 'POST',
