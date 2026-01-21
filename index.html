@@ -447,6 +447,50 @@
             return JSON.parse(jsonPayload);
 	}
 
+        /**
+         * Join a shared multiplayer game
+         */
+        async function joinSharedGame(code) {
+            document.getElementById('generatingMessage').classList.remove('hidden');
+            document.getElementById('generatingMessage').innerHTML = `
+                <img src="bee2.gif" style="height: 60px; vertical-align: middle;"> 
+                Joining game <strong>${code}</strong>...
+            `;
+            
+            try {
+                const response = await fetch(`${API_URL}/api/get-shared-game/${code}`, {
+                    headers: { 
+                        'Authorization': `Bearer ${authToken}` 
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (!data.success) {
+                    document.getElementById('generatingMessage').classList.add('hidden');
+                    showError(data.error || 'Invalid game code');
+                    return;
+                }
+                
+                console.log('[MULTIPLAYER] Joined game:', code);
+                
+                // Save the share code for multiplayer
+                localStorage.setItem('sharedGameCode', code);
+                
+                // Save game data
+                localStorage.setItem('pendingGame', JSON.stringify(data.gameData));
+                
+                // Redirect to play
+                window.location.href = 'play.html';
+                
+            } catch (error) {
+                console.error('[MULTIPLAYER] Join error:', error);
+                document.getElementById('generatingMessage').classList.add('hidden');
+                showError('Failed to join game. Please check the code and try again.');
+            }
+        }
+
+
 	async function resumeFromEdit(cacheKey) {
     try {
         // Fetch the edited theme from database
@@ -618,10 +662,20 @@ async function generateTheme() {
     }
     
     // Remove the credit check - backend handles it
+       // Check if it's a 4-digit hex code (0-9, A-F)
+    const hexPattern = /^[0-9A-Fa-f]{4}$/;
+    
+    if (hexPattern.test(input)) {
+        // It's a join code!
+        await joinSharedGame(input.toUpperCase());
+        return;
+    }
     
     const themeInput = document.getElementById('themeInput');
     themeInput.value = '';
-    themeInput.placeholder = 'Refine search here (e.g., "only 5-letter words", "exclude colors")';
+    themeInput.placeholder = "Enter theme (e.g. 'common animals') or 4-digit game code (e.g. 'A3F2')";
+
+    localStorage.removeItem('sharedGameCode');
     
     baseTheme = input;
     refinements = [];
