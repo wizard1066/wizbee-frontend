@@ -408,6 +408,9 @@
         })(console.log);*/
 
         window.onload = function() {
+            console.log('[PLAY] Loading game...');
+            console.log('[PLAY] pendingGame from localStorage:', localStorage.getItem('pendingGame'));
+    
             authToken = localStorage.getItem('authToken');
             
             if (!authToken) {
