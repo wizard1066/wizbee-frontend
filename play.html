@@ -171,7 +171,7 @@
         /**
          * Share the current game
          */
-        async function shareGame() {
+        async function shareGameBusted() {
             const btn = document.getElementById('showClueBtn');
             btn.disabled = true;
             btn.textContent = 'Creating...';
@@ -236,7 +236,7 @@
 
 
 
-        async function shareGameDepreciated() {
+        async function shareGame() {
             const btn = document.getElementById('showClueBtn');
             btn.disabled = true;
             btn.textContent = '⏳ Creating...';
@@ -259,7 +259,7 @@
                 if (!data.success) {
                     alert('Failed to create shared game');
                     btn.disabled = false;
-                    btn.textContent = '📤 Share Game';
+                    btn.textContent = 'Share Game';
                     return;
                 }
                 
@@ -284,7 +284,7 @@
                 console.error('[MULTIPLAYER] Share error:', error);
                 alert('Failed to create shared game');
                 btn.disabled = false;
-                btn.textContent = '📤 Share Game';
+                btn.textContent = 'Share Game';
             }
         }
 
