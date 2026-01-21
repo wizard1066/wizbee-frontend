@@ -1000,6 +1000,8 @@ async function acceptAndPlay() {
     if (playBtn.disabled) return;
     playBtn.disabled = true;
 
+    const input = document.getElementById('themeInput').value.trim();
+
     // Check if it's a 4-digit hex code
     const hexPattern = /^[0-9A-Fa-f]{4}$/;
     
