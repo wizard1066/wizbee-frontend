@@ -1283,11 +1283,13 @@
                 
                 if (!isMultiplayerGame && wordClues && wordClues.length > 0) {
                     // Clues are ready, offer to share
-                    clueBtn.textContent = '📤 Share Game';
+                    clueBtn.textContent = 'Share Game';
                     clueBtn.onclick = shareGame;
                 } else {
                     // Keep as show clue
                     clueBtn.textContent = originalText;
+                    clueBtn.textContent = "Something went wrong";
+                    clueBtn.onclick = shareGame;
                 }
                 
                 clueBtn.style.background = '';
