@@ -1490,19 +1490,22 @@
                 // Re-enable button
                 clueBtn.disabled = false;
                 
-                // Check if this is a multiplayer game or if clues now exist
+                // Check if this is a multiplayer game
                 const multiplayerCode = localStorage.getItem('sharedGameCode');
                 const isMultiplayerGame = !!multiplayerCode;
                 
-                if (!isMultiplayerGame && wordClues && wordClues.length > 0) {
-                    // Clues are ready, offer to share
-                    clueBtn.textContent = 'Share Game';
+                if (isMultiplayerGame) {
+                    // Already in multiplayer - keep as show clue
+                    clueBtn.textContent = '💡 Show Clue';
+                    clueBtn.onclick = showClue;
+                } else if (wordClues && wordClues.length > 0) {
+                    // Solo game and clues generated - offer to share
+                    clueBtn.textContent = '📤 Share Game';
                     clueBtn.onclick = shareGame;
                 } else {
-                    // Keep as show clue
-                    clueBtn.textContent = originalText;
-                    clueBtn.textContent = "Something went wrong";
-                    clueBtn.onclick = shareGame;
+                    // Something went wrong - clues didn't generate
+                    clueBtn.textContent = '❌ Clue generation failed';
+                    //clueBtn.onclick = () => generateAllClues(); // Retry
                 }
                 
                 clueBtn.style.background = '';
