@@ -13,7 +13,17 @@
     <div class="container">
         <h1>
             <a href="index.html" style="text-decoration: none; color: inherit;">
-                <img src="bee4.png" alt="Wizbee" style="height: 48px; vertical-align: middle;"> 
+                <img src="bee4.png" alt="Wizbee" style="height: 48px; vertical-align: middle;" hidden="true">
+                <img 
+                    id="debugPollBtn" 
+                    src="bee4.png" 
+                    alt="Poll" 
+                    onclick="debugPoll()" 
+                    style="position: fixed; bottom: 20px; right: 20px; height: 48px; cursor: pointer; z-index: 9999; transition: transform 0.2s;"
+                    onmouseover="this.style.transform='scale(1.1)'"
+                    onmouseout="this.style.transform='scale(1)'"
+                >
+
                 <span style="color: #f59e0b;">Wizbee</span>
             </a>
         </h1>
@@ -134,6 +144,8 @@
         let multiplayerCode = null;
         let pollInterval = null;
 
+
+
         function initMultiplayer() {
             multiplayerCode = localStorage.getItem('sharedGameCode');
             isMultiplayerGame = !!multiplayerCode;
@@ -165,6 +177,57 @@
                     btn.textContent = 'Share Game';
                     btn.onclick = shareGame;
                 }
+            }
+        }
+
+        /**
+ * Debug: Manual poll trigger
+ */
+        async function debugPoll() {
+            const bee = document.getElementById('debugPollBtn');
+            
+            // Animate bee (spin while polling)
+            bee.style.transform = 'rotate(360deg)';
+            bee.style.transition = 'transform 0.5s';
+            
+            try {
+                if (!multiplayerCode) {
+                    console.log('[DEBUG] No multiplayer game active');
+                    alert('Not in a multiplayer game');
+                    return;
+                }
+                
+                console.log('[DEBUG] Polling game:', multiplayerCode);
+                
+                const response = await fetch(`${API_URL}/api/poll-game/${multiplayerCode}`, {
+                    headers: { 
+                        'Authorization': `Bearer ${authToken}` 
+                    }
+                });
+                
+                const data = await response.json();
+                
+                console.log('[DEBUG] Poll result:', data);
+                console.log('[DEBUG] Current word index:', currentWordIndex);
+                console.log('[DEBUG] Server current index:', data.currentIndex);
+                
+                if (data.currentIndex > currentWordIndex) {
+                    console.log('[DEBUG] ✅ Opponent advanced! Updating...');
+                    alert(`Opponent solved! Moving from word ${currentWordIndex} to ${data.currentIndex}`);
+                    // TODO: Add the actual update logic here
+                } else {
+                    console.log('[DEBUG] ⏸️ No change detected');
+                    alert('No changes - still in sync');
+                }
+                
+            } catch (error) {
+                console.error('[DEBUG] Poll error:', error);
+                alert('Poll failed: ' + error.message);
+            } finally {
+                // Reset bee rotation
+                setTimeout(() => {
+                    bee.style.transform = 'rotate(0deg)';
+                }, 100);
             }
         }
 
