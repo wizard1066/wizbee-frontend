@@ -1493,6 +1493,9 @@
                     // Check if this is a multiplayer game
                     const multiplayerCode = localStorage.getItem('sharedGameCode');
                     const isMultiplayerGame = !!multiplayerCode;
+
+                    console.log('[CLUES] multiplayerCode:', multiplayerCode);
+                    console.log('[CLUES] isMultiplayerGame:', isMultiplayerGame);
                     
                     if (isMultiplayerGame) {
                         // Already in multiplayer - show clue button
