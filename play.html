@@ -1348,10 +1348,53 @@
             }, 100);
         }
 
+        /**
+         * Notify server that we're advancing to the next word
+         * Call this whenever the current player moves forward
+         */
+        async function advanceMultiplayerGame() {
+            if (!isMultiplayerGame || !multiplayerCode) {
+                return; // Not in multiplayer mode
+            }
+            
+            try {
+                console.log(`[MULTIPLAYER] Advancing from word ${currentWordIndex}`);
+                
+                const response = await fetch(`${API_URL}/api/advance-game`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        shareCode: multiplayerCode,
+                        fromIndex: currentWordIndex
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success && data.advanced) {
+                    console.log('[MULTIPLAYER] ✅ Successfully advanced game');
+                } else if (data.success && !data.advanced) {
+                    console.log('[MULTIPLAYER] ⚠️ Opponent beat us to it');
+                } else {
+                    console.error('[MULTIPLAYER] Failed to advance:', data.error);
+                }
+                
+            } catch (error) {
+                console.error('[MULTIPLAYER] Advance error:', error);
+            }
+        }
+
         function nextWord() {
             console.log('=== NEXT WORD CALLED ===');
             console.log('currentWordIndex:', currentWordIndex);
             console.log('wordList.length:', wordList.length);
+
+            advanceMultiplayerGame();
+
+            
 
             // Check if game is complete
             if (currentWordIndex >= wordList.length - 1) {
@@ -1360,6 +1403,7 @@
             }
 
             // Move to next word
+
             currentWordIndex++;
             currentWord = wordList[currentWordIndex];
             currentGuess = '';
@@ -1455,6 +1499,7 @@
 
         function giveUp() {
             //if (confirm('Give up on this word?')) {
+                advanceMultiplayerGame();
                 endGame(false);
             //}
         }
