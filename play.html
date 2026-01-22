@@ -144,7 +144,14 @@
         let multiplayerCode = null;
         let pollInterval = null;
         
-
+        // Prevent any navigation
+        window.addEventListener('beforeunload', function(e) {
+            console.log('[NAVIGATION] Page trying to unload!');
+            console.trace(); // Shows what triggered it
+            e.preventDefault();
+            e.returnValue = '';
+            return 'Page is trying to leave - are you sure?';
+        });
 
 
 
