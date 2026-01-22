@@ -143,6 +143,8 @@
         let isMultiplayerGame = false;
         let multiplayerCode = null;
         let pollInterval = null;
+        
+
 
 
 
@@ -189,10 +191,13 @@
             // Animate bee (spin while polling)
             bee.style.transform = 'rotate(360deg)';
             bee.style.transition = 'transform 0.5s';
+
+            debugger;
             
             try {
                 if (!multiplayerCode) {
                     console.log('[DEBUG] No multiplayer game active');
+                    
                     return;
                 }
                 
@@ -1491,11 +1496,11 @@
                     
                     if (isMultiplayerGame) {
                         // Already in multiplayer - show clue button
-                        clueBtn.textContent = '💡 Show Clue';
+                        clueBtn.textContent = 'Show Clue';
                         clueBtn.onclick = showClue;
                     } else {
                         // Solo game - ALWAYS show share button
-                        clueBtn.textContent = '📤 Share Game';
+                        clueBtn.textContent = 'Share Game';
                         clueBtn.onclick = shareGame;
                     }
                     
