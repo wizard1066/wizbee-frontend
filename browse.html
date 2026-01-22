@@ -47,6 +47,8 @@
         window.onload = function() {
             authToken = localStorage.getItem('authToken');
             userEmail = localStorage.getItem('userEmail');
+
+            
             
             if (!authToken || !userEmail) {
                 window.location.href = 'index.html';
@@ -219,6 +221,7 @@
 
         async function playTheme(cacheKey) {
             console.log('[BROWSE] Playing theme:', cacheKey);
+            localStorage.removeItem('sharedGameCode');
             
             try {
                 const response = await fetch(`${API_URL}/api/play-theme`, {
