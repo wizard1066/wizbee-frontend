@@ -192,6 +192,8 @@
          * Debug: Manual poll trigger
          */
         async function debugPoll() {
+            console.log('[DEBUG POLL START] authToken:', localStorage.getItem('authToken'));
+            console.log('[DEBUG POLL START] authToken global var:', authToken);
             const bee = document.getElementById('debugPollBtn');
             
             // Animate bee (spin while polling)
@@ -233,9 +235,10 @@
                 console.error('[DEBUG] Poll error:', error);
             } finally {
                 // Reset bee rotation
-                /*setTimeout(() => {
+                console.log('[DEBUG POLL END] authToken:', localStorage.getItem('authToken'));
+                setTimeout(() => {
                     bee.style.transform = 'rotate(0deg)';
-                }, 100);*/
+                }, 100);
             }
         }
 
