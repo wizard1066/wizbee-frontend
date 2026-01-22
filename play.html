@@ -180,9 +180,9 @@
             }
         }
 
-        /**
- * Debug: Manual poll trigger
- */
+       /**
+         * Debug: Manual poll trigger
+         */
         async function debugPoll() {
             const bee = document.getElementById('debugPollBtn');
             
@@ -193,7 +193,6 @@
             try {
                 if (!multiplayerCode) {
                     console.log('[DEBUG] No multiplayer game active');
-                    alert('Not in a multiplayer game');
                     return;
                 }
                 
@@ -212,22 +211,15 @@
                 console.log('[DEBUG] Server current index:', data.currentIndex);
                 
                 if (data.currentIndex > currentWordIndex) {
-                    console.log('[DEBUG] ✅ Opponent advanced! Updating...');
-                    // alert(`Opponent solved! Moving from word ${currentWordIndex} to ${data.currentIndex}`);
-                    // Show opponent solved message
+                    console.log('[DEBUG] ✅ Opponent advanced!');
                     showOpponentSolvedMessage();
-                    
-                    // Move to the new word
                     jumpToWord(data.currentIndex);
-
                 } else {
                     console.log('[DEBUG] ⏸️ No change detected');
-                    alert('No changes - still in sync');
                 }
                 
             } catch (error) {
                 console.error('[DEBUG] Poll error:', error);
-                alert('Poll failed: ' + error.message);
             } finally {
                 // Reset bee rotation
                 setTimeout(() => {
