@@ -1487,29 +1487,27 @@
             } catch (error) {
                 console.error('Error generating clues:', error);
             } finally {
-                // Re-enable button
-                clueBtn.disabled = false;
-                
-                // Check if this is a multiplayer game
-                const multiplayerCode = localStorage.getItem('sharedGameCode');
-                const isMultiplayerGame = !!multiplayerCode;
-                
-                if (isMultiplayerGame) {
-                    // Already in multiplayer - keep as show clue
-                    clueBtn.textContent = '💡 Show Clue';
-                    clueBtn.onclick = showClue;
-                } else if (wordClues && wordClues.length > 0) {
-                    // Solo game and clues generated - offer to share
-                    clueBtn.textContent = '📤 Share Game';
-                    clueBtn.onclick = shareGame;
-                } else {
-                    // Something went wrong - clues didn't generate
-                    clueBtn.textContent = '❌ Clue generation failed';
-                    //clueBtn.onclick = () => generateAllClues(); // Retry
+                finally {
+                    // Re-enable button
+                    clueBtn.disabled = false;
+                    
+                    // Check if this is a multiplayer game
+                    const multiplayerCode = localStorage.getItem('sharedGameCode');
+                    const isMultiplayerGame = !!multiplayerCode;
+                    
+                    if (isMultiplayerGame) {
+                        // Already in multiplayer - show clue button
+                        clueBtn.textContent = '💡 Show Clue';
+                        clueBtn.onclick = showClue;
+                    } else {
+                        // Solo game - ALWAYS show share button
+                        clueBtn.textContent = '📤 Share Game';
+                        clueBtn.onclick = shareGame;
+                    }
+                    
+                    clueBtn.style.background = '';
+                    clueBtn.style.cursor = '';
                 }
-                
-                clueBtn.style.background = '';
-                clueBtn.style.cursor = '';
             }
         }
 
