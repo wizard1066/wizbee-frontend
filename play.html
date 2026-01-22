@@ -213,8 +213,13 @@
                 
                 if (data.currentIndex > currentWordIndex) {
                     console.log('[DEBUG] ✅ Opponent advanced! Updating...');
-                    alert(`Opponent solved! Moving from word ${currentWordIndex} to ${data.currentIndex}`);
-                    // TODO: Add the actual update logic here
+                    // alert(`Opponent solved! Moving from word ${currentWordIndex} to ${data.currentIndex}`);
+                    // Show opponent solved message
+                    showOpponentSolvedMessage();
+                    
+                    // Move to the new word
+                    jumpToWord(data.currentIndex);
+
                 } else {
                     console.log('[DEBUG] ⏸️ No change detected');
                     alert('No changes - still in sync');
@@ -229,6 +234,69 @@
                     bee.style.transform = 'rotate(0deg)';
                 }, 100);
             }
+        }
+
+        /**
+         * Show message when opponent solves
+         */
+        function showOpponentSolvedMessage() {
+            const msg = document.createElement('div');
+            msg.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+                color: white;
+                padding: 30px 50px;
+                border-radius: 16px;
+                font-size: 28px;
+                font-weight: bold;
+                z-index: 9999;
+                box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+                animation: slideIn 0.3s ease-out;
+            `;
+            msg.textContent = '👤 Opponent solved it!';
+            document.body.appendChild(msg);
+            
+            // Remove after 2 seconds
+            setTimeout(() => {
+                msg.style.animation = 'slideOut 0.3s ease-in';
+                setTimeout(() => msg.remove(), 300);
+            }, 2000);
+        }
+
+        /**
+         * Jump to a specific word index (when opponent solves)
+         */
+        function jumpToWord(newIndex) {
+            console.log(`[MULTIPLAYER] Jumping from word ${currentWordIndex} to ${newIndex}`);
+            
+            // Update to new word
+            currentWordIndex = newIndex;
+            currentWord = wordList[newIndex];
+            currentGuess = '';
+            guessesUsed = 0;
+            remainingGuesses = maxGuesses;
+            gameOver = false;
+            
+            // Reset UI
+            createWordBoxes();
+            updateGuessCount();
+            resetKeyboard();
+            hideClue();
+            
+            console.log(`[MULTIPLAYER] Now on word: ${currentWord}`);
+        }
+
+        /**
+         * Reset keyboard colors
+         */
+        function resetKeyboard() {
+            const keys = document.querySelectorAll('.key');
+            keys.forEach(key => {
+                key.classList.remove('correct', 'present', 'used');
+            });
         }
 
         /**
