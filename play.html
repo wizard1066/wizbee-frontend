@@ -565,13 +565,13 @@
 
             const pendingGame = localStorage.getItem('pendingGame');
             if (!pendingGame) {
-                showError('[PLAY23Jan2026] No game data found');
+                showError('[PLAY] No game data found');
                 return;
             }
 
             try {
                 const gameData = JSON.parse(pendingGame);
-                localStorage.removeItem('pendingGame');
+                //localStorage.removeItem('pendingGame');
                 
                 document.getElementById('loadingMessage').style.display = 'none';
                 startGame(gameData);
