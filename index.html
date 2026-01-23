@@ -261,6 +261,40 @@
 	    ]
         };
 
+        /**
+         * Fetch wrapper with rate limit handling
+         */
+        async function apiFetch(url, options = {}) {
+            try {
+                const response = await fetch(url, options);
+                
+                // Handle rate limiting
+                if (response.status === 429) {
+                    const data = await response.json();
+                    const retryAfter = response.headers.get('retry-after');
+                    const minutes = retryAfter ? Math.ceil(retryAfter / 60) : 'a few';
+                    
+                    alert(`⏰ Too many requests!\n\n${data.error}\n\nPlease wait ${minutes} minutes and try again.`);
+                    throw new Error('Rate limited');
+                }
+                
+                // Handle other errors
+                if (!response.ok) {
+                    const data = await response.json().catch(() => ({}));
+                    throw new Error(data.error || `HTTP ${response.status}`);
+                }
+                
+                return response;
+                
+            } catch (error) {
+                if (error.message !== 'Rate limited') {
+                    console.error('[API] Fetch error:', error);
+                    alert('Network error. Please check your connection and try again.');
+                }
+                throw error;
+            }
+        }
+
     function editWords() {
     if (!currentCacheKey) {
         showError('No theme to edit');
@@ -532,7 +566,7 @@
 
         async function updateThemeCounter() {
             try {
-                const response = await fetch(`${API_URL}/api/user-info`, {
+                const response = await apiFetch(`${API_URL}/api/user-info`, {
                     headers: { 'Authorization': `Bearer ${authToken}` }
                 });     
                             
@@ -564,7 +598,7 @@
 
 	async function buyThemes() {
   	    try {
-    		const response = await fetch(`${API_URL}/api/create-checkout-session`, {
+    		const response = await apiFetch(`${API_URL}/api/create-checkout-session`, {
       		    method: 'POST',
       		    headers: { 
         	        'Authorization': `Bearer ${authToken}`,
@@ -659,6 +693,7 @@
         // ========================================================================
 async function generateTheme() {
     const input = document.getElementById('themeInput').value.trim();
+    localStorage.removeItem('sharedGameCode');
 
     console.log('=================================');
     console.log('GENERATE THEME CALLED');
