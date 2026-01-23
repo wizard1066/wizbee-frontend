@@ -165,27 +165,54 @@
             // Don't change button here - let generateAllClues() handle it
         }
 
+        /**
+         * Simple delay helper
+         */
+        function delay(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
 
         /**
-         * Initialize multiplayer mode if needed
+         * Animate the opponent's answer letter-by-letter
          */
-        function initMultiplayerDepreciated() {
-            multiplayerCode = localStorage.getItem('sharedGameCode');
-            isMultiplayerGame = !!multiplayerCode;
+        async function animateOpponentSolution() {
+            const word = wordList[currentWordIndex];
+            const boxes = document.querySelectorAll('.letter-box');
             
-            if (isMultiplayerGame) {
-                console.log('[MULTIPLAYER] Joined game:', multiplayerCode);
-                startPolling(multiplayerCode);
-                // Keep "Show Clue" button as is
-            } else {
-                // Change button to "Share Game"
-                const btn = document.getElementById('showClueBtn');
-                if (btn) {
-                    btn.textContent = 'Share Game';
-                    btn.onclick = shareGame;
-                }
+            console.log('[ANIMATION] Showing opponent solution:', word);
+            
+            // Clear current boxes
+            boxes.forEach(box => {
+                box.textContent = '';
+                box.classList.remove('correct', 'present', 'absent', 'active-input');
+            });
+            
+            // Reveal each letter with delay
+            for (let i = 0; i < word.length; i++) {
+                const box = boxes[i];
+                box.textContent = word[i];
+                box.classList.add('correct');
+                
+                // Flash effect
+                box.style.animation = 'none';
+                setTimeout(() => {
+                    box.style.animation = 'pop 0.3s ease-in-out';
+                }, 10);
+                
+                await delay(150); // 150ms per letter
             }
+            
+            // Flash all boxes green
+            await delay(300);
+            boxes.forEach((box, i) => {
+                if (i < word.length) {
+                    box.style.animation = 'pulse 0.5s ease-in-out';
+                }
+            });
+            
+            await delay(800);
         }
+       
 
        /**
          * Debug: Manual poll trigger
@@ -222,11 +249,19 @@
                 console.log('[DEBUG] Server current index:', data.currentIndex);
                 
                 if (data.currentIndex > currentWordIndex) {
-                    console.log('[DEBUG] ✅ Opponent advanced!');
+                        console.log('[DEBUG] ✅ Opponent advanced!');
+    
+                    // Show opponent's answer with animation
+                    await animateOpponentSolution();
+                    
+                    // Show message
                     showOpponentSolvedMessage();
-                    await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2s
+                    
+                    // Wait 2 seconds
+                    await delay(2000);
+                    
+                    // Move to next word
                     jumpToWord(data.currentIndex);
-                    await new Promise(resolve => setTimeout(resolve, 1000));
                 } else {
                     console.log('[DEBUG] ⏸️ No change detected');
                 }
@@ -305,71 +340,7 @@
             });
         }
 
-        /**
-         * Share the current game
-         */
-        async function shareGameBusted() {
-            const btn = document.getElementById('showClueBtn');
-            btn.disabled = true;
-            btn.textContent = 'Creating...';
-            
-            // Get fresh cache key from current game data
-            const gameData = JSON.parse(localStorage.getItem('pendingGame'));
-            const cacheKey = gameData?.cacheKey;
-            
-            if (!cacheKey) {
-                alert('Error: No game loaded');
-                btn.disabled = false;
-                btn.textContent = 'Share Game';
-                return;
-            }
-            
-            try {
-                const response = await fetch(`${API_URL}/api/create-shared-game`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${authToken}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        cacheKey: cacheKey,
-                        clues: wordClues
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (!data.success) {
-                    alert('Failed to create shared game');
-                    btn.disabled = false;
-                    btn.textContent = 'Share Game';
-                    return;
-                }
-                
-                multiplayerCode = data.shareCode;
-                isMultiplayerGame = true;
-                
-                // Save code
-                localStorage.setItem('sharedGameCode', data.shareCode);
-                
-                // Show code to user
-                showShareCodeModal(data.shareCode);
-                
-                // Start polling
-                startPolling(data.shareCode);
-                
-                // Change button to show clue
-                btn.textContent = '💡 Show Clue';
-                btn.onclick = showClue;
-                btn.disabled = false;
-                
-            } catch (error) {
-                console.error('[MULTIPLAYER] Share error:', error);
-                alert('Failed to create shared game');
-                btn.disabled = false;
-                btn.textContent = '📤 Share Game';
-            }
-        }
+        
 
         async function shareGame() {
             const btn = document.getElementById('showClueBtn');
@@ -420,7 +391,7 @@
                 showShareCodeModal(data.shareCode);
                 
                 // Start polling
-                startPolling(data.shareCode);
+                //startPolling(data.shareCode);
                 
                 // Change button to show clue
                 btn.textContent = '💡 Show Clue';
