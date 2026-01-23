@@ -326,6 +326,9 @@
             updateGuessCount();
             resetKeyboard();
             hideClue();
+
+            document.getElementById('selectedTheme').textContent = `${selectedThemeWord} (${currentWordIndex + 1}/${wordList.length})`;
+
             
             console.log(`[MULTIPLAYER] Now on word: ${currentWord}`);
         }
