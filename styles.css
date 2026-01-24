@@ -579,7 +579,6 @@
             min-width: 80px;
             padding: 12px 8px;
             font-size: 14px;
-            margin: 8px 1px;
             display: inline-block;
 	}
 
@@ -958,7 +957,6 @@
     .back-btn {
         display: inline-block !important;
         width: 20% !important;
-        margin: 10px 10px !important;
         font-size: 20px !important;
     }
     
