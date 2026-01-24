@@ -944,6 +944,7 @@
         font-size: 20px !important;
         align-items: center !important;       /* ← ADD */
         justify-content: center !important;   /* ← ADD */
+        display: flex !important;          /* ← ADD */
     }
     
     /* If buttons are in a container, make it flex row */
