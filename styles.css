@@ -1189,6 +1189,12 @@
     0%, 100% { background-color: #48bb78; }
     50% { background-color: #38a169; }
 }
+
+@media (min-width: 768px) {
+    #scanQrBtn {
+        display: none !important;
+    }
+}
  
 
 
