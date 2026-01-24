@@ -571,6 +571,16 @@
     		background: #5a6268;
 	}
 
+    .back-btn {
+        background: #667eea;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: background 0.3s;
+        font-family: inherit;
+    }
+
 	.user-info {
     text-align: center;
     margin-bottom: 20px;
