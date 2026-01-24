@@ -1005,6 +1005,13 @@
         background: #667eea !important;
         text-align: center !important;
         margin: 10px auto; 
+        display: block;
+        width: 80%;
+        margin-top: 12px;       /* ← Space above each button */
+        margin-bottom: 12px;    /* ← Space below each button */
+        margin-left: auto;
+        margin-right: auto;
+        padding: 12px 8px;
     }
 
     .game-screen,
