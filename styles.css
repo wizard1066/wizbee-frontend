@@ -575,11 +575,12 @@
     		border-radius: 10px;
     		cursor: crosshair;
     		transition: background 0.3s;
-            width: 100px;
-            padding: 12px 20px;
+            width: 22%;
+            min-width: 80px;
+            padding: 12px 8px;
             font-size: 14px;
-            margin: 8px 4px;
-            display: inline-block 
+            margin: 8px 1px;
+            display: inline-block;
 	}
 
 	.back-btn:hover {
