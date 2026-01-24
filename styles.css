@@ -575,7 +575,7 @@
     		border-radius: 10px;
     		cursor: crosshair;
     		transition: background 0.3s;
-            width: auto;
+            width: 100px;
             padding: 12px 20px;
             font-size: 14px;
             margin: 8px 4px;
