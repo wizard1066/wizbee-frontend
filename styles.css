@@ -1018,10 +1018,12 @@
     /* Center everything */
 
     .back-btn {
-        width: auto !important;
         font-size: 22px !important;
         background: #667eea !important;
         text-align: center !important;
+        display: flex;             /* ← ADD */
+        align-items: center;       /* ← ADD */
+        justify-content: center;   /* ← ADD */
     }
 
     .game-screen,
