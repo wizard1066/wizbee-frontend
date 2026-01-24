@@ -1021,9 +1021,9 @@
         font-size: 22px !important;
         background: #667eea !important;
         text-align: center !important;
-        display: flex;             /* ← ADD */
-        align-items: center;       /* ← ADD */
-        justify-content: center;   /* ← ADD */
+        display: flex !important;             /* ← ADD */
+        align-items: center !important;       /* ← ADD */
+        justify-content: center !important;   /* ← ADD */
     }
 
     .game-screen,
