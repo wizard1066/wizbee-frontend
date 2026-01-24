@@ -1021,6 +1021,7 @@
         margin-left: auto;
         margin-right: auto;
         padding: 12px 8px;
+        border: 2px solid red; 
     }
 
     .game-screen,
