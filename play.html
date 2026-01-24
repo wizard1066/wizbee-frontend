@@ -409,113 +409,68 @@
                 btn.textContent = '📤 Share Game';
             }
         }
-
-
-
         
 
         /**
-         * Show share code modal
-         *
-        function showShareCodeModal(code) {
-            const modal = document.createElement('div');
-            modal.id = 'shareCodeModal';
-            modal.innerHTML = `
-                <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; display: flex; align-items: center; justify-content: center;" onclick="closeShareModal()">
-                    <div style="background: white; padding: 40px; border-radius: 16px; text-align: center; max-width: 400px; box-shadow: 0 10px 40px rgba(0,0,0,0.3);" onclick="event.stopPropagation()">
-                        <h2 style="margin-top: 0; color: #667eea;">🎮 Game Shared!</h2>
-                        <p style="color: #718096; margin: 20px 0;">Share this code with your opponent:</p>
-                        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 12px; margin: 20px 0;">
-                            <div style="font-size: 56px; font-weight: bold; color: white; letter-spacing: 12px; font-family: 'Courier New', monospace;">${code}</div>
-                        </div>
-                        <p style="font-size: 14px; color: #718096; margin-bottom: 20px;">They can enter this code on the main menu to join the race!</p>
-                        <button onclick="copyShareCode('${code}')" style="background: #667eea; color: white; border: none; padding: 15px 30px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-right: 10px;">
-                            📋 Copy Code
-                        </button>
-                        <button onclick="closeShareModal()" style="background: #e2e8f0; color: #4a5568; border: none; padding: 15px 30px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer;">
-                            Close
-                        </button>
-                    </div>
-                </div>
-            `;
-            document.body.appendChild(modal);
-        }*/
+         * Show share code modal with QR code
+         */
 
         function showShareCodeModal(shareCode) {
-            alert('Code: ' + shareCode); // Temporary
-            return;
-
-            // Create modal backdrop
             const backdrop = document.createElement('div');
-            backdrop.style.cssText = `
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(0, 0, 0, 0.7);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                z-index: 10000;
-            `;
+            backdrop.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); display: flex; align-items: center; justify-content: center; z-index: 10000;';
             
-            // Create modal content
             const modal = document.createElement('div');
-            modal.style.cssText = `
-                background: white;
-                padding: 40px;
-                border-radius: 16px;
-                text-align: center;
-                max-width: 400px;
-                box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-            `;
+            modal.style.cssText = 'background: white; padding: 40px; border-radius: 16px; text-align: center; max-width: 400px; box-shadow: 0 10px 40px rgba(0,0,0,0.3);';
             
-            const shareUrl = `https://wizbee.app/?join=${shareCode}`;
+            const shareUrl = 'https://wizbee.app/?join=' + shareCode;
             
-            modal.innerHTML = `
-                <h2 style="margin: 0 0 20px 0; color: #2d3748;">Share Game Code</h2>
-                
-                <!-- 4-digit code for typing -->
-                <div style="background: #f7fafc; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-                    <div style="font-size: 14px; color: #718096; margin-bottom: 8px;">Type this code:</div>
-                    <div style="font-size: 36px; font-weight: bold; color: #2d3748; letter-spacing: 4px;">${shareCode}</div>
-                    <button onclick="navigator.clipboard.writeText('${shareCode}')" 
-                            style="margin-top: 10px; padding: 8px 16px; background: #4299e1; color: white; border: none; border-radius: 6px; cursor: pointer;">
-                        📋 Copy Code
-                    </button>
-                </div>
-                
-                <!-- QR Code for mobile -->
-                <div style="margin-bottom: 20px;">
-                    <div style="font-size: 14px; color: #718096; margin-bottom: 12px;">Or scan with phone:</div>
-                    <div id="qrcode" style="display: inline-block;"></div>
-                </div>
-                
-                <button onclick="this.closest('[style*=\"position: fixed\"]').remove()" 
-                        style="padding: 12px 32px; background: #48bb78; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px;">
-                    Done
-                </button>
-            `;
+            // Build modal content
+            const title = document.createElement('h2');
+            title.textContent = 'Share Game Code';
+            title.style.cssText = 'margin: 0 0 20px 0; color: #2d3748;';
             
+            const codeSection = document.createElement('div');
+            codeSection.style.cssText = 'background: #f7fafc; padding: 20px; border-radius: 8px; margin-bottom: 20px;';
+            codeSection.innerHTML = '<div style="font-size: 14px; color: #718096; margin-bottom: 8px;">Type this code:</div><div style="font-size: 36px; font-weight: bold; color: #2d3748; letter-spacing: 4px;">' + shareCode + '</div>';
+            
+            const copyBtn = document.createElement('button');
+            copyBtn.textContent = '📋 Copy Code';
+            copyBtn.style.cssText = 'margin-top: 10px; padding: 8px 16px; background: #4299e1; color: white; border: none; border-radius: 6px; cursor: pointer;';
+            copyBtn.onclick = () => navigator.clipboard.writeText(shareCode);
+            codeSection.appendChild(copyBtn);
+            
+            const qrSection = document.createElement('div');
+            qrSection.style.cssText = 'margin-bottom: 20px;';
+            qrSection.innerHTML = '<div style="font-size: 14px; color: #718096; margin-bottom: 12px;">Or scan with phone:</div><div id="qrcode" style="display: inline-block;"></div>';
+            
+            const doneBtn = document.createElement('button');
+            doneBtn.textContent = 'Done';
+            doneBtn.style.cssText = 'padding: 12px 32px; background: #48bb78; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px;';
+            doneBtn.onclick = () => backdrop.remove();
+            
+            modal.appendChild(title);
+            modal.appendChild(codeSection);
+            modal.appendChild(qrSection);
+            modal.appendChild(doneBtn);
             backdrop.appendChild(modal);
             document.body.appendChild(backdrop);
             
             // Generate QR code
-            new QRCode(document.getElementById("qrcode"), {
-                text: shareUrl,
-                width: 200,
-                height: 200,
-                colorDark: "#2d3748",
-                colorLight: "#ffffff",
-                correctLevel: QRCode.CorrectLevel.H
-            });
-            
-            // Close on backdrop click
-            backdrop.addEventListener('click', (e) => {
-                if (e.target === backdrop) {
-                    backdrop.remove();
+            setTimeout(() => {
+                if (typeof QRCode !== 'undefined') {
+                    new QRCode(document.getElementById("qrcode"), {
+                        text: shareUrl,
+                        width: 200,
+                        height: 200
+                    });
+                } else {
+                    console.error('[QR] QRCode library not loaded');
+                    document.getElementById("qrcode").textContent = 'QR code unavailable';
                 }
+            }, 100);
+            
+            backdrop.addEventListener('click', (e) => {
+                if (e.target === backdrop) backdrop.remove();
             });
         }
 
