@@ -567,23 +567,6 @@
     background: #5568d3;
 }
 
-	.back-btn {
-        background: #6c757d;
-        color: white;
-        border: none;
-        font-size: 14px;           /* Removed duplicate, using this one */
-        border-radius: 10px;
-        cursor: pointer;           /* Changed from crosshair to pointer */
-        transition: background 0.3s;
-        width: 22%;
-        min-width: 80px;
-        padding: 12px 8px;
-        margin: 2px 2px;
-        text-align: center;
-        display: inline-block;
-        vertical-align: top;       /* ← ADD THIS for perfect alignment */
-    }
-
 	.back-btn:hover {
     		background: #5a6268;
 	}
