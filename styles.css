@@ -957,9 +957,11 @@
 /* ===== DESKTOP - Keep buttons in a row ===== */
 @media (min-width: 769px) {
     .back-btn {
-        display: inline-block !important;
         width: 20% !important;
         font-size: 20px !important;
+        display: flex !important;             /* ← ADD */
+        align-items: center !important;       /* ← ADD */
+        justify-content: center !important;   /* ← ADD */
     }
     
     /* If buttons are in a container, make it flex row */
@@ -1021,9 +1023,7 @@
         font-size: 22px !important;
         background: #667eea !important;
         text-align: center !important;
-        display: flex !important;             /* ← ADD */
-        align-items: center !important;       /* ← ADD */
-        justify-content: center !important;   /* ← ADD */
+        
     }
 
     .game-screen,
