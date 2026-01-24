@@ -68,7 +68,7 @@
                 
                 <div id="errorMessage" class="error-message hidden"></div>
                 
-                <div style="margin-bottom: 20px;">
+                <div style="margin-bottom: 40px;">
                     <input type="text" id="themeInput" placeholder="e.g., household pets, common colors, European capitals" autofocus style="width: 90%; padding: 16px; font-size: 16px; border: 2px solid #e2e8f0; border-radius: 8px;">
                     <div>
                         <button id="generateBtn" onclick="generateTheme()" class="back-btn">
@@ -226,6 +226,7 @@
                     qrScanner = null;
                     readerDiv.style.display = 'none';
                     scanBtn.textContent = 'Scan';
+                    scanBtn.style.background = '#805ad5';
                 });
             } else {
                 // Start scanning
