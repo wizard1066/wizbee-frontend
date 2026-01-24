@@ -968,7 +968,51 @@
             }
         }
 
+                /**
+         * Focus hidden input when user taps boxes (mobile)
+         */
+        function focusInput() {
+            const guessInput = document.getElementById('guessInput');
+            if (guessInput && !gameOver) {
+                guessInput.focus();
+            }
+        }
+
         function createWordBoxes() {
+            const container = document.getElementById('wordBoxes');
+            container.innerHTML = '';
+            
+            for (let i = 0; i < currentWord.length; i++) {
+                const box = document.createElement('div');
+                box.className = 'letter-box';
+                box.id = `box-${i}`;
+                box.onclick = focusInput;  // ← ADD THIS
+                container.appendChild(box);
+            }
+            
+            // Show cursor on first box
+            const firstBox = document.getElementById('box-0');
+            if (firstBox && !gameOver) {
+                firstBox.classList.add('active-input');
+            }
+
+            setTimeout(() => {
+                const firstBox = document.getElementById('box-0');
+                if (firstBox) {
+                    firstBox.classList.add('active-input');
+                    console.log('Added active-input class to box-0');
+                }
+                
+                // Focus hidden input for mobile keyboard
+                const guessInput = document.getElementById('guessInput');
+                if (guessInput) {
+                    guessInput.focus();
+                    console.log('Focused guessInput for mobile keyboard');
+                }
+            }, 100);
+        }
+
+        function createWordBoxesDepreciated2() {
             const container = document.getElementById('wordBoxes');
             container.innerHTML = '';
             
