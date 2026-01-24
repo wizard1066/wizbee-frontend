@@ -578,8 +578,8 @@
             width: auto;
             padding: 12px 20px;
             font-size: 14px;
-            margin: 8px auto;
-            display: block 
+            margin: 8px 4px;
+            display: inline-block 
 	}
 
 	.back-btn:hover {
