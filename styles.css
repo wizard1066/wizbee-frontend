@@ -940,11 +940,11 @@
 /* ===== DESKTOP - Keep buttons in a row ===== */
 @media (min-width: 769px) {
     .back-btn {
-        display: inline-flex !important;
-        width: 20% !important;
-        font-size: 20px !important;
-        align-items: center !important;       /* ← ADD */
-        justify-content: center !important;   /* ← ADD */
+        display: inline-flex;
+        width: 20%;
+        font-size: 20px;
+        align-items: center;       /* ← ADD */
+        justify-content: center;   /* ← ADD */
     }
     
     /* If buttons are in a container, make it flex row */
