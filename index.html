@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 </head>
 <body>
     <div class="container">
@@ -79,9 +80,13 @@
                         <button id="playBtn" onclick="acceptAndPlay()" class="back-btn">
                             Play
                         </button>
+                        <button id="scanQrBtn" onclick="toggleQrScanner()" 
+                            style="padding: 12px 24px; background: #805ad5; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px;">
+                            Scan
+                         </button>
                     </div>
                 </div>
-                
+                <div id="qr-reader" style="display: none; margin: 20px auto; max-width: 500px;"></div>
                 <div id="generatingMessage" class="hidden" style="text-align: center; padding: 20px; font-size: 18px;">
                     <img src="bee4.png" style="height: 60px; vertical-align: middle;"> Generating words...
                 </div>
@@ -182,23 +187,23 @@
         let selectedThemeWord = '';
         let isResetting = false; 
         let gameResults = []; // Track results for summary
-	let hintsUsed = 0;
-	let winMessage = '';
-	let loseMessage = '';
+        let hintsUsed = 0;
+        let winMessage = '';
+        let loseMessage = '';
         const MAX_HINTS = 3;
         let currentLanguage = 'en';
-	let wordList = [];
-	let currentWordIndex = 0;
+        let wordList = [];
+        let currentWordIndex = 0;
         let themesPlayedCount = 0;
         // CLUE SYSTEM VARIABLES
-    let wordClues = [];           // Array of clues for current game
-    let clueViewCount = 0;        // How many times current clue was viewed
-    let currentClueTimeout = null; // Timeout for auto-hiding clue
+        let wordClues = [];           // Array of clues for current game
+        let clueViewCount = 0;        // How many times current clue was viewed
+        let currentClueTimeout = null; // Timeout for auto-hiding clue
         
         // REFINE SYSTEM VARIABLES
         let refineAttempts = 0;
-	let baseTheme = '';           // Original theme
-	let refinements = [];         // Array of refinement strings
+        let baseTheme = '';           // Original theme
+        let refinements = [];         // Array of refinement strings
         const maxRefineAttempts = 3;
         let currentGeneratedWords = null;
         let currentThemeText = '';
@@ -206,7 +211,96 @@
         let currentThemeId = null;
         let wordStartTime = null;
         let letterSwapCount = 0;
-	let currentCacheKey = null;
+        let currentCacheKey = null;
+        let qrScanner = null;
+
+        /**
+         * Toggle QR scanner on/off
+         */
+        function toggleQrScanner() {
+            const scanBtn = document.getElementById('scanQrBtn');
+            const readerDiv = document.getElementById('qr-reader');
+            
+            if (qrScanner && qrScanner.isScanning) {
+                // Stop scanning
+                qrScanner.stop().then(() => {
+                    qrScanner = null;
+                    readerDiv.style.display = 'none';
+                    scanBtn.textContent = '📷 Scan QR Code';
+                    scanBtn.style.background = '#805ad5';
+                });
+            } else {
+                // Start scanning
+                startQrScanner();
+            }
+        }
+
+        /**
+         * Start QR code scanner
+         */
+        function startQrScanner() {
+            const scanBtn = document.getElementById('scanQrBtn');
+            const readerDiv = document.getElementById('qr-reader');
+            
+            readerDiv.style.display = 'block';
+            scanBtn.textContent = '⏹️ Stop Scanning';
+            scanBtn.style.background = '#e53e3e';
+            
+            qrScanner = new Html5Qrcode("qr-reader");
+            
+            qrScanner.start(
+                { facingMode: "environment" }, // Use back camera
+                {
+                    fps: 10,
+                    qrbox: { width: 250, height: 250 }
+                },
+                onQrCodeScanned,
+                onScanError
+            ).catch(err => {
+                console.error('[QR] Scanner start error:', err);
+                alert('Could not access camera. Please check permissions.');
+                readerDiv.style.display = 'none';
+                scanBtn.textContent = '📷 Scan QR Code';
+                scanBtn.style.background = '#805ad5';
+            });
+        }
+
+        /**
+         * Handle successful QR scan
+         */
+        function onQrCodeScanned(decodedText) {
+            console.log('[QR] Scanned:', decodedText);
+            
+            try {
+                // Parse URL: https://wizbee.app/?join=8BDC
+                const url = new URL(decodedText);
+                const code = url.searchParams.get('join');
+                
+                if (code && /^[0-9A-Fa-f]{4}$/.test(code)) {
+                    // Valid code found!
+                    qrScanner.stop();
+                    qrScanner = null;
+                    document.getElementById('qr-reader').style.display = 'none';
+                    document.getElementById('scanQrBtn').textContent = '📷 Scan QR Code';
+                    document.getElementById('scanQrBtn').style.background = '#805ad5';
+                    
+                    console.log('[QR] Valid code found:', code);
+                    joinSharedGame(code.toUpperCase());
+                } else {
+                    alert('Invalid QR code. Please scan a Wizbee game code.');
+                }
+            } catch (error) {
+                console.error('[QR] Parse error:', error);
+                alert('Invalid QR code format.');
+            }
+        }
+
+        /**
+         * Handle scan errors (ignore most, they're just "no QR found yet")
+         */
+        function onScanError(errorMessage) {
+            // Ignore - these fire constantly while scanning
+        }
 
 	const keyboardLayouts = {
             en: [
