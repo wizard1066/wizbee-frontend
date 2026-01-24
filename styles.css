@@ -579,6 +579,8 @@
             min-width: 80px;
             padding: 12px 8px;
             font-size: 14px;
+            margin:auto;
+            text-align: center;
             display: inline-block;
 	}
 
