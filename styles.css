@@ -580,6 +580,7 @@
         cursor: pointer;
         transition: background 0.3s;
         font-family: inherit;
+        margin: 4px;
     }
 
 .user-info {
