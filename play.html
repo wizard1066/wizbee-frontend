@@ -747,6 +747,8 @@ let socket = null;
     
             authToken = localStorage.getItem('authToken');
             
+
+            
             if (!authToken) {
                 window.location.href = 'index.html';
                 return;
@@ -1551,6 +1553,7 @@ let socket = null;
         async function endGame(won) {
             gameOver = true;
             hideClue();
+            localStorage.removeItem('lastEditedTheme');
 
             await recordWordAttempt(won);
 
