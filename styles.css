@@ -952,7 +952,7 @@
     .back-btn {
         display: inline-flex;
         width: 20%;
-        font-size: 20px;
+        font-size: 16px;
         align-items: center;       /* ← ADD */
         justify-content: center;   /* ← ADD */
     }
@@ -1012,7 +1012,7 @@
     /* Center everything */
 
     .back-btn {
-        font-size: 20px !important;
+        font-size: 16px !important;
         background: #667eea !important;
         text-align: center !important;
         display: block;
