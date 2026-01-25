@@ -760,7 +760,7 @@ let socket = null;
 
             try {
                 const gameData = JSON.parse(pendingGame);
-                //localStorage.removeItem('pendingGame');
+                localStorage.removeItem('pendingGame');
                 
                 document.getElementById('loadingMessage').style.display = 'none';
                 startGame(gameData);
