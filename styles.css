@@ -561,7 +561,7 @@
     border-radius: 12px;
     cursor: pointer;
     transition: background 0.3s;
-    margin: 12px;
+    margin: 4px;
 }
 
 .theme-input-screen button:not(.tab):hover {
