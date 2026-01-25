@@ -424,6 +424,26 @@ let socket = null;
 
             
             console.log(`[MULTIPLAYER] Now on word: ${currentWord}`);
+
+            // Check if this is the LAST word (game complete)
+            if (currentWordIndex >= wordList.length - 1) {
+                console.log('[MULTIPLAYER] Last word reached - enabling summary view');
+                
+                // Hide game controls
+                document.getElementById('submitGuess').classList.add('hidden');
+                document.getElementById('showClueBtn').classList.add('hidden');
+                document.getElementById('giveUpBtn').classList.add('hidden');
+                
+                // Show summary button
+                const resetBtn = document.getElementById('resetButton');
+                resetBtn.textContent = '🎉 View Summary';
+                resetBtn.classList.remove('hidden');
+                
+                // Show message
+                const messageDiv = document.getElementById('gameMessage');
+                messageDiv.textContent = '🏁 Game Complete! Your opponent finished the last word.';
+                messageDiv.className = 'message';
+            }
         }
 
         /**
