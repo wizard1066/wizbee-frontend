@@ -581,7 +581,7 @@
         font-family: inherit;
     }
 
-	.user-info {
+.user-info {
     text-align: center;
     margin-bottom: 20px;
     color: #666;
@@ -600,7 +600,7 @@
     font-size: 14px;
     border-radius: 5px;
     cursor: pointer;
-    margin-left: 0;  /* Remove left margin */
+    margin: 0;  /* Remove left margin */
 }
 
         /* Screen 2 - Theme Selection */
