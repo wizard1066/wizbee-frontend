@@ -473,7 +473,7 @@
                     
                     document.getElementById('previewSection').classList.add('hidden');
                     document.getElementById('themeInput').value = '';
-                    document.getElementById('themeInput').placeholder = 'Enter theme (e.g. 'common animals') or 4-digit game code (e.g. 'A3F2')';
+                    document.getElementById('themeInput').placeholder = 'Enter theme (e.g. common animals) or 4-digit game code (e.g. A3F2)';
                     document.getElementById('generateBtn').textContent = 'Generate';
                     document.getElementById('generateBtn').disabled = false;
                     document.getElementById('editWordsBtn').disabled = true;
@@ -814,7 +814,7 @@ async function generateTheme() {
     
     const themeInput = document.getElementById('themeInput');
     themeInput.value = '';
-    themeInput.placeholder = "Enter theme (e.g. 'common animals') or 4-digit game code (e.g. 'A3F2')";
+    themeInput.placeholder = "Enter theme (e.g. common animals) or 4-digit game code (e.g. A3F2)";
 
     localStorage.removeItem('sharedGameCode');
     
