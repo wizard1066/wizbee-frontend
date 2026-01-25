@@ -418,9 +418,72 @@ let socket = null;
             });
         }
 
-        
-
         async function shareGame() {
+            const btn = document.getElementById('showClueBtn');
+            btn.disabled = true;
+            btn.textContent = '⏳ Creating...';
+            
+            const gameData = JSON.parse(localStorage.getItem('pendingGame'));
+            const cacheKey = gameData?.cacheKey;
+            
+            if (!cacheKey) {
+                alert('Error: No game loaded');
+                btn.disabled = false;
+                btn.textContent = '📤 Share Game';
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/api/create-shared-game`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        cacheKey: cacheKey,
+                        clues: wordClues,
+                        words: wordList
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (!data.success) {
+                    alert('Failed to create shared game');
+                    btn.disabled = false;
+                    btn.textContent = '📤 Share Game';
+                    return;
+                }
+                
+                // Set multiplayer variables
+                multiplayerCode = data.shareCode;
+                isMultiplayerGame = true;
+                
+                // Initialize Socket.IO
+                console.log('[MULTIPLAYER] Initializing Socket.IO for code:', data.shareCode);
+                initializeSocket();
+                
+                // Save code
+                localStorage.setItem('sharedGameCode', data.shareCode);
+                
+                // Show code to user
+                showShareCodeModal(data.shareCode);
+                
+                // Change button to show clue
+                btn.textContent = '💡 Show Clue';
+                btn.onclick = showClue;
+                btn.disabled = false;
+                
+            } catch (error) {
+                console.error('[MULTIPLAYER] Share error:', error);
+                alert('Failed to create shared game');
+                btn.disabled = false;
+                btn.textContent = '📤 Share Game';
+            }
+        }
+
+        async function shareGameDepreciated() {
             const btn = document.getElementById('showClueBtn');
             btn.disabled = true;
             btn.textContent = '⏳ Creating...';
@@ -456,8 +519,6 @@ let socket = null;
                     alert('Failed to create shared game');
                     btn.disabled = false;
                     btn.textContent = '📤 Share Game';
-                    multiplayerCode = data.shareCode;
-                    isMultiplayerGame = true;
                     return;
                 }
                 
