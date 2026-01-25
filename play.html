@@ -9,6 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
 </head>
 <body>
     <div class="container">
@@ -154,6 +155,77 @@
         });
         */
 
+        // ============================================================================
+// SOCKET.IO CONNECTION
+// ============================================================================
+
+let socket = null;
+
+/**
+ * Initialize Socket.IO connection for multiplayer
+ */
+        function initializeSocket() {
+            if (!multiplayerCode) {
+                console.log('[SOCKET] No multiplayer game - skipping socket connection');
+                return;
+            }
+            
+            console.log('[SOCKET] Connecting to server...');
+            
+            socket = io('https://api.wizbee.app', {
+                reconnection: true,
+                reconnectionAttempts: 5,
+                reconnectionDelay: 1000
+            });
+            
+            socket.on('connect', () => {
+                console.log('[SOCKET] ✅ Connected:', socket.id);
+                
+                // Join the game room
+                socket.emit('join_game', multiplayerCode);
+                console.log('[SOCKET] Joined room:', multiplayerCode);
+            });
+            
+            socket.on('opponent_advanced', async (data) => {
+                console.log('[SOCKET] 🎯 Opponent advanced to index:', data.newIndex);
+                console.log('[SOCKET] Solver:', data.solver);
+                
+                // Only react if we're behind
+                if (data.newIndex > currentWordIndex) {
+                    // Animate opponent's solution
+                    await animateOpponentSolution();
+                    
+                    // Show message
+                    showOpponentSolvedMessage();
+                    
+                    // Wait 2 seconds
+                    await delay(2000);
+                    
+                    // Jump to next word
+                    jumpToWord(data.newIndex);
+                }
+            });
+            
+            socket.on('player_joined', (data) => {
+                console.log('[SOCKET] 👋 Another player joined!');
+                // Could show a message here if you want
+            });
+            
+            socket.on('game_completed', (data) => {
+                console.log('[SOCKET] 🏁 Game completed by:', data.winner);
+                // Handle game completion if needed
+            });
+            
+            socket.on('connect_error', (error) => {
+                console.error('[SOCKET] ❌ Connection error:', error);
+                console.log('[SOCKET] Use bee button for manual polling');
+            });
+            
+            socket.on('disconnect', () => {
+                console.log('[SOCKET] ⚠️ Disconnected - use bee button as fallback');
+            });
+        }
+
 
         function initMultiplayer() {
             multiplayerCode = localStorage.getItem('sharedGameCode');
@@ -161,6 +233,7 @@
             
             if (isMultiplayerGame) {
                 console.log('[MULTIPLAYER] Joined game:', multiplayerCode);
+                initializeSocket();
                 //startPolling(multiplayerCode);
                 // Button stays as "Show Clue" since clues already exist
             }
