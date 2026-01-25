@@ -129,7 +129,7 @@
     padding: 15px; 
     margin-bottom: 20px; 
     font-family: 'Montserrat', sans-serif;  /* ← Changed from monospace */
-    font-size: 20px;                         /* ← Same as themes purchased */
+    font-size: 10px;                         /* ← Same as themes purchased */
     font-weight: 400;                        /* ← Same weight */
 }
 
