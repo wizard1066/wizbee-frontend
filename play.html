@@ -456,6 +456,8 @@ let socket = null;
                     alert('Failed to create shared game');
                     btn.disabled = false;
                     btn.textContent = '📤 Share Game';
+                    multiplayerCode = data.shareCode;
+                    isMultiplayerGame = true;
                     return;
                 }
                 
