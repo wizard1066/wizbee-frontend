@@ -190,8 +190,17 @@ let socket = null;
                 console.log('[SOCKET] 🎯 Opponent advanced to index:', data.newIndex);
                 console.log('[SOCKET] Solver:', data.solver);
                 
-                // Only react if we're behind
-                if (data.newIndex > currentWordIndex) {
+                    // Only react if we're behind
+                    if (data.newIndex > currentWordIndex) {
+                        gameResults.push({
+                        word: wordList[currentWordIndex],
+                        won: false,              // You didn't solve it
+                        solvedByOpponent: true,  // Opponent solved it
+                        guesses: 0,
+                        timeSeconds: 0,
+                        cluesViewed: 0
+                    });
+
                     // Animate opponent's solution
                     await animateOpponentSolution();
                     
@@ -325,6 +334,15 @@ let socket = null;
                 
                 if (data.currentIndex > currentWordIndex) {
                         console.log('[DEBUG] ✅ Opponent advanced!');
+
+                    gameResults.push({
+                        word: wordList[currentWordIndex],
+                        won: false,
+                        solvedByOpponent: true,
+                        guesses: 0,
+                        timeSeconds: 0,
+                        cluesViewed: 0
+                    });
     
                     // Show opponent's answer with animation
                     await animateOpponentSolution();
@@ -1468,7 +1486,27 @@ let socket = null;
             `;
             
             gameResults.forEach((result, index) => {
-                const icon = result.won ? '✅' : '❌';
+                let icon, status;
+    
+                if (result.solvedByOpponent) {
+                    icon = '👤';
+                    status = '<span style="color: #667eea;">Solved by opponent</span>';
+                } else if (result.won) {
+                    icon = '✅';
+                    status = `${result.guesses} guesses, ${result.timeSeconds}s, ${result.cluesViewed} clues`;
+                } else {
+                    icon = '❌';
+                    status = `${result.guesses} guesses, ${result.timeSeconds}s, ${result.cluesViewed} clues`;
+                }
+                
+                html += `
+                    <div style="padding: 10px; border-bottom: 1px solid #e2e8f0;">
+                        ${icon} <strong>${result.word}</strong> - ${status}
+                    </div>
+                `;
+
+
+                /*
                 html += `
                     <div style="padding: 10px; border-bottom: 1px solid #e2e8f0;">
                         ${icon} <strong>${result.word}</strong> - 
@@ -1476,7 +1514,7 @@ let socket = null;
                         ${result.timeSeconds}s, 
                         ${result.cluesViewed} clues
                     </div>
-                `;
+                `;*/
             });
             
             html += '</div>';
