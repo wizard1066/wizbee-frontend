@@ -426,7 +426,7 @@ let socket = null;
             console.log(`[MULTIPLAYER] Now on word: ${currentWord}`);
 
             // Check if this is the LAST word (game complete)
-            if (currentWordIndex >= wordList.length - 1) {
+            if (currentWordIndex >= wordList.length) {
                 console.log('[MULTIPLAYER] Last word reached - enabling summary view');
                 
                 // Hide game controls
