@@ -24,6 +24,7 @@
 
 	body {
     font-family: 'Montserrat', sans-serif;
+    font-size: 18px;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);  /* Purple gradient */
     min-height: 100vh;
     display: flex;
