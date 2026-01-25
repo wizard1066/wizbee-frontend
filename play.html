@@ -233,7 +233,7 @@ let socket = null;
             
             if (isMultiplayerGame) {
                 console.log('[MULTIPLAYER] Joined game:', multiplayerCode);
-                initializeSocket();
+                
                 //startPolling(multiplayerCode);
                 // Button stays as "Show Clue" since clues already exist
             }
@@ -674,6 +674,7 @@ let socket = null;
                 return false;
             });
             initMultiplayer();
+            initializeSocket();
         };
 
                 /**
