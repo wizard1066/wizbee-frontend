@@ -482,14 +482,20 @@ let socket = null;
             btn.disabled = true;
             btn.textContent = '⏳ Creating...';
             
-            const gameData = JSON.parse(localStorage.getItem('pendingGame'));
+            // Log what we're reading
+            console.log('[SHARE] Reading from localStorage...');
+            const rawData = localStorage.getItem('pendingGame');
+            console.log('[SHARE] Raw pendingGame:', rawData);
+            
+            const gameData = JSON.parse(rawData);
+            console.log('[SHARE] Parsed gameData:', gameData);
+            
             const cacheKey = gameData?.cacheKey;
+            console.log('[SHARE] Extracted cacheKey:', cacheKey);
+            
+            // REMOVE THE DATA LOGS HERE (they were wrong)
 
-            // ADD THESE LOGS
-
-            console.log('[SHARE] API response:', data);
-            console.log('[SHARE] Success:', data.success);
-            console.log('[SHARE] Share code:', data.shareCode);
+            
             
             if (!cacheKey) {
                 alert('Error: No game loaded');
