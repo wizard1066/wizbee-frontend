@@ -255,6 +255,7 @@ let socket = null;
             });
 
             socket.on('player_skipped', (data) => {
+                if (data.skipper === userEmail) return;
                 console.log('[SOCKET] 👋 Opponent skipped word:', data.wordIndex);
                 console.log('[SOCKET] Skipper:', data.skipper);
                 
@@ -1632,10 +1633,10 @@ let socket = null;
             console.log('=== NEXT WORD CALLED ===');
             console.log('currentWordIndex:', currentWordIndex);
             console.log('wordList.length:', wordList.length);
-
-            advanceMultiplayerGame();
-
-            
+            const lastResult = gameResults[gameResults.length - 1];
+            if (lastResult && lastResult.won) {
+                advanceMultiplayerGame();
+            }
 
             // Check if game is complete
             if (currentWordIndex >= wordList.length - 1) {
