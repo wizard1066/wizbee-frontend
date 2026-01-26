@@ -278,7 +278,105 @@ let socket = null;
                 
                 setTimeout(() => msg.remove(), 2000);
             });
-        }
+            
+            socket.on('skip_requested', (data) => {
+    console.log('[SOCKET] 👋 Opponent requested skip for word:', data.word);
+    console.log('[SOCKET] Requester:', data.requester);
+    
+    // Get current user email
+    const currentUserEmail = localStorage.getItem('userEmail');
+    
+    // Don't show modal to the person who requested skip
+    if (data.requester === currentUserEmail) {
+        console.log('[SOCKET] Ignoring - we requested the skip');
+        return;
+    }
+    
+    // Show modal asking if we want to skip too
+    showSkipRequestModal(data.requester, data.word);
+});
+
+socket.on('skip_declined', (data) => {
+    console.log('[SOCKET] 🚫 Skip declined by:', data.decliner);
+    
+    // Get current user email
+    const currentUserEmail = localStorage.getItem('userEmail');
+    
+    // Only show to the person who requested skip
+    if (data.decliner === currentUserEmail) {
+        console.log('[SOCKET] Ignoring - we declined');
+        return;
+    }
+    
+    // Re-enable next button and show message
+    const resetBtn = document.getElementById('resetButton');
+    const msg = document.getElementById('gameMessage');
+    
+    resetBtn.disabled = false;
+    resetBtn.textContent = 'Next Word →';
+    
+    if (msg) {
+        msg.textContent = '💪 Opponent wants to keep trying!';
+        msg.className = 'message';
+    }
+    
+    // Show temporary notification
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20%;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #f59e0b;
+        color: white;
+        padding: 20px 40px;
+        border-radius: 12px;
+        font-size: 18px;
+        font-weight: bold;
+        z-index: 9999;
+    `;
+    notification.textContent = 'Opponent is still trying to solve it!';
+    document.body.appendChild(notification);
+    setTimeout(() => notification.remove(), 3000);
+});
+
+socket.on('both_skipped', async (data) => {
+    console.log('[SOCKET] ⏭️ Both players skipped! Advancing to:', data.newIndex);
+    
+    // Record as skipped for both
+    gameResults.push({
+        word: wordList[currentWordIndex],
+        won: false,
+        bothSkipped: true,
+        guesses: 0,
+        timeSeconds: 0,
+        cluesViewed: 0
+    });
+    
+    // Show message
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20%;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #667eea;
+        color: white;
+        padding: 20px 40px;
+        border-radius: 12px;
+        font-size: 18px;
+        font-weight: bold;
+        z-index: 9999;
+    `;
+    notification.textContent = '⏭️ Both skipped - moving to next word';
+    document.body.appendChild(notification);
+    
+    await delay(2000);
+    notification.remove();
+    
+    // Jump to next word
+    jumpToWord(data.newIndex);
+});
 
 
         function initMultiplayer() {
@@ -579,7 +677,133 @@ let socket = null;
             }
         }
 
-        
+        /**
+         * Show modal when opponent requests to skip
+         */
+        function showSkipRequestModal(requester, word) {
+            // Create modal overlay
+            const overlay = document.createElement('div');
+            overlay.id = 'skipRequestOverlay';
+            overlay.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.7);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 9999;
+            `;
+            
+            // Create modal content
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                background: white;
+                border-radius: 16px;
+                padding: 40px;
+                max-width: 500px;
+                width: 90%;
+                text-align: center;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            `;
+            
+            modal.innerHTML = `
+                <h2 style="color: #f59e0b; margin-bottom: 20px;">
+                    🤔 Opponent Wants to Skip
+                </h2>
+                <p style="font-size: 18px; margin-bottom: 10px;">
+                    Your opponent gave up on:
+                </p>
+                <p style="font-size: 24px; font-weight: bold; color: #667eea; margin-bottom: 30px;">
+                    ${word}
+                </p>
+                <p style="font-size: 16px; margin-bottom: 30px; color: #666;">
+                    Do you want to keep trying or skip together?
+                </p>
+                <div style="display: flex; gap: 15px; justify-content: center;">
+                    <button onclick="respondToSkip('keep_trying')" style="
+                        padding: 15px 30px;
+                        background: #48bb78;
+                        color: white;
+                        border: none;
+                        border-radius: 10px;
+                        font-size: 18px;
+                        font-weight: bold;
+                        cursor: pointer;
+                        box-shadow: 0 4px 15px rgba(72, 187, 120, 0.4);
+                    ">
+                        💪 Keep Trying
+                    </button>
+                    <button onclick="respondToSkip('skip')" style="
+                        padding: 15px 30px;
+                        background: #667eea;
+                        color: white;
+                        border: none;
+                        border-radius: 10px;
+                        font-size: 18px;
+                        font-weight: bold;
+                        cursor: pointer;
+                        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+                    ">
+                        ⏭️ Skip Together
+                    </button>
+                </div>
+            `;
+            
+            overlay.appendChild(modal);
+            document.body.appendChild(overlay);
+        }
+
+        /**
+         * Respond to opponent's skip request
+         */
+        async function respondToSkip(response) {
+            console.log('[MULTIPLAYER] Responding to skip:', response);
+            
+            // Remove modal
+            const overlay = document.getElementById('skipRequestOverlay');
+            if (overlay) overlay.remove();
+            
+            try {
+                const apiResponse = await fetch(`${API_URL}/api/respond-skip`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        shareCode: multiplayerCode,
+                        response: response
+                    })
+                });
+                
+                const data = await apiResponse.json();
+                
+                if (data.success) {
+                    if (response === 'keep_trying') {
+                        console.log('[MULTIPLAYER] Continuing to play');
+                        // Show message
+                        const msg = document.createElement('div');
+                        msg.style.cssText = `
+                            position: fixed;
+                            top: 20%;
+                            left: 50%;
+                            transform: translateX(-50%);
+                            background: #48bb78;
+                            color: white;
+                            padding: 20px 40px;
+                            border-radius: 12px;
+                            font-size: 18px;
+                            font-weight: bold;
+                            z-index: 9999;
+                        `;
+                        msg.textContent = '💪 Keep going! Opponent is waiting.';
+                        document.body.appendChild(msg);
+                        setTimeout(() => msg.remove(), 3000);
+                    }
+                    // If "skip", advancement handled by Socket.IO event
         
 
         /**
@@ -1465,8 +1689,13 @@ let socket = null;
             
             gameResults.forEach((result, index) => {
                 let icon, status;
-    
-                if (result.solvedByOpponent) {
+                if (result.bothSkipped) {
+                    icon = '⏭️';
+                    status = '<span style="color: #667eea;">Both players skipped</span>';
+                } else if (result.timedOut) {
+                    icon = '⏰';
+                    status = '<span style="color: #f59e0b;">Time expired</span>';
+                } else if (result.solvedByOpponent) {
                     icon = '👤';
                     status = '<span style="color: #667eea;">Solved by opponent</span>';
                 } else if (result.won) {
@@ -1482,8 +1711,7 @@ let socket = null;
                         ${icon} <strong>${result.word}</strong> - ${status}
                     </div>
                 `;
-
-
+                
                 
             });
             
@@ -1730,7 +1958,61 @@ let socket = null;
             }
         }
 
-        function giveUp() {
+        async function giveUp() {
+    console.log('[GAME] Player gave up on word:', currentWord);
+    
+    // End game locally - show answer, mark as lost
+    endGame(false);
+    
+    // If multiplayer, request skip from opponent
+    if (isMultiplayerGame && multiplayerCode) {
+        try {
+            console.log('[MULTIPLAYER] Requesting skip from opponent');
+            
+            const response = await fetch(`${API_URL}/api/request-skip`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${authToken}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    shareCode: multiplayerCode,
+                    wordIndex: currentWordIndex,
+                    word: currentWord
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                console.log('[MULTIPLAYER] Skip request sent');
+                showWaitingForOpponent();
+            }
+            
+        } catch (error) {
+            console.error('[MULTIPLAYER] Skip request error:', error);
+        }
+    }
+}
+
+        /**
+         * Show waiting state after requesting skip
+         */
+        function showWaitingForOpponent() {
+            const resetBtn = document.getElementById('resetButton');
+            const msg = document.getElementById('gameMessage');
+            
+            resetBtn.textContent = '⏳ Waiting for opponent...';
+            resetBtn.disabled = true;
+            resetBtn.classList.remove('hidden');
+            
+            if (msg) {
+                msg.textContent = 'Waiting for opponent to decide...';
+                msg.className = 'message';
+            }
+        }
+
+        function giveUpDepreciated() {
             //if (confirm('Give up on this word?')) {
                 //advanceMultiplayerGame();
                 skipMultiplayerWord();
