@@ -253,6 +253,31 @@ let socket = null;
                 console.log('[SOCKET] ⚠️ Disconnected:', reason);
                 console.log('[SOCKET] Use bee button as fallback or wait for reconnection');
             });
+
+            socket.on('player_skipped', (data) => {
+                console.log('[SOCKET] 👋 Opponent skipped word:', data.wordIndex);
+                console.log('[SOCKET] Skipper:', data.skipper);
+                
+                // Optional: Show a brief message
+                const msg = document.createElement('div');
+                msg.style.cssText = `
+                    position: fixed;
+                    top: 20%;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    background: #f59e0b;
+                    color: white;
+                    padding: 15px 30px;
+                    border-radius: 12px;
+                    font-size: 18px;
+                    font-weight: bold;
+                    z-index: 9999;
+                `;
+                msg.textContent = '⏭️ Opponent skipped this word';
+                document.body.appendChild(msg);
+                
+                setTimeout(() => msg.remove(), 2000);
+            });
         }
 
 
@@ -1713,9 +1738,42 @@ let socket = null;
             }
         }
 
+        /**
+         * Notify other players that you skipped a word
+         */
+        async function skipMultiplayerWord() {
+            if (!isMultiplayerGame || !multiplayerCode) return;
+            
+            try {
+                console.log('[MULTIPLAYER] Skipping word:', currentWordIndex);
+                
+                const response = await fetch(`${API_URL}/api/skip-word`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        shareCode: multiplayerCode,
+                        wordIndex: currentWordIndex
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    console.log('[MULTIPLAYER] ✅ Skip broadcast to opponents');
+                }
+                
+            } catch (error) {
+                console.error('[MULTIPLAYER] Skip error:', error);
+            }
+        }
+
         function giveUp() {
             //if (confirm('Give up on this word?')) {
-                advanceMultiplayerGame();
+                //advanceMultiplayerGame();
+                skipMultiplayerWord();
                 endGame(false);
             //}
         }
