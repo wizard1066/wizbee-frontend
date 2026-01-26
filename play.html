@@ -173,6 +173,9 @@ let socket = null;
             console.log('[SOCKET] Connecting to server...');
             
             socket = io('https://api.wizbee.app', {
+                auth: {
+                    token: authToken  // Send JWT token for authentication
+                },
                 reconnection: true,
                 reconnectionAttempts: 5,
                 reconnectionDelay: 1000
@@ -183,19 +186,20 @@ let socket = null;
                 
                 // Join the game room
                 socket.emit('join_game', multiplayerCode);
-                console.log('[SOCKET] Joined room:', multiplayerCode);
+                console.log('[SOCKET] Requesting to join room:', multiplayerCode);
             });
             
             socket.on('opponent_advanced', async (data) => {
                 console.log('[SOCKET] 🎯 Opponent advanced to index:', data.newIndex);
                 console.log('[SOCKET] Solver:', data.solver);
                 
-                    // Only react if we're behind
-                    if (data.newIndex > currentWordIndex) {
-                        gameResults.push({
+                // Only react if we're behind
+                if (data.newIndex > currentWordIndex) {
+                    // Record opponent's solve
+                    gameResults.push({
                         word: wordList[currentWordIndex],
-                        won: false,              // You didn't solve it
-                        solvedByOpponent: true,  // Opponent solved it
+                        won: false,
+                        solvedByOpponent: true,
                         guesses: 0,
                         timeSeconds: 0,
                         cluesViewed: 0
@@ -216,7 +220,7 @@ let socket = null;
             });
             
             socket.on('player_joined', (data) => {
-                console.log('[SOCKET] 👋 Another player joined!');
+                console.log('[SOCKET] 👋 Another player joined:', data.playerEmail || 'unknown');
                 // Could show a message here if you want
             });
             
@@ -225,13 +229,25 @@ let socket = null;
                 // Handle game completion if needed
             });
             
-            socket.on('connect_error', (error) => {
-                console.error('[SOCKET] ❌ Connection error:', error);
-                console.log('[SOCKET] Use bee button for manual polling');
+            socket.on('error', (data) => {
+                console.error('[SOCKET] ❌ Server error:', data.message);
+                alert(`Game error: ${data.message}`);
             });
             
-            socket.on('disconnect', () => {
-                console.log('[SOCKET] ⚠️ Disconnected - use bee button as fallback');
+            socket.on('connect_error', (error) => {
+                console.error('[SOCKET] ❌ Connection error:', error.message);
+                
+                if (error.message === 'Authentication required' || error.message.includes('Invalid')) {
+                    console.error('[SOCKET] Authentication failed - token may be expired');
+                    alert('Session expired. Please refresh the page and log in again.');
+                } else {
+                    console.log('[SOCKET] Connection failed - use bee button for manual polling');
+                }
+            });
+            
+            socket.on('disconnect', (reason) => {
+                console.log('[SOCKET] ⚠️ Disconnected:', reason);
+                console.log('[SOCKET] Use bee button as fallback or wait for reconnection');
             });
         }
 
@@ -521,69 +537,7 @@ let socket = null;
             }
         }
 
-        async function shareGameDepreciated() {
-            const btn = document.getElementById('showClueBtn');
-            btn.disabled = true;
-            btn.textContent = '⏳ Creating...';
-            
-            // Get fresh cache key from current game data
-            const gameData = JSON.parse(localStorage.getItem('pendingGame'));
-            const cacheKey = gameData?.cacheKey;
-            
-            if (!cacheKey) {
-                alert('Error: No game loaded');
-                btn.disabled = false;
-                btn.textContent = '📤 Share Game';
-                return;
-            }
-            
-            try {
-                const response = await fetch(`${API_URL}/api/create-shared-game`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${authToken}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        cacheKey: cacheKey,
-                        clues: wordClues,
-                        words: wordList      // ← ADD THIS LINE
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (!data.success) {
-                    alert('Failed to create shared game');
-                    btn.disabled = false;
-                    btn.textContent = '📤 Share Game';
-                    return;
-                }
-                
-                multiplayerCode = data.shareCode;
-                isMultiplayerGame = true;
-                
-                // Save code
-                localStorage.setItem('sharedGameCode', data.shareCode);
-                
-                // Show code to user
-                showShareCodeModal(data.shareCode);
-                
-                // Start polling
-                //startPolling(data.shareCode);
-                
-                // Change button to show clue
-                btn.textContent = '💡 Show Clue';
-                btn.onclick = showClue;
-                btn.disabled = false;
-                
-            } catch (error) {
-                console.error('[MULTIPLAYER] Share error:', error);
-                alert('Failed to create shared game');
-                btn.disabled = false;
-                btn.textContent = '📤 Share Game';
-            }
-        }
+        
         
 
         /**
@@ -1528,15 +1482,7 @@ let socket = null;
                 `;
 
 
-                /*
-                html += `
-                    <div style="padding: 10px; border-bottom: 1px solid #e2e8f0;">
-                        ${icon} <strong>${result.word}</strong> - 
-                        ${result.guesses} guesses, 
-                        ${result.timeSeconds}s, 
-                        ${result.cluesViewed} clues
-                    </div>
-                `;*/
+                
             });
             
             html += '</div>';
