@@ -171,6 +171,10 @@ let socket = null;
             }
             
             console.log('[SOCKET] Connecting to server...');
+            // DEBUG: Check if authToken is available
+            console.log('[SOCKET] authToken exists:', !!authToken);
+            console.log('[SOCKET] authToken value:', authToken ? authToken.substring(0, 20) + '...' : 'NULL');
+    
             
             socket = io('https://api.wizbee.app', {
                 auth: {
