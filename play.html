@@ -255,7 +255,6 @@ let socket = null;
             });
 
             socket.on('player_skipped', (data) => {
-                if (data.skipper === userEmail) return;
                 console.log('[SOCKET] 👋 Opponent skipped word:', data.wordIndex);
                 console.log('[SOCKET] Skipper:', data.skipper);
                 
