@@ -377,6 +377,27 @@ let socket = null;
                 
                 // Jump to next word
                 jumpToWord(data.newIndex);
+                // ============================================================================
+                // RE-ENABLE GAME CONTROLS (ADD THIS SECTION)
+                // ============================================================================
+                
+                // Show game buttons
+                document.getElementById('submitGuess').classList.remove('hidden');
+                document.getElementById('showClueBtn').classList.remove('hidden');
+                document.getElementById('giveUpBtn').classList.remove('hidden');
+                
+                // Hide/reset next button
+                const resetBtn = document.getElementById('resetButton');
+                resetBtn.classList.add('hidden');
+                resetBtn.disabled = false;
+                resetBtn.textContent = 'Next Word →';
+                
+                // Clear message
+                const msg = document.getElementById('gameMessage');
+                if (msg) {
+                    msg.textContent = '';
+                    msg.className = 'message';
+                }
             });
         }
 
