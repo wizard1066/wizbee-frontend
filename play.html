@@ -209,6 +209,17 @@ let socket = null;
             socket.on('opponent_advanced', async (data) => {
                 console.log('[SOCKET] 🎯 Opponent advanced to index:', data.newIndex);
                 console.log('[SOCKET] Solver:', data.solver);
+
+                const currentUserEmail = localStorage.getItem('userEmail');
+    
+                // ============================================================================
+                // IGNORE IF WE ARE THE SOLVER (ADD THIS CHECK)
+                // ============================================================================
+                
+                if (data.solver === currentUserEmail) {
+                    console.log('[SOCKET] Ignoring - we solved it ourselves');
+                    return;
+                }
                 
                 // Only react if we're behind
                 if (data.newIndex > currentWordIndex) {
