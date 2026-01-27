@@ -612,10 +612,77 @@ let socket = null;
             }, 2000);
         }
 
+        function jumpToWord(newIndex) {
+            console.log(`[MULTIPLAYER] Jumping from word ${currentWordIndex} to ${newIndex}`);
+            
+            // Check if game is complete
+            if (newIndex >= wordList.length) {
+                console.log('[MULTIPLAYER] Game complete! No more words.');
+                
+                // Hide game controls
+                document.getElementById('submitGuess').classList.add('hidden');
+                document.getElementById('showClueBtn').classList.add('hidden');
+                document.getElementById('giveUpBtn').classList.add('hidden');
+                
+                // Show summary button
+                const resetBtn = document.getElementById('resetButton');
+                resetBtn.textContent = '🎉 View Summary';
+                resetBtn.classList.remove('hidden');
+                resetBtn.disabled = false;
+                resetBtn.onclick = showGameSummary;
+                
+                // Show message
+                const messageDiv = document.getElementById('gameMessage');
+                messageDiv.textContent = '🏁 Game Complete!';
+                messageDiv.className = 'message win';
+                
+                return;
+            }
+            
+            // Update to new word
+            currentWordIndex = newIndex;
+            currentWord = wordList[newIndex];
+            currentGuess = '';
+            guessHistory = [];
+            guessesUsed = 0;
+            remainingGuesses = maxGuesses;
+            gameOver = false;
+            
+            // Reset UI
+            createWordBoxes();
+            updateGuessCount();
+            resetKeyboard();
+            hideClue();
+            
+            // Clear previous guesses and messages
+            document.getElementById('previousGuesses').innerHTML = '';
+            document.getElementById('gameMessage').textContent = '';
+
+            document.getElementById('selectedTheme').textContent = `${selectedThemeWord} (${currentWordIndex + 1}/${wordList.length})`;
+            
+            // ============================================================================
+            // CHECK IF THIS IS THE LAST WORD - SHOW "NO MORE WORDS" BUTTON
+            // ============================================================================
+            
+            if (newIndex >= wordList.length - 1) {
+                // This is the LAST word - show disabled "No More Words" button
+                const resetBtn = document.getElementById('resetButton');
+                resetBtn.textContent = '🏁 No More Words';
+                resetBtn.disabled = true;
+                resetBtn.style.opacity = '0.6';
+                resetBtn.style.cursor = 'not-allowed';
+                resetBtn.classList.remove('hidden');
+                
+                console.log('[GAME] Last word - showing "No More Words" button');
+            }
+            
+            console.log(`[MULTIPLAYER] Now on word: ${currentWord}`);
+        }
+
         /**
          * Jump to a specific word index (when opponent solves)
          */
-        function jumpToWord(newIndex) {
+        function jumpToWordDepreciated(newIndex) {
             console.log(`[MULTIPLAYER] Jumping from word ${currentWordIndex} to ${newIndex}`);
 
             // Check if this is the LAST word (game complete)
