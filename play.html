@@ -245,9 +245,8 @@ let socket = null;
                     
                     // Hide/reset next button
                     const resetBtn = document.getElementById('resetButton');
-                    resetBtn.classList.add('hidden');
-                    resetBtn.disabled = false;
-                    resetBtn.textContent = 'Next Word →';
+                    resetBtn.disabled = true;
+                    resetBtn.textContent = '🏁 No More Words';
                     
                     // Clear message
                     const msg = document.getElementById('gameMessage');
