@@ -205,8 +205,87 @@ let socket = null;
                 resetBtn.disabled = false;
                 resetBtn.onclick = showGameSummary;
             });
-            
+
             socket.on('opponent_advanced', async (data) => {
+                console.log('[SOCKET] 🎯 Opponent advanced to index:', data.newIndex);
+                console.log('[SOCKET] Solver:', data.solver);
+                
+                const currentUserEmail = localStorage.getItem('userEmail');
+                
+                if (data.solver === currentUserEmail) {
+                    console.log('[SOCKET] Ignoring - we solved it ourselves');
+                    return;
+                }
+                
+                // Only react if we're behind
+                if (data.newIndex > currentWordIndex) {
+                    // Record opponent's solve
+                    gameResults.push({
+                        word: wordList[currentWordIndex],
+                        won: false,
+                        solvedByOpponent: true,
+                        guesses: 0,
+                        timeSeconds: 0,
+                        cluesViewed: 0
+                    });
+
+                    // ALWAYS show animation first (even if it's the last word)
+                    await animateOpponentSolution();
+                    showOpponentSolvedMessage();
+                    await delay(2000);
+                    
+                    // NOW check if game is complete
+                    if (data.newIndex >= wordList.length) {
+                        console.log('[SOCKET] Last word solved - game complete!');
+                        
+                        // Show completion message
+                        const messageDiv = document.getElementById('gameMessage');
+                        messageDiv.textContent = '🏁 Game Complete! All words finished.';
+                        messageDiv.className = 'message win';
+                        
+                        // Hide game controls
+                        document.getElementById('submitGuess').classList.add('hidden');
+                        document.getElementById('showClueBtn').classList.add('hidden');
+                        document.getElementById('giveUpBtn').classList.add('hidden');
+                        
+                        // Show summary button
+                        const resetBtn = document.getElementById('resetButton');
+                        resetBtn.textContent = '🎉 View Summary';
+                        resetBtn.classList.remove('hidden');
+                        resetBtn.disabled = false;
+                        resetBtn.onclick = showGameSummary;
+                        
+                        // Don't call jumpToWord - we're done
+                        return;
+                    }
+                    
+                    // Not last word - jump to next word normally
+                    jumpToWord(data.newIndex);
+                    
+                    // Re-enable controls
+                    document.getElementById('submitGuess').classList.remove('hidden');
+                    document.getElementById('showClueBtn').classList.remove('hidden');
+                    document.getElementById('giveUpBtn').classList.remove('hidden');
+                    
+                    const resetBtn = document.getElementById('resetButton');
+                    if (data.newIndex < wordList.length - 1) {
+                        resetBtn.classList.add('hidden');
+                    }
+                    
+                    resetBtn.disabled = false;
+                    resetBtn.textContent = 'Next Word →';
+                    
+                    const msg = document.getElementById('gameMessage');
+                    if (msg) {
+                        msg.textContent = '';
+                        msg.className = 'message';
+                    }
+                    
+                    gameOver = false;
+                }
+            });
+            
+            socket.on('opponent_advancedDepreciated', async (data) => {
                 console.log('[SOCKET] 🎯 Opponent advanced to index:', data.newIndex);
                 console.log('[SOCKET] Solver:', data.solver);
 
@@ -1925,9 +2004,7 @@ let socket = null;
                     // Check if this is the last word
                     if (currentWordIndex >= wordList.length - 1) {
                         // Last word - complete the game
-                        await delay(2000); // Show celebration briefly
-                        await animateOpponentSolution();
-                        await delay(2000);
+                        await delay(4000);
                         await completeMultiplayerGame();
                     } else {
                         // Not last word - advance immediately
