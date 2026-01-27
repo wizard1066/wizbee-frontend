@@ -2002,7 +2002,7 @@ let socket = null;
                     console.log('[MULTIPLAYER] Solved! Broadcasting to opponent...');
                     
                     // Check if this is the last word
-                    if (currentWordIndex <= wordList.length - 1) {
+                    if (currentWordIndex >= wordList.length) {
                         // Last word - complete the game
                         await delay(4000);
                         await completeMultiplayerGame();
