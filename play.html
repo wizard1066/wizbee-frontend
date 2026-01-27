@@ -2029,6 +2029,8 @@ let socket = null;
     if (isMultiplayerGame && multiplayerCode) {
         try {
             console.log('[MULTIPLAYER] Requesting skip from opponent');
+
+            await delay(4000); // Small delay to ensure local endGame processes first
             
             const response = await fetch(`${API_URL}/api/request-skip`, {
                 method: 'POST',
