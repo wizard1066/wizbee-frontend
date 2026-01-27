@@ -2129,6 +2129,16 @@ let socket = null;
             createWordBoxes();
             updateGuessCount();
 
+            if (currentWordIndex >= wordList.length - 1) {
+                // This is the LAST word - show disabled "No More Words" button
+                const resetBtn = document.getElementById('resetButton');
+                resetBtn.textContent = '🏁 No More Words';
+                resetBtn.disabled = true;
+                resetBtn.style.opacity = '0.6';
+                resetBtn.style.cursor = 'not-allowed';
+                resetBtn.classList.remove('hidden');
+            }
+
             // Wire up hidden input for mobile keyboard
             const guessInput = document.getElementById('guessInput');
             if (guessInput) {
