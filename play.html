@@ -626,6 +626,8 @@ let socket = null;
 
         function jumpToWord(newIndex) {
             console.log(`[MULTIPLAYER] Jumping from word ${currentWordIndex} to ${newIndex}`);
+
+            hideClue();
             
             // Check if game is complete
             if (newIndex >= wordList.length) {
@@ -686,6 +688,10 @@ let socket = null;
                 resetBtn.classList.remove('hidden');
                 
                 console.log('[GAME] Last word - showing "No More Words" button');
+            }
+
+            if (wordClues.length > newIndex) {
+                 showClueAuto(20000);
             }
             
             console.log(`[MULTIPLAYER] Now on word: ${currentWord}`);
