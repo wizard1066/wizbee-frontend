@@ -1910,6 +1910,83 @@ let socket = null;
             document.getElementById('resetButton').classList.add('hidden');
             document.getElementById('backButton').classList.add('hidden');
 
+            const resetBtn = document.getElementById('resetButton');
+            resetBtn.classList.remove('hidden');
+            
+            // Check if this is the LAST word
+            if (currentWordIndex >= wordList.length - 1) {
+                // Last word - show "No More Words" briefly, then "View Summary"
+                resetBtn.textContent = '🏁 No More Words';
+                resetBtn.disabled = true;
+                resetBtn.style.opacity = '0.6';
+                resetBtn.style.cursor = 'not-allowed';
+                
+                // After 2 seconds, change to "View Summary"
+                setTimeout(() => {
+                    resetBtn.textContent = '🎉 View Summary';
+                    resetBtn.disabled = false;
+                    resetBtn.style.opacity = '1';
+                    resetBtn.style.cursor = 'pointer';
+                    
+                    // Notify opponent in multiplayer
+                    if (isMultiplayerGame && multiplayerCode) {
+                        completeMultiplayerGame();
+                    }
+                }, 2000);
+                
+            } else {
+                // Not last word
+                if (!isMultiplayerGame) {
+                    // Solo: Show "Next Word" button
+                    resetBtn.textContent = 'Next Word →';
+                    resetBtn.disabled = false;
+                } else {
+                    // Multiplayer: Hide button, Socket.IO handles advancement
+                    resetBtn.classList.add('hidden');
+                    messageDiv.textContent += ' Waiting for opponent...';
+                }
+            }
+
+            setTimeout(() => {
+                messageDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
+        }
+
+        async function endGameDepreciated2(won) {
+            gameOver = true;
+            hideClue();
+            localStorage.removeItem('lastEditedTheme');
+
+            await recordWordAttempt(won);
+
+            // Track result for summary
+            gameResults.push({
+                word: currentWord,
+                won: won,
+                guesses: maxGuesses - remainingGuesses,
+                timeSeconds: Math.floor((Date.now() - wordStartTime) / 1000),
+                cluesViewed: clueViewCount
+            });
+
+            const messageDiv = document.getElementById('gameMessage');
+
+            if (won) {
+                celebrateWin();
+                messageDiv.textContent = `🎉 ${winMessage} ${currentWord}`;
+                messageDiv.className = 'message win';
+            } else {
+                messageDiv.textContent = `${loseMessage} ${currentWord}`;
+                messageDiv.className = 'message lose';
+            }
+
+            document.getElementById('submitGuess').classList.add('hidden');
+            document.getElementById('showClueBtn').classList.add('hidden');
+            document.getElementById('giveUpBtn').classList.add('hidden');
+
+            // Hide both buttons initially
+            document.getElementById('resetButton').classList.add('hidden');
+            document.getElementById('backButton').classList.add('hidden');
+
             // In MULTIPLAYER: Don't show "Next Word" button - Socket.IO handles advancement
             // In SOLO: Show "Next Word" button
             if (!isMultiplayerGame) {
