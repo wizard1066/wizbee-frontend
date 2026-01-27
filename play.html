@@ -280,103 +280,105 @@ let socket = null;
             });
             
             socket.on('skip_requested', (data) => {
-    console.log('[SOCKET] 👋 Opponent requested skip for word:', data.word);
-    console.log('[SOCKET] Requester:', data.requester);
-    
-    // Get current user email
-    const currentUserEmail = localStorage.getItem('userEmail');
-    
-    // Don't show modal to the person who requested skip
-    if (data.requester === currentUserEmail) {
-        console.log('[SOCKET] Ignoring - we requested the skip');
-        return;
-    }
-    
-    // Show modal asking if we want to skip too
-    showSkipRequestModal(data.requester, data.word);
-});
+                console.log('[SOCKET] 👋 Opponent requested skip for word:', data.word);
+                console.log('[SOCKET] Requester:', data.requester);
+                
+                // Get current user email
+                const currentUserEmail = localStorage.getItem('userEmail');
+                
+                // Don't show modal to the person who requested skip
+                if (data.requester === currentUserEmail) {
+                    console.log('[SOCKET] Ignoring - we requested the skip');
+                    return;
+                }
+                
+                // Show modal asking if we want to skip too
+                showSkipRequestModal(data.requester, data.word);
+            });
+        
 
-socket.on('skip_declined', (data) => {
-    console.log('[SOCKET] 🚫 Skip declined by:', data.decliner);
+            socket.on('skip_declined', (data) => {
+                console.log('[SOCKET] 🚫 Skip declined by:', data.decliner);
+                
+                // Get current user email
+                const currentUserEmail = localStorage.getItem('userEmail');
+                
+                // Only show to the person who requested skip
+                if (data.decliner === currentUserEmail) {
+                    console.log('[SOCKET] Ignoring - we declined');
+                    return;
+                }
     
-    // Get current user email
-    const currentUserEmail = localStorage.getItem('userEmail');
-    
-    // Only show to the person who requested skip
-    if (data.decliner === currentUserEmail) {
-        console.log('[SOCKET] Ignoring - we declined');
-        return;
-    }
-    
-    // Re-enable next button and show message
-    const resetBtn = document.getElementById('resetButton');
-    const msg = document.getElementById('gameMessage');
-    
-    resetBtn.disabled = false;
-    resetBtn.textContent = 'Next Word →';
-    
-    if (msg) {
-        msg.textContent = '💪 Opponent wants to keep trying!';
-        msg.className = 'message';
-    }
-    
-    // Show temporary notification
-    const notification = document.createElement('div');
-    notification.style.cssText = `
-        position: fixed;
-        top: 20%;
-        left: 50%;
-        transform: translateX(-50%);
-        background: #f59e0b;
-        color: white;
-        padding: 20px 40px;
-        border-radius: 12px;
-        font-size: 18px;
-        font-weight: bold;
-        z-index: 9999;
-    `;
-    notification.textContent = 'Opponent is still trying to solve it!';
-    document.body.appendChild(notification);
-    setTimeout(() => notification.remove(), 3000);
-});
+                // Re-enable next button and show message
+                const resetBtn = document.getElementById('resetButton');
+                const msg = document.getElementById('gameMessage');
+                
+                resetBtn.disabled = false;
+                resetBtn.textContent = 'Next Word →';
+                
+                if (msg) {
+                    msg.textContent = '💪 Opponent wants to keep trying!';
+                    msg.className = 'message';
+                }
+                
+                // Show temporary notification
+                const notification = document.createElement('div');
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20%;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    background: #f59e0b;
+                    color: white;
+                    padding: 20px 40px;
+                    border-radius: 12px;
+                    font-size: 18px;
+                    font-weight: bold;
+                    z-index: 9999;
+                `;
+                notification.textContent = 'Opponent is still trying to solve it!';
+                document.body.appendChild(notification);
+                setTimeout(() => notification.remove(), 3000);
+            });
 
-socket.on('both_skipped', async (data) => {
-    console.log('[SOCKET] ⏭️ Both players skipped! Advancing to:', data.newIndex);
-    
-    // Record as skipped for both
-    gameResults.push({
-        word: wordList[currentWordIndex],
-        won: false,
-        bothSkipped: true,
-        guesses: 0,
-        timeSeconds: 0,
-        cluesViewed: 0
-    });
-    
-    // Show message
-    const notification = document.createElement('div');
-    notification.style.cssText = `
-        position: fixed;
-        top: 20%;
-        left: 50%;
-        transform: translateX(-50%);
-        background: #667eea;
-        color: white;
-        padding: 20px 40px;
-        border-radius: 12px;
-        font-size: 18px;
-        font-weight: bold;
-        z-index: 9999;
-    `;
-    notification.textContent = '⏭️ Both skipped - moving to next word';
-    document.body.appendChild(notification);
-    
-    await delay(2000);
-    notification.remove();
-    
-    // Jump to next word
-    jumpToWord(data.newIndex);
-});
+            socket.on('both_skipped', async (data) => {
+                console.log('[SOCKET] ⏭️ Both players skipped! Advancing to:', data.newIndex);
+                
+                // Record as skipped for both
+                gameResults.push({
+                    word: wordList[currentWordIndex],
+                    won: false,
+                    bothSkipped: true,
+                    guesses: 0,
+                    timeSeconds: 0,
+                    cluesViewed: 0
+                });
+                
+                // Show message
+                const notification = document.createElement('div');
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20%;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    background: #667eea;
+                    color: white;
+                    padding: 20px 40px;
+                    border-radius: 12px;
+                    font-size: 18px;
+                    font-weight: bold;
+                    z-index: 9999;
+                `;
+                notification.textContent = '⏭️ Both skipped - moving to next word';
+                document.body.appendChild(notification);
+                
+                await delay(2000);
+                notification.remove();
+                
+                // Jump to next word
+                jumpToWord(data.newIndex);
+            });
+        }
 
 
         function initMultiplayer() {
@@ -804,6 +806,13 @@ socket.on('both_skipped', async (data) => {
                         setTimeout(() => msg.remove(), 3000);
                     }
                     // If "skip", advancement handled by Socket.IO event
+                }
+                
+            } catch (error) {
+                console.error('[MULTIPLAYER] Respond skip error:', error);
+                alert('Failed to respond. Please try again.');
+            }
+        }
         
 
         /**
