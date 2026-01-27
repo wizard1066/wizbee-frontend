@@ -244,9 +244,11 @@ let socket = null;
                     document.getElementById('giveUpBtn').classList.remove('hidden');
                     
                     // Hide/reset next button
-                    const resetBtn = document.getElementById('resetButton');
-                    resetBtn.disabled = true;
-                    resetBtn.textContent = '🏁 No More Words';
+                    if (newIndex === wordList.length - 1) {
+                        const resetBtn = document.getElementById('resetButton');
+                        resetBtn.disabled = true;
+                        resetBtn.textContent = '🏁 No More Words';
+                    }
                     
                     // Clear message
                     const msg = document.getElementById('gameMessage');
