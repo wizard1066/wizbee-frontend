@@ -84,7 +84,7 @@
             <div id="previousGuesses" class="previous-guesses"></div>
             <div id="gameMessage" class="message"></div>
             <button id="resetButton" class="play-again hidden" onclick="nextWord()">Next Word →</button>
-            <button id="backButton" class="play-again hidden" onclick="returnToBrowse()" style="background: #e2e8f0; color: #2d3748;">← Back Button</button>
+            <button id="backButton" class="play-again hidden" onclick="returnToBrowse()" style="background: #e2e8f0; color: #2d3748;">← Exit Game</button>
         </div>
 
         <!-- Game Summary Modal -->
@@ -184,8 +184,27 @@ let socket = null;
                 reconnectionAttempts: 5,
                 reconnectionDelay: 1000
             });
-            
-            
+
+            socket.on('game_completed', (data) => {
+                console.log('[SOCKET] 🏁 Game completed!');
+                
+                // Show completion message
+                const messageDiv = document.getElementById('gameMessage');
+                messageDiv.textContent = '🏁 Game Complete! All words finished.';
+                messageDiv.className = 'message win';
+                
+                // Hide game controls
+                document.getElementById('submitGuess').classList.add('hidden');
+                document.getElementById('showClueBtn').classList.add('hidden');
+                document.getElementById('giveUpBtn').classList.add('hidden');
+                
+                // Show summary button
+                const resetBtn = document.getElementById('resetButton');
+                resetBtn.textContent = '🎉 View Summary';
+                resetBtn.classList.remove('hidden');
+                resetBtn.disabled = false;
+                resetBtn.onclick = showGameSummary;
+            });
             
             socket.on('opponent_advanced', async (data) => {
                 console.log('[SOCKET] 🎯 Opponent advanced to index:', data.newIndex);
@@ -1826,6 +1845,24 @@ let socket = null;
             document.getElementById('resetButton').classList.remove('hidden');
             document.getElementById('backButton').classList.add('hidden');
 
+            // In MULTIPLAYER: Don't show "Next Word" button - Socket.IO handles advancement
+            // In SOLO: Show "Next Word" button
+            if (!isMultiplayerGame) {
+                document.getElementById('resetButton').classList.remove('hidden');
+                
+                // Change button text if it's the last word
+                if (currentWordIndex >= wordList.length - 1) {
+                    document.getElementById('resetButton').textContent = '🎉 View Summary';
+                } else {
+                    document.getElementById('resetButton').textContent = 'Next Word →';
+                }
+            } else {
+                // Multiplayer: Show message that opponent can still play
+                messageDiv.textContent += won 
+                    ? ' Waiting for opponent...' 
+                    : ' Waiting for opponent...';
+            }
+
             // Change button text if it's the last word
             if (currentWordIndex >= wordList.length - 1) {
                 document.getElementById('resetButton').textContent = '🎉 View Summary';
@@ -1877,6 +1914,35 @@ let socket = null;
             }
         }
 
+        /**
+         * Notify server and opponent that game is complete
+         */
+        async function completeMultiplayerGame() {
+            try {
+                console.log('[MULTIPLAYER] Completing game:', multiplayerCode);
+                
+                const response = await fetch(`${API_URL}/api/complete-game`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        shareCode: multiplayerCode
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    console.log('[MULTIPLAYER] Game marked as complete');
+                }
+                
+            } catch (error) {
+                console.error('[MULTIPLAYER] Complete game error:', error);
+            }
+        }
+
         function nextWord() {
             console.log('=== NEXT WORD CALLED ===');
             console.log('currentWordIndex:', currentWordIndex);
@@ -1888,6 +1954,9 @@ let socket = null;
 
             // Check if game is complete
             if (currentWordIndex >= wordList.length - 1) {
+                if (isMultiplayerGame && multiplayerCode) {
+                   completeMultiplayerGame();  // NEW function to broadcast completion
+                }
                 showGameSummary();
                 return;
             }
