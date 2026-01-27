@@ -2003,13 +2003,16 @@ let socket = null;
                     
                     // Check if this is the last word
                     if (currentWordIndex >= wordList.length - 1) {
+                        await delay(2000); // Show celebration briefly
+                        await advanceMultiplayerGame();
+
                         // Last word - complete the game
                       //  await delay(4000);
                       //  await completeMultiplayerGame();
                     } else {
                         // Not last word - advance immediately
-                        await delay(2000); // Show celebration briefly
-                        await advanceMultiplayerGame();
+                      //  await delay(2000); // Show celebration briefly
+                        //await advanceMultiplayerGame();
                     }
                     
                     return; // Exit early - don't show "Next Word" button
