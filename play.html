@@ -185,13 +185,7 @@ let socket = null;
                 reconnectionDelay: 1000
             });
             
-            socket.on('connect', () => {
-                console.log('[SOCKET] ✅ Connected:', socket.id);
-                
-                // Join the game room
-                socket.emit('join_game', multiplayerCode);
-                console.log('[SOCKET] Requesting to join room:', multiplayerCode);
-            });
+            
             
             socket.on('opponent_advanced', async (data) => {
                 console.log('[SOCKET] 🎯 Opponent advanced to index:', data.newIndex);
@@ -423,6 +417,14 @@ let socket = null;
                     msg.textContent = '';
                     msg.className = 'message';
                 }
+            });
+
+            socket.on('connect', () => {
+                console.log('[SOCKET] ✅ Connected:', socket.id);
+                
+                // Join the game room
+                socket.emit('join_game', multiplayerCode);
+                console.log('[SOCKET] Requesting to join room:', multiplayerCode);
             });
         }
 
