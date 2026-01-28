@@ -2730,12 +2730,10 @@ let socket = null;
                 submitGuess();
             } else if (e.key === 'Backspace') {
                 handleKeyPress('BACKSPACE');
-            } else 
-            
-            /*if (/^[a-zA-Z]$/.test(e.key)) {
+            } else if (/^\p{L}$/u.test(e.key)) {
                 handleKeyPress(e.key.toUpperCase());
             }
-        });*/
+        });
 
         // hint button support
         function scramble(word) {
