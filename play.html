@@ -2472,61 +2472,6 @@ let socket = null;
             }
         }
 
-        function nextWordDepreciated() {
-            if (currentWordIndex >= wordList.length - 1) {
-                // Game complete - show summary
-                showGameSummary();
-                return;
-            }
-
-            currentWordIndex++;
-            currentWord = wordList[currentWordIndex];
-            currentGuess = '';
-            guessHistory = [];
-            remainingGuesses = maxGuesses;
-            gameOver = false;
-            wordStartTime = Date.now();
-            clueViewCount = 0;  // ← ADD THIS
-
-            document.getElementById('selectedTheme').textContent = `${selectedThemeWord} (${currentWordIndex + 1}/${wordList.length})`;
-            document.getElementById('gameMessage').textContent = '';
-            document.getElementById('previousGuesses').innerHTML = '';
-            document.getElementById('resetButton').classList.add('hidden');
-            document.getElementById('backButton').classList.add('hidden');
-            document.getElementById('submitGuess').classList.remove('hidden');
-            document.getElementById('showClueBtn').classList.remove('hidden');
-            document.getElementById('giveUpBtn').classList.remove('hidden');
-
-            document.querySelectorAll('.key').forEach(key => {
-                key.classList.remove('correct', 'present', 'used');
-            });
-
-            createWordBoxes();
-            updateGuessCount();
-
-            if (wordClues.length > currentWordIndex) {
-                showClueAuto(20000);
-                // Wire up hidden input for mobile keyboard
-                const guessInput = document.getElementById('guessInput');
-                if (guessInput) {
-                    guessInput.value = '';
-                    guessInput.maxLength = currentWord.length;
-                    
-                    guessInput.addEventListener('input', (e) => {
-                        currentGuess = e.target.value.toUpperCase();
-                        e.target.value = currentGuess;
-                        updateWordBoxes();
-                    });
-                    
-                    guessInput.addEventListener('keypress', (e) => {
-                        if (e.key === 'Enter') {
-                            submitGuess();
-                        }
-                    });
-                }
-            }
-        }
-
         /**
          * Notify other players that you skipped a word
          */
@@ -2560,43 +2505,43 @@ let socket = null;
         }
 
         async function giveUp() {
-    console.log('[GAME] Player gave up on word:', currentWord);
-    
-    // End game locally - show answer, mark as lost
-    endGame(false);
-    
-    // If multiplayer, request skip from opponent
-    if (isMultiplayerGame && multiplayerCode) {
-        try {
-            console.log('[MULTIPLAYER] Requesting skip from opponent');
+        console.log('[GAME] Player gave up on word:', currentWord);
+        
+        // End game locally - show answer, mark as lost
+        endGame(false);
+        
+        // If multiplayer, request skip from opponent
+        if (isMultiplayerGame && multiplayerCode) {
+            try {
+                console.log('[MULTIPLAYER] Requesting skip from opponent');
 
-            await delay(4000); // Small delay to ensure local endGame processes first
-            
-            const response = await fetch(`${API_URL}/api/request-skip`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${authToken}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    shareCode: multiplayerCode,
-                    wordIndex: currentWordIndex,
-                    word: currentWord
-                })
-            });
-            
-            const data = await response.json();
-            
-            if (data.success) {
-                console.log('[MULTIPLAYER] Skip request sent');
-                showWaitingForOpponent();
+                await delay(4000); // Small delay to ensure local endGame processes first
+                
+                const response = await fetch(`${API_URL}/api/request-skip`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        shareCode: multiplayerCode,
+                        wordIndex: currentWordIndex,
+                        word: currentWord
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    console.log('[MULTIPLAYER] Skip request sent');
+                    showWaitingForOpponent();
+                }
+                
+                } catch (error) {
+                    console.error('[MULTIPLAYER] Skip request error:', error);
+                }
             }
-            
-        } catch (error) {
-            console.error('[MULTIPLAYER] Skip request error:', error);
         }
-    }
-}
 
         /**
          * Show waiting state after requesting skip
