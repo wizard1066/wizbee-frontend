@@ -336,6 +336,31 @@
         }
 
         async function loadTheme() {
+            console.log('cacheKey:', cacheKey);
+            console.log('authToken:', authToken);
+            
+            try {
+                const response = await fetch(`${API_URL}/api/admin/get-theme/${cacheKey}`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                console.log('Response status:', response.status);
+
+                if (!response.ok) {
+                    showError('Failed to load theme');
+                    return;
+                }
+
+                theme = await response.json();
+                displayTheme();
+
+            } catch (error) {
+                console.error('Error loading theme:', error);
+                showError('Failed to load theme');
+            }
+        }
+
+        async function loadThemeDepreciated() {
             try {
                 const response = await fetch(`${API_URL}/api/admin/get-theme/${cacheKey}`, {
                     headers: { 'Authorization': `Bearer ${authToken}` }
