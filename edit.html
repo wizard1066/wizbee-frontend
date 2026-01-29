@@ -337,7 +337,7 @@
 
         async function loadTheme() {
             try {
-                const response = await fetch(`${API_URL}/api/get-theme/${cacheKey}`, {
+                const response = await fetch(`${API_URL}/api/admin/get-theme/${cacheKey}`, {
                     headers: { 'Authorization': `Bearer ${authToken}` }
                 });
 

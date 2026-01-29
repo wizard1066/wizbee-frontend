@@ -286,73 +286,6 @@ let socket = null;
                 }
             });
             
-            socket.on('opponent_advancedDepreciated', async (data) => {
-                console.log('[SOCKET] 🎯 Opponent advanced to index:', data.newIndex);
-                console.log('[SOCKET] Solver:', data.solver);
-
-                const currentUserEmail = localStorage.getItem('userEmail');
-    
-                // ============================================================================
-                // IGNORE IF WE ARE THE SOLVER (ADD THIS CHECK)
-                // ============================================================================
-                
-                if (data.solver === currentUserEmail) {
-                    console.log('[SOCKET] Ignoring - we solved it ourselves');
-                    return;
-                }
-                
-                // Only react if we're behind
-                if (data.newIndex > currentWordIndex) {
-                    // Record opponent's solve
-                    gameResults.push({
-                        word: wordList[currentWordIndex],
-                        won: false,
-                        solvedByOpponent: true,
-                        guesses: 0,
-                        timeSeconds: 0,
-                        cluesViewed: 0
-                    });
-
-                    // Animate opponent's solution
-                    await animateOpponentSolution();
-                    
-                    // Show message
-                    showOpponentSolvedMessage();
-                    
-                    // Wait 2 seconds
-                    await delay(2000);
-                    
-                    // Jump to next word
-                    jumpToWord(data.newIndex);
-
-                    // ============================================================================
-                    // RE-ENABLE GAME CONTROLS (ADD THIS SECTION)
-                    // ============================================================================
-                    
-                    // Show game buttons
-                    document.getElementById('submitGuess').classList.remove('hidden');
-                    document.getElementById('showClueBtn').classList.remove('hidden');
-                    document.getElementById('giveUpBtn').classList.remove('hidden');
-                    
-                    // Hide/reset next button
-                    if (newIndex === wordList.length - 1) {
-                        const resetBtn = document.getElementById('resetButton');
-                        resetBtn.disabled = true;
-                        resetBtn.textContent = '🏁 No More Words';
-                    }
-                    
-                    // Clear message
-                    const msg = document.getElementById('gameMessage');
-                    if (msg) {
-                        msg.textContent = '';
-                        msg.className = 'message';
-                    }
-                    
-                    // Clear any waiting state
-                    gameOver = false;
-                }
-            });
-            
             socket.on('player_joined', (data) => {
                 console.log('[SOCKET] 👋 Another player joined:', data.playerEmail || 'unknown');
                 // Could show a message here if you want
@@ -773,57 +706,6 @@ let socket = null;
             if (wordClues.length > newIndex) {
                  showClueAuto(20000);
             }
-            
-            console.log(`[MULTIPLAYER] Now on word: ${currentWord}`);
-        }
-
-        /**
-         * Jump to a specific word index (when opponent solves)
-         */
-        function jumpToWordDepreciated(newIndex) {
-            console.log(`[MULTIPLAYER] Jumping from word ${currentWordIndex} to ${newIndex}`);
-
-            // Check if this is the LAST word (game complete)
-            if (currentWordIndex >= wordList.length) {
-                console.log('[MULTIPLAYER] Last word reached - enabling summary view');
-                
-                // Hide game controls
-                document.getElementById('submitGuess').classList.add('hidden');
-                document.getElementById('showClueBtn').classList.add('hidden');
-                document.getElementById('giveUpBtn').classList.add('hidden');
-                
-                // Show summary button
-                const resetBtn = document.getElementById('resetButton');
-                resetBtn.textContent = '🎉 View Summary';
-                resetBtn.classList.remove('hidden');
-                resetBtn.disabled = false;
-                resetBtn.onclick = showGameSummary;
-                
-                // Show message
-                const messageDiv = document.getElementById('gameMessage');
-                messageDiv.textContent = '🏁 Game Complete! Your opponent finished the last word.';
-                messageDiv.className = 'message';
-
-                return; // Exit early - don't try to load non-existent word
-            }
-
-            // Update to new word
-            currentWordIndex = newIndex;
-            currentWord = wordList[newIndex];
-            currentGuess = '';
-            guessesUsed = 0;
-            guessHistory = [];
-            remainingGuesses = maxGuesses;
-            gameOver = false;
-            
-            // Reset UI
-            createWordBoxes();
-            updateGuessCount();
-            resetKeyboard();
-            hideClue();
-
-            document.getElementById('selectedTheme').textContent = `${selectedThemeWord} (${currentWordIndex + 1}/${wordList.length})`;
-
             
             console.log(`[MULTIPLAYER] Now on word: ${currentWord}`);
         }
@@ -1398,35 +1280,8 @@ let socket = null;
             }
 
             container.appendChild(guessDiv);
-    }
-/*
-        function updatePreviousGuesses() {
-            const container = document.getElementById('previousGuesses');
-            
-            if (guessHistory.length === 0) {
-                container.innerHTML = '';
-                return;
-            }
-            
-            let html = '<h3>Previous Guesses:</h3>';
-            
-            guessHistory.forEach(guess => {
-                html += '<div class="guess-row">';
-                
-                const feedback = getFeedbackForGuess(guess);
-                
-                for (let i = 0; i < guess.length; i++) {
-                    const colorClass = feedback[i];
-                    html += `<div class="guess-letter ${colorClass}">${guess[i]}</div>`;
-                }
-                
-                html += '</div>';
-            });
-            
-            container.innerHTML = html;
         }
 
-        */
         function getFeedbackForGuess(guess) {
             const feedback = [];
             const wordArray = currentWord.split('');
@@ -1616,50 +1471,6 @@ let socket = null;
             }, 100);
         }
 
-        function createWordBoxesDepreciated2() {
-            const container = document.getElementById('wordBoxes');
-            container.innerHTML = '';
-            
-            for (let i = 0; i < currentWord.length; i++) {
-                const box = document.createElement('div');
-                box.className = 'letter-box';
-                box.id = `box-${i}`;
-                container.appendChild(box);
-            }
-            
-            // Show cursor on first box
-            const firstBox = document.getElementById('box-0');
-            if (firstBox && !gameOver) {
-                firstBox.classList.add('active-input');
-            }
-
-            setTimeout(() => {
-                const firstBox = document.getElementById('box-0');
-                if (firstBox) {
-                    firstBox.classList.add('active-input');
-                    console.log('Added active-input class to box-0');
-                }
-            }, 100);
-        }
-
-        function createWordBoxesDepreciated() {
-            const container = document.getElementById('wordBoxes');
-            let html = '';
-
-            for (let i = 0; i < currentWord.length; i++) {
-                html += `<div class="letter-box" id="box-${i}"></div>`;
-            }
-
-            container.innerHTML = html;
-                // Make boxes clickable to focus input (shows keyboard on mobile)
-            container.addEventListener('click', () => {
-            const guessInput = document.getElementById('guessInput');
-            if (guessInput) {
-                guessInput.focus();
-            }
-            });
-        }
-
         function updateWordBoxes() {
             for (let i = 0; i < currentWord.length; i++) {
                 const box = document.getElementById(`box-${i}`);
@@ -1674,20 +1485,6 @@ let socket = null;
                         box.classList.remove('active-input');
                     }
                 }
-            }
-        }
-
-        function updateWordBoxesDepreciated() {
-            for (let i = 0; i < currentWord.length; i++) {
-                const box = document.getElementById(`box-${i}`);
-                if (box) {
-                    box.textContent = i < currentGuess.length ? currentGuess[i] : '';
-                }
-            }
-            if (i === currentGuess.length && !gameOver) {
-                box.classList.add('active-input');
-            } else {
-                box.classList.remove('active-input');
             }
         }
 
@@ -1870,27 +1667,6 @@ let socket = null;
             }
         }
 
-        function celebrateWinDepreciated() {
-            const colors = ['#ff0000', '#ff7700', '#ffff00', '#00ff00', '#0000ff', '#9400d3'];
-            
-            for (let i = 0; i < currentWord.length; i++) {
-                const box = document.getElementById(`box-${i}`);
-                if (box) {
-                    box.textContent = currentWord[i];
-                    box.classList.add('correct');
-                    
-                    // Cycle through colors
-                    setTimeout(() => {
-                        box.style.background = colors[i % colors.length];
-                        box.style.transform = 'scale(1.2)';
-                    }, i * 100);
-                    
-                    setTimeout(() => {
-                        box.style.transform = 'scale(1)';
-                    }, i * 100 + 500);
-                }
-            }
-        }
 
         function celebrateWinDefunct() {
             for (let i = 0; i < currentWord.length; i++) {
@@ -2064,225 +1840,6 @@ let socket = null;
             }, 100);
         }
 
-        async function endGameDepreciated3(won) {
-            gameOver = true;
-            hideClue();
-            localStorage.removeItem('lastEditedTheme');
-
-            await recordWordAttempt(won);
-
-            // Track result for summary
-            gameResults.push({
-                word: currentWord,
-                won: won,
-                guesses: maxGuesses - remainingGuesses,
-                timeSeconds: Math.floor((Date.now() - wordStartTime) / 1000),
-                cluesViewed: clueViewCount
-            });
-
-            const messageDiv = document.getElementById('gameMessage');
-
-            if (won) {
-                celebrateWin();
-                messageDiv.textContent = `🎉 ${winMessage} ${currentWord}`;
-                messageDiv.className = 'message win';
-            } else {
-                messageDiv.textContent = `${loseMessage} ${currentWord}`;
-                messageDiv.className = 'message lose';
-            }
-
-            document.getElementById('submitGuess').classList.add('hidden');
-            document.getElementById('showClueBtn').classList.add('hidden');
-            document.getElementById('giveUpBtn').classList.add('hidden');
-
-            // Hide both buttons initially
-            document.getElementById('resetButton').classList.add('hidden');
-            document.getElementById('backButton').classList.add('hidden');
-
-            const resetBtn = document.getElementById('resetButton');
-            resetBtn.classList.remove('hidden');
-            
-            // Check if this is the LAST word
-            if (currentWordIndex >= wordList.length - 1) {
-                // Last word - show "No More Words" briefly, then "View Summary"
-                resetBtn.textContent = '🏁 No More Words';
-                resetBtn.disabled = true;
-                resetBtn.style.opacity = '0.6';
-                resetBtn.style.cursor = 'not-allowed';
-                
-                // After 2 seconds, change to "View Summary"
-                setTimeout(() => {
-                    resetBtn.textContent = '🎉 View Summary';
-                    resetBtn.disabled = false;
-                    resetBtn.style.opacity = '1';
-                    resetBtn.style.cursor = 'pointer';
-                    
-                    // Notify opponent in multiplayer
-                    if (isMultiplayerGame && multiplayerCode) {
-                        completeMultiplayerGame();
-                    }
-                }, 2000);
-                
-            } else {
-                // Not last word
-                if (!isMultiplayerGame) {
-                    // Solo: Show "Next Word" button
-                    resetBtn.textContent = 'Next Word →';
-                    resetBtn.disabled = false;
-                } else {
-                    // Multiplayer: Hide button, Socket.IO handles advancement
-                    resetBtn.classList.add('hidden');
-                    messageDiv.textContent += ' Waiting for opponent...';
-                }
-            }
-
-            setTimeout(() => {
-                messageDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }, 100);
-        }
-
-        async function endGameDepreciated2(won) {
-            gameOver = true;
-            hideClue();
-            localStorage.removeItem('lastEditedTheme');
-
-            await recordWordAttempt(won);
-
-            // Track result for summary
-            gameResults.push({
-                word: currentWord,
-                won: won,
-                guesses: maxGuesses - remainingGuesses,
-                timeSeconds: Math.floor((Date.now() - wordStartTime) / 1000),
-                cluesViewed: clueViewCount
-            });
-
-            const messageDiv = document.getElementById('gameMessage');
-
-            if (won) {
-                celebrateWin();
-                messageDiv.textContent = `🎉 ${winMessage} ${currentWord}`;
-                messageDiv.className = 'message win';
-            } else {
-                messageDiv.textContent = `${loseMessage} ${currentWord}`;
-                messageDiv.className = 'message lose';
-            }
-
-            document.getElementById('submitGuess').classList.add('hidden');
-            document.getElementById('showClueBtn').classList.add('hidden');
-            document.getElementById('giveUpBtn').classList.add('hidden');
-
-            // Hide both buttons initially
-            document.getElementById('resetButton').classList.add('hidden');
-            document.getElementById('backButton').classList.add('hidden');
-
-            // In MULTIPLAYER: Don't show "Next Word" button - Socket.IO handles advancement
-            // In SOLO: Show "Next Word" button
-            if (!isMultiplayerGame) {
-                const resetBtn = document.getElementById('resetButton');
-                resetBtn.classList.remove('hidden');
-                
-                // Check if this is the LAST word
-                if (currentWordIndex >= wordList.length - 1) {
-                    // Show "No More Words" first
-                    resetBtn.textContent = '🏁 No More Words';
-                    resetBtn.disabled = true;
-                    resetBtn.style.opacity = '0.6';
-                    resetBtn.style.cursor = 'not-allowed';
-                    
-                    // After 2 seconds, change to "View Summary"
-                    setTimeout(() => {
-                        resetBtn.textContent = '🎉 View Summary';
-                        resetBtn.disabled = false;
-                        resetBtn.style.opacity = '1';
-                        resetBtn.style.cursor = 'pointer';
-                    }, 2000);
-                } else {
-                    // Not last word - show normal "Next Word" button
-                    resetBtn.textContent = 'Next Word →';
-                    resetBtn.disabled = false;
-                }
-            } else {
-                // Multiplayer: Show message that opponent can still play
-                messageDiv.textContent += won 
-                    ? ' Waiting for opponent...' 
-                    : ' Waiting for opponent...';
-            }
-
-            setTimeout(() => {
-                messageDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }, 100);
-        }
-
-        async function endGameDepreciated(won) {
-            gameOver = true;
-            hideClue();
-            localStorage.removeItem('lastEditedTheme');
-
-            await recordWordAttempt(won);
-
-             // Track result for summary
-            gameResults.push({
-                word: currentWord,
-                won: won,
-                guesses: maxGuesses - remainingGuesses,
-                timeSeconds: Math.floor((Date.now() - wordStartTime) / 1000),
-                cluesViewed: clueViewCount
-            });
-
-            const messageDiv = document.getElementById('gameMessage');
-
-            if (won) {
-                celebrateWin();
-                messageDiv.textContent = `🎉 ${winMessage} ${currentWord}`;
-                messageDiv.className = 'message win';
-            } else {
-                messageDiv.textContent = `${loseMessage} ${currentWord}`;
-                messageDiv.className = 'message lose';
-            }
-
-            document.getElementById('submitGuess').classList.add('hidden');
-            document.getElementById('showClueBtn').classList.add('hidden');
-            document.getElementById('giveUpBtn').classList.add('hidden');
-
-            // Hide both buttons initially
-            document.getElementById('resetButton').classList.add('hidden');
-            document.getElementById('backButton').classList.add('hidden');
-
-           // Always show Next Word button (it will trigger summary on last word)
-            document.getElementById('resetButton').classList.remove('hidden');
-            document.getElementById('backButton').classList.add('hidden');
-
-            // In MULTIPLAYER: Don't show "Next Word" button - Socket.IO handles advancement
-            // In SOLO: Show "Next Word" button
-            if (!isMultiplayerGame) {
-                document.getElementById('resetButton').classList.remove('hidden');
-                
-                // Change button text if it's the last word
-                if (currentWordIndex >= wordList.length - 1) {
-                    document.getElementById('resetButton').textContent = '🎉 View Summary';
-                } else {
-                    document.getElementById('resetButton').textContent = 'Next Word →';
-                }
-            } else {
-                // Multiplayer: Show message that opponent can still play
-                messageDiv.textContent += won 
-                    ? ' Waiting for opponent...' 
-                    : ' Waiting for opponent...';
-            }
-
-            // Change button text if it's the last word
-            if (currentWordIndex >= wordList.length - 1) {
-                document.getElementById('resetButton').textContent = '🎉 View Summary';
-            } else {
-                document.getElementById('resetButton').textContent = 'Next Word →';
-            }
-
-            setTimeout(() => {
-                messageDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }, 100);
-        }
-
         /**
          * Notify server that we're advancing to the next word
          * Call this whenever the current player moves forward
@@ -2340,40 +1897,6 @@ let socket = null;
             }
         }
 
-        async function advanceMultiplayerGameDepreciated() {
-            if (!isMultiplayerGame || !multiplayerCode) {
-                return; // Not in multiplayer mode
-            }
-            
-            try {
-                console.log(`[MULTIPLAYER] Advancing from word ${currentWordIndex}`);
-                
-                const response = await fetch(`${API_URL}/api/advance-game`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${authToken}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        shareCode: multiplayerCode,
-                        fromIndex: currentWordIndex
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success && data.advanced) {
-                    console.log('[MULTIPLAYER] ✅ Successfully advanced game');
-                } else if (data.success && !data.advanced) {
-                    console.log('[MULTIPLAYER] ⚠️ Opponent beat us to it');
-                } else {
-                    console.error('[MULTIPLAYER] Failed to advance:', data.error);
-                }
-                
-            } catch (error) {
-                console.error('[MULTIPLAYER] Advance error:', error);
-            }
-        }
 
         /**
          * Notify server and opponent that game is complete
@@ -2560,13 +2083,6 @@ let socket = null;
             }
         }
 
-        function giveUpDepreciated() {
-            //if (confirm('Give up on this word?')) {
-                //advanceMultiplayerGame();
-                skipMultiplayerWord();
-                endGame(false);
-            //}
-        }
 
         function returnToBrowse() {
             window.location.href = 'browse.html';
