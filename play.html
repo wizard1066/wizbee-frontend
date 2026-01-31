@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Play - Wizbee</title>
-
-    
     <link rel="stylesheet" href="styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
@@ -16,15 +14,14 @@
     <div class="container">
         <h1>
             <a href="index.html" style="text-decoration: none; color: inherit;">
-                <img 
-                    id="debugPollBtn" 
-                    src="bee4.png" 
-                    alt="Poll" 
+                <img
+                    id="debugPollBtn"
+                    src="bee4.png"
+                    alt="Poll"
                     style="height: 48px; vertical-align: middle;"
                     onmouseover="this.style.transform='scale(1.1)'"
                     onmouseout="this.style.transform='scale(1)'"
                 >
-
                 <span style="color: #f59e0b;">Wizbee</span>
             </a>
         </h1>
@@ -38,7 +35,7 @@
         <!-- Game Board -->
         <div id="gameScreen" class="game-screen">
             <div class="theme-display">Theme: <span id="selectedTheme"></span></div>
-            
+
             <!-- CLUE DISPLAY -->
             <div id="clueDisplay" class="clue-display hidden" style="
                 background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -55,24 +52,24 @@
                 <div style="font-size: 14px; opacity: 0.9; margin-bottom: 8px;">💡 Clue</div>
                 <div id="clueText"></div>
             </div>
-            
+
             <div id="wordBoxes" class="word-boxes"></div>
             <div class="guesses-remaining">Guesses remaining: <span id="guessesRemaining"></span></div>
             <div id="keyboard" class="keyboard" hidden></div>
 
-            <input 
-            type="text" 
-            id="guessInput" 
-            autocomplete="off"
-            autocorrect="off"
-            autocapitalize="characters"
-            style="
-                position: absolute;
-                left: -9999px;
-                width: 1px;
-                height: 1px;
-                opacity: 0;
-            "
+            <input
+                type="text"
+                id="guessInput"
+                autocomplete="off"
+                autocorrect="off"
+                autocapitalize="characters"
+                style="
+                    position: absolute;
+                    left: -9999px;
+                    width: 1px;
+                    height: 1px;
+                    opacity: 0;
+                "
             />
 
             <div class="guess-input-container">
@@ -96,7 +93,6 @@
                 <button onclick="shareResults()" class="play-again" style="background: #22c55e; margin-top: 10px;">
                     Share Results
                 </button>
-
                 <button onclick="closeSummary()" class="play-again" style="margin-top: 20px;">
                     Back to Browse
                 </button>
@@ -112,7 +108,7 @@
     <script>
         const API_URL = 'https://api.wizbee.app';
         let authToken = null;
-        
+
         // Game state
         let wordList = [];
         let currentWordIndex = 0;
@@ -134,9 +130,9 @@
         let letterSwapCount = 0;
         let gameResults = [];
         let currentGameData = null;
-
         let currentThemeId = null;
-	    let currentCacheKey = null;
+        let currentCacheKey = null;
+
         // ============================================================================
         // MULTIPLAYER FUNCTIONS
         // ============================================================================
@@ -144,42 +140,29 @@
         let isMultiplayerGame = false;
         let multiplayerCode = null;
         let pollInterval = null;
-        
-        // Prevent any navigation
-        /*
-        window.addEventListener('beforeunload', function(e) {
-            console.log('[NAVIGATION] Page trying to unload!');
-            console.trace(); // Shows what triggered it
-            e.preventDefault();
-            e.returnValue = '';
-            return 'Page is trying to leave - are you sure?';
-        });
-        */
 
         // ============================================================================
-// SOCKET.IO CONNECTION
-// ============================================================================
+        // SOCKET.IO CONNECTION
+        // ============================================================================
 
-let socket = null;
+        let socket = null;
 
-/**
- * Initialize Socket.IO connection for multiplayer
- */
+        /**
+         * Initialize Socket.IO connection for multiplayer
+         */
         function initializeSocket() {
             if (!multiplayerCode) {
                 console.log('[SOCKET] No multiplayer game - skipping socket connection');
                 return;
             }
-            
+
             console.log('[SOCKET] Connecting to server...');
-            // DEBUG: Check if authToken is available
             console.log('[SOCKET] authToken exists:', !!authToken);
             console.log('[SOCKET] authToken value:', authToken ? authToken.substring(0, 20) + '...' : 'NULL');
-    
-            
+
             socket = io('https://api.wizbee.app', {
                 auth: {
-                    token: authToken  // Send JWT token for authentication
+                    token: authToken
                 },
                 reconnection: true,
                 reconnectionAttempts: 5,
@@ -188,18 +171,15 @@ let socket = null;
 
             socket.on('game_completed', (data) => {
                 console.log('[SOCKET] 🏁 Game completed!');
-                
-                // Show completion message
+
                 const messageDiv = document.getElementById('gameMessage');
                 messageDiv.textContent = '🏁 Game Complete! All words finished.';
                 messageDiv.className = 'message win';
-                
-                // Hide game controls
+
                 document.getElementById('submitGuess').classList.add('hidden');
                 document.getElementById('showClueBtn').classList.add('hidden');
                 document.getElementById('giveUpBtn').classList.add('hidden');
-                
-                // Show summary button
+
                 const resetBtn = document.getElementById('resetButton');
                 resetBtn.textContent = '🎉 View Summary';
                 resetBtn.classList.remove('hidden');
@@ -210,17 +190,16 @@ let socket = null;
             socket.on('opponent_advanced', async (data) => {
                 console.log('[SOCKET] 🎯 Opponent advanced to index:', data.newIndex);
                 console.log('[SOCKET] Solver:', data.solver);
-                
+
                 const currentUserEmail = localStorage.getItem('userEmail');
-                
+
                 if (data.solver === currentUserEmail) {
                     console.log('[SOCKET] Ignoring - we solved it ourselves');
                     return;
                 }
-                
+
                 // Only react if we're behind
                 if (data.newIndex > currentWordIndex) {
-                    // Record opponent's solve
                     gameResults.push({
                         word: wordList[currentWordIndex],
                         won: false,
@@ -230,80 +209,70 @@ let socket = null;
                         cluesViewed: 0
                     });
 
-                    // ALWAYS show animation first (even if it's the last word)
                     await animateOpponentSolution();
                     showOpponentSolvedMessage();
                     await delay(2000);
-                    
-                    // NOW check if game is complete
+
                     if (data.newIndex >= wordList.length) {
                         console.log('[SOCKET] Last word solved - game complete!');
-                        
-                        // Show completion message
+
                         const messageDiv = document.getElementById('gameMessage');
                         messageDiv.textContent = '🏁 Game Complete! All words finished.';
                         messageDiv.className = 'message win';
-                        
-                        // Hide game controls
+
                         document.getElementById('submitGuess').classList.add('hidden');
                         document.getElementById('showClueBtn').classList.add('hidden');
                         document.getElementById('giveUpBtn').classList.add('hidden');
-                        
-                        // Show summary button
+
                         const resetBtn = document.getElementById('resetButton');
                         resetBtn.textContent = '🎉 View Summary';
                         resetBtn.classList.remove('hidden');
                         resetBtn.disabled = false;
                         resetBtn.onclick = showGameSummary;
-                        
-                        // Don't call jumpToWord - we're done
+
                         return;
                     }
-                    
-                    // Not last word - jump to next word normally
+
                     jumpToWord(data.newIndex);
-                    
-                    // Re-enable controls
+
                     document.getElementById('submitGuess').classList.remove('hidden');
                     document.getElementById('showClueBtn').classList.remove('hidden');
                     document.getElementById('giveUpBtn').classList.remove('hidden');
-                    
+
                     const resetBtn = document.getElementById('resetButton');
                     if (data.newIndex < wordList.length - 1) {
                         resetBtn.classList.add('hidden');
                     }
-                    
+
                     resetBtn.disabled = false;
                     resetBtn.textContent = 'Next Word →';
-                    
+
                     const msg = document.getElementById('gameMessage');
                     if (msg) {
                         msg.textContent = '';
                         msg.className = 'message';
                     }
-                    
+
                     gameOver = false;
                 }
             });
-            
+
             socket.on('player_joined', (data) => {
                 console.log('[SOCKET] 👋 Another player joined:', data.playerEmail || 'unknown');
-                // Could show a message here if you want
             });
-            
+
             socket.on('game_completed', (data) => {
                 console.log('[SOCKET] 🏁 Game completed by:', data.winner);
-                // Handle game completion if needed
             });
-            
+
             socket.on('error', (data) => {
                 console.error('[SOCKET] ❌ Server error:', data.message);
                 alert(`Game error: ${data.message}`);
             });
-            
+
             socket.on('connect_error', (error) => {
                 console.error('[SOCKET] ❌ Connection error:', error.message);
-                
+
                 if (error.message === 'Authentication required' || error.message.includes('Invalid')) {
                     console.error('[SOCKET] Authentication failed - token may be expired');
                     alert('Session expired. Please refresh the page and log in again.');
@@ -311,7 +280,7 @@ let socket = null;
                     console.log('[SOCKET] Connection failed - use bee button for manual polling');
                 }
             });
-            
+
             socket.on('disconnect', (reason) => {
                 console.log('[SOCKET] ⚠️ Disconnected:', reason);
                 console.log('[SOCKET] Use bee button as fallback or wait for reconnection');
@@ -320,8 +289,7 @@ let socket = null;
             socket.on('player_skipped', (data) => {
                 console.log('[SOCKET] 👋 Opponent skipped word:', data.wordIndex);
                 console.log('[SOCKET] Skipper:', data.skipper);
-                
-                // Optional: Show a brief message
+
                 const msg = document.createElement('div');
                 msg.style.cssText = `
                     position: fixed;
@@ -338,53 +306,45 @@ let socket = null;
                 `;
                 msg.textContent = '⏭️ Opponent skipped this word';
                 document.body.appendChild(msg);
-                
+
                 setTimeout(() => msg.remove(), 2000);
             });
-            
+
             socket.on('skip_requested', (data) => {
                 console.log('[SOCKET] 👋 Opponent requested skip for word:', data.word);
                 console.log('[SOCKET] Requester:', data.requester);
-                
-                // Get current user email
+
                 const currentUserEmail = localStorage.getItem('userEmail');
-                
-                // Don't show modal to the person who requested skip
+
                 if (data.requester === currentUserEmail) {
                     console.log('[SOCKET] Ignoring - we requested the skip');
                     return;
                 }
-                
-                // Show modal asking if we want to skip too
+
                 showSkipRequestModal(data.requester, data.word);
             });
-        
 
             socket.on('skip_declined', (data) => {
                 console.log('[SOCKET] 🚫 Skip declined by:', data.decliner);
-                
-                // Get current user email
+
                 const currentUserEmail = localStorage.getItem('userEmail');
-                
-                // Only show to the person who requested skip
+
                 if (data.decliner === currentUserEmail) {
                     console.log('[SOCKET] Ignoring - we declined');
                     return;
                 }
-    
-                // Re-enable next button and show message
+
                 const resetBtn = document.getElementById('resetButton');
                 const msg = document.getElementById('gameMessage');
-                
+
                 resetBtn.disabled = false;
                 resetBtn.textContent = 'Next Word →';
-                
+
                 if (msg) {
                     msg.textContent = '💪 Opponent wants to keep trying!';
                     msg.className = 'message';
                 }
-                
-                // Show temporary notification
+
                 const notification = document.createElement('div');
                 notification.style.cssText = `
                     position: fixed;
@@ -406,8 +366,7 @@ let socket = null;
 
             socket.on('both_skipped', async (data) => {
                 console.log('[SOCKET] ⏭️ Both players skipped! Advancing to:', data.newIndex);
-                
-                // Record as skipped for both
+
                 gameResults.push({
                     word: wordList[currentWordIndex],
                     won: false,
@@ -416,8 +375,7 @@ let socket = null;
                     timeSeconds: 0,
                     cluesViewed: 0
                 });
-                
-                // Show message
+
                 const notification = document.createElement('div');
                 notification.style.cssText = `
                     position: fixed;
@@ -434,28 +392,22 @@ let socket = null;
                 `;
                 notification.textContent = '⏭️ Both skipped - moving to next word';
                 document.body.appendChild(notification);
-                
+
                 await delay(2000);
                 notification.remove();
-                
-                // Jump to next word
+
                 jumpToWord(data.newIndex);
-                // ============================================================================
-                // RE-ENABLE GAME CONTROLS (ADD THIS SECTION)
-                // ============================================================================
-                
-                // Show game buttons
+
+                // Re-enable game controls
                 document.getElementById('submitGuess').classList.remove('hidden');
                 document.getElementById('showClueBtn').classList.remove('hidden');
                 document.getElementById('giveUpBtn').classList.remove('hidden');
-                
-                // Hide/reset next button
+
                 const resetBtn = document.getElementById('resetButton');
                 resetBtn.classList.add('hidden');
                 resetBtn.disabled = false;
                 resetBtn.textContent = 'Next Word →';
-                
-                // Clear message
+
                 const msg = document.getElementById('gameMessage');
                 if (msg) {
                     msg.textContent = '';
@@ -465,25 +417,19 @@ let socket = null;
 
             socket.on('connect', () => {
                 console.log('[SOCKET] ✅ Connected:', socket.id);
-                
-                // Join the game room
+
                 socket.emit('join_game', multiplayerCode);
                 console.log('[SOCKET] Requesting to join room:', multiplayerCode);
             });
         }
 
-
         function initMultiplayer() {
             multiplayerCode = localStorage.getItem('sharedGameCode');
             isMultiplayerGame = !!multiplayerCode;
-            
+
             if (isMultiplayerGame) {
                 console.log('[MULTIPLAYER] Joined game:', multiplayerCode);
-                
-                //startPolling(multiplayerCode);
-                // Button stays as "Show Clue" since clues already exist
             }
-            // Don't change button here - let generateAllClues() handle it
         }
 
         /**
@@ -499,78 +445,70 @@ let socket = null;
         async function animateOpponentSolution() {
             const word = wordList[currentWordIndex];
             const boxes = document.querySelectorAll('.letter-box');
-            
+
             console.log('[ANIMATION] Showing opponent solution:', word);
-            
-            // Clear current boxes
+
             boxes.forEach(box => {
                 box.textContent = '';
                 box.classList.remove('correct', 'present', 'absent', 'active-input');
             });
-            
-            // Reveal each letter with delay
+
             for (let i = 0; i < word.length; i++) {
                 const box = boxes[i];
                 box.textContent = word[i];
                 box.classList.add('correct');
-                
-                // Flash effect
+
                 box.style.animation = 'none';
                 setTimeout(() => {
                     box.style.animation = 'pop 0.3s ease-in-out';
                 }, 10);
-                
-                await delay(150); // 150ms per letter
+
+                await delay(150);
             }
-            
-            // Flash all boxes green
+
             await delay(300);
             boxes.forEach((box, i) => {
                 if (i < word.length) {
                     box.style.animation = 'pulse 0.5s ease-in-out';
                 }
             });
-            
+
             await delay(800);
         }
-       
 
-       /**
+        /**
          * Debug: Manual poll trigger
          */
         async function debugPoll() {
             console.log('[DEBUG POLL START] authToken:', localStorage.getItem('authToken'));
             console.log('[DEBUG POLL START] authToken global var:', authToken);
             const bee = document.getElementById('debugPollBtn');
-            
-            // Animate bee (spin while polling)
+
             bee.style.transform = 'rotate(360deg)';
             bee.style.transition = 'transform 0.5s';
 
-            
             try {
                 if (!multiplayerCode) {
                     console.log('[DEBUG] No multiplayer game active');
-                    
                     return;
                 }
-                
+
                 console.log('[DEBUG] Polling game:', multiplayerCode);
-                
+
                 const response = await fetch(`${API_URL}/api/poll-game/${multiplayerCode}`, {
-                    headers: { 
-                        'Authorization': `Bearer ${authToken}` 
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
                     }
                 });
-                
+
                 const data = await response.json();
-                
+
                 console.log('[DEBUG] Poll result:', data);
                 console.log('[DEBUG] Current word index:', currentWordIndex);
                 console.log('[DEBUG] Server current index:', data.currentIndex);
-                
+
                 if (data.currentIndex > currentWordIndex) {
-                        console.log('[DEBUG] ✅ Opponent advanced!');
+                    console.log('[DEBUG] ✅ Opponent advanced!');
 
                     gameResults.push({
                         word: wordList[currentWordIndex],
@@ -580,26 +518,18 @@ let socket = null;
                         timeSeconds: 0,
                         cluesViewed: 0
                     });
-    
-                    // Show opponent's answer with animation
+
                     await animateOpponentSolution();
-                    
-                    // Show message
                     showOpponentSolvedMessage();
-                    
-                    // Wait 2 seconds
                     await delay(2000);
-                    
-                    // Move to next word
                     jumpToWord(data.currentIndex);
                 } else {
                     console.log('[DEBUG] ⏸️ No change detected');
                 }
-                
+
             } catch (error) {
                 console.error('[DEBUG] Poll error:', error);
             } finally {
-                // Reset bee rotation
                 console.log('[DEBUG POLL END] authToken:', localStorage.getItem('authToken'));
                 setTimeout(() => {
                     bee.style.transform = 'rotate(0deg)';
@@ -629,8 +559,7 @@ let socket = null;
             `;
             msg.textContent = '👤 Opponent solved it!';
             document.body.appendChild(msg);
-            
-            // Remove after 2 seconds
+
             setTimeout(() => {
                 msg.style.animation = 'slideOut 0.3s ease-in';
                 setTimeout(() => msg.remove(), 300);
@@ -641,32 +570,27 @@ let socket = null;
             console.log(`[MULTIPLAYER] Jumping from word ${currentWordIndex} to ${newIndex}`);
 
             hideClue();
-            
-            // Check if game is complete
+
             if (newIndex >= wordList.length) {
                 console.log('[MULTIPLAYER] Game complete! No more words.');
-                
-                // Hide game controls
+
                 document.getElementById('submitGuess').classList.add('hidden');
                 document.getElementById('showClueBtn').classList.add('hidden');
                 document.getElementById('giveUpBtn').classList.add('hidden');
-                
-                // Show summary button
+
                 const resetBtn = document.getElementById('resetButton');
                 resetBtn.textContent = '🎉 View Summary';
                 resetBtn.classList.remove('hidden');
                 resetBtn.disabled = false;
                 resetBtn.onclick = showGameSummary;
-                
-                // Show message
+
                 const messageDiv = document.getElementById('gameMessage');
                 messageDiv.textContent = '🏁 Game Complete!';
                 messageDiv.className = 'message win';
-                
+
                 return;
             }
-            
-            // Update to new word
+
             currentWordIndex = newIndex;
             currentWord = wordList[newIndex];
             currentGuess = '';
@@ -674,39 +598,31 @@ let socket = null;
             guessesUsed = 0;
             remainingGuesses = maxGuesses;
             gameOver = false;
-            
-            // Reset UI
+
             createWordBoxes();
             updateGuessCount();
             resetKeyboard();
             hideClue();
-            
-            // Clear previous guesses and messages
+
             document.getElementById('previousGuesses').innerHTML = '';
             document.getElementById('gameMessage').textContent = '';
-
             document.getElementById('selectedTheme').textContent = `${selectedThemeWord} (${currentWordIndex + 1}/${wordList.length})`;
-            
-            // ============================================================================
-            // CHECK IF THIS IS THE LAST WORD - SHOW "NO MORE WORDS" BUTTON
-            // ============================================================================
-            
+
             if (newIndex >= wordList.length - 1) {
-                // This is the LAST word - show disabled "No More Words" button
                 const resetBtn = document.getElementById('resetButton');
                 resetBtn.textContent = '🏁 No More Words';
                 resetBtn.disabled = true;
                 resetBtn.style.opacity = '0.6';
                 resetBtn.style.cursor = 'not-allowed';
                 resetBtn.classList.remove('hidden');
-                
+
                 console.log('[GAME] Last word - showing "No More Words" button');
             }
 
             if (wordClues.length > newIndex) {
-                 showClueAuto(20000);
+                showClueAuto(20000);
             }
-            
+
             console.log(`[MULTIPLAYER] Now on word: ${currentWord}`);
         }
 
@@ -725,29 +641,24 @@ let socket = null;
             const btn = document.getElementById('showClueBtn');
             btn.disabled = true;
             btn.textContent = '⏳ Creating...';
-            
-            // Log what we're reading
+
             console.log('[SHARE] Reading from localStorage...');
             const rawData = localStorage.getItem('pendingGame');
             console.log('[SHARE] Raw pendingGame:', rawData);
-            
+
             const gameData = JSON.parse(rawData);
             console.log('[SHARE] Parsed gameData:', gameData);
-            
+
             const cacheKey = gameData?.cacheKey;
             console.log('[SHARE] Extracted cacheKey:', cacheKey);
-            
-            // REMOVE THE DATA LOGS HERE (they were wrong)
 
-            
-            
             if (!cacheKey) {
                 alert('Error: No game loaded');
                 btn.disabled = false;
                 btn.textContent = '📤 Share Game';
                 return;
             }
-            
+
             try {
                 const response = await fetch(`${API_URL}/api/create-shared-game`, {
                     method: 'POST',
@@ -761,35 +672,29 @@ let socket = null;
                         words: wordList
                     })
                 });
-                
+
                 const data = await response.json();
-                
+
                 if (!data.success) {
                     alert('Failed to create shared game');
                     btn.disabled = false;
                     btn.textContent = '📤 Share Game';
                     return;
                 }
-                
-                // Set multiplayer variables
+
                 multiplayerCode = data.shareCode;
                 isMultiplayerGame = true;
-                
-                // Initialize Socket.IO
+
                 console.log('[MULTIPLAYER] Initializing Socket.IO for code:', data.shareCode);
                 initializeSocket();
-                
-                // Save code
+
                 localStorage.setItem('sharedGameCode', data.shareCode);
-                
-                // Show code to user
                 showShareCodeModal(data.shareCode);
-                
-                // Change button to show clue
+
                 btn.textContent = '💡 Show Clue';
                 btn.onclick = showClue;
                 btn.disabled = false;
-                
+
             } catch (error) {
                 console.error('[MULTIPLAYER] Share error:', error);
                 alert('Failed to create shared game');
@@ -802,7 +707,6 @@ let socket = null;
          * Show modal when opponent requests to skip
          */
         function showSkipRequestModal(requester, word) {
-            // Create modal overlay
             const overlay = document.createElement('div');
             overlay.id = 'skipRequestOverlay';
             overlay.style.cssText = `
@@ -817,8 +721,7 @@ let socket = null;
                 justify-content: center;
                 z-index: 9999;
             `;
-            
-            // Create modal content
+
             const modal = document.createElement('div');
             modal.style.cssText = `
                 background: white;
@@ -829,7 +732,7 @@ let socket = null;
                 text-align: center;
                 box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             `;
-            
+
             modal.innerHTML = `
                 <h2 style="color: #f59e0b; margin-bottom: 20px;">
                     🤔 Opponent Wants to Skip
@@ -872,7 +775,7 @@ let socket = null;
                     </button>
                 </div>
             `;
-            
+
             overlay.appendChild(modal);
             document.body.appendChild(overlay);
         }
@@ -882,11 +785,10 @@ let socket = null;
          */
         async function respondToSkip(response) {
             console.log('[MULTIPLAYER] Responding to skip:', response);
-            
-            // Remove modal
+
             const overlay = document.getElementById('skipRequestOverlay');
             if (overlay) overlay.remove();
-            
+
             try {
                 const apiResponse = await fetch(`${API_URL}/api/respond-skip`, {
                     method: 'POST',
@@ -899,13 +801,12 @@ let socket = null;
                         response: response
                     })
                 });
-                
+
                 const data = await apiResponse.json();
-                
+
                 if (data.success) {
                     if (response === 'keep_trying') {
                         console.log('[MULTIPLAYER] Continuing to play');
-                        // Show message
                         const msg = document.createElement('div');
                         msg.style.cssText = `
                             position: fixed;
@@ -924,61 +825,56 @@ let socket = null;
                         document.body.appendChild(msg);
                         setTimeout(() => msg.remove(), 3000);
                     }
-                    // If "skip", advancement handled by Socket.IO event
                 }
-                
+
             } catch (error) {
                 console.error('[MULTIPLAYER] Respond skip error:', error);
                 alert('Failed to respond. Please try again.');
             }
         }
-        
 
         /**
          * Show share code modal with QR code
          */
-
         function showShareCodeModal(shareCode) {
             const backdrop = document.createElement('div');
             backdrop.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); display: flex; align-items: center; justify-content: center; z-index: 10000;';
-            
+
             const modal = document.createElement('div');
             modal.style.cssText = 'background: white; padding: 40px; border-radius: 16px; text-align: center; max-width: 400px; box-shadow: 0 10px 40px rgba(0,0,0,0.3);';
-            
+
             const shareUrl = 'https://wizbee.app/?join=' + shareCode;
-            
-            // Build modal content
+
             const title = document.createElement('h2');
             title.textContent = 'Share Game Code';
             title.style.cssText = 'margin: 0 0 20px 0; color: #2d3748;';
-            
+
             const codeSection = document.createElement('div');
             codeSection.style.cssText = 'background: #f7fafc; padding: 20px; border-radius: 8px; margin-bottom: 20px;';
             codeSection.innerHTML = '<div style="font-size: 14px; color: #718096; margin-bottom: 8px;">Type this code:</div><div style="font-size: 36px; font-weight: bold; color: #2d3748; letter-spacing: 4px;">' + shareCode + '</div>';
-            
+
             const copyBtn = document.createElement('button');
             copyBtn.textContent = '📋 Copy Code';
             copyBtn.style.cssText = 'margin-top: 10px; padding: 8px 16px; background: #4299e1; color: white; border: none; border-radius: 6px; cursor: pointer;';
             copyBtn.onclick = () => navigator.clipboard.writeText(shareCode);
             codeSection.appendChild(copyBtn);
-            
+
             const qrSection = document.createElement('div');
             qrSection.style.cssText = 'margin-bottom: 20px;';
             qrSection.innerHTML = '<div style="font-size: 14px; color: #718096; margin-bottom: 12px;">Or scan with phone:</div><div id="qrcode" style="display: inline-block;"></div>';
-            
+
             const doneBtn = document.createElement('button');
             doneBtn.textContent = 'Done';
             doneBtn.style.cssText = 'padding: 12px 32px; background: #48bb78; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px;';
             doneBtn.onclick = () => backdrop.remove();
-            
+
             modal.appendChild(title);
             modal.appendChild(codeSection);
             modal.appendChild(qrSection);
             modal.appendChild(doneBtn);
             backdrop.appendChild(modal);
             document.body.appendChild(backdrop);
-            
-            // Generate QR code
+
             setTimeout(() => {
                 if (typeof QRCode !== 'undefined') {
                     new QRCode(document.getElementById("qrcode"), {
@@ -991,16 +887,13 @@ let socket = null;
                     document.getElementById("qrcode").textContent = 'QR code unavailable';
                 }
             }, 100);
-            
+
             backdrop.addEventListener('click', (e) => {
                 if (e.target === backdrop) backdrop.remove();
             });
         }
 
-        /**
-         * Copy share code to clipboard
-         */
-        function copyShareCode(code) {
+        function copyShareCodeDepreciated(code) {
             navigator.clipboard.writeText(code).then(() => {
                 const btn = event.target;
                 const originalText = btn.textContent;
@@ -1009,31 +902,24 @@ let socket = null;
                     btn.textContent = originalText;
                 }, 2000);
             }).catch(err => {
-                // Fallback
                 prompt('Copy this code:', code);
             });
         }
 
-        /**
-         * Close share modal
-         */
-        function closeShareModal() {
+        function closeShareModalDepreciated() {
             const modal = document.getElementById('shareCodeModal');
             if (modal) {
                 modal.remove();
             }
         }
 
-        /**
-         * Start polling for game state changes
-         */
-        function startPolling(code) {
+        function startPollingDepreciated(code) {
             if (pollInterval) {
                 clearInterval(pollInterval);
             }
-            
+
             console.log('[MULTIPLAYER] Starting polling for game:', code);
-            
+
             pollInterval = setInterval(async () => {
                 try {
                     const response = await fetch(`${API_URL}/api/poll-game/${code}`, {
@@ -1041,32 +927,27 @@ let socket = null;
                             'Authorization': `Bearer ${authToken}`
                         }
                     });
-                    
+
                     const data = await response.json();
-                    
+
                     if (data.success) {
-                        // Check if opponent advanced
                         if (data.currentIndex > currentWordIndex) {
                             console.log('[MULTIPLAYER] Opponent advanced! Moving to next word...');
-                            showOpponentSolved();
+                            showOpponentSolvedDepreciated();
                         }
-                        
-                        // Check if game completed
+
                         if (data.status === 'completed' && !gameOver) {
                             console.log('[MULTIPLAYER] Game completed by opponent');
-                            showOpponentWon();
+                            showOpponentWonDepreciated();
                         }
                     }
                 } catch (error) {
                     console.error('[MULTIPLAYER] Poll error:', error);
                 }
-            }, 2000); // Poll every 2 seconds
+            }, 2000);
         }
 
-        /**
-         * Stop polling
-         */
-        function stopPolling() {
+        function stopPollingDepreciated() {
             if (pollInterval) {
                 clearInterval(pollInterval);
                 pollInterval = null;
@@ -1074,29 +955,12 @@ let socket = null;
             }
         }
 
-        // Mobile debugging
-        /*window.onerror = function(msg, url, lineNo, columnNo, error) {
-            alert('ERROR: ' + msg + '\nLine: ' + lineNo);
-            console.error(msg, url, lineNo, columnNo, error);
-            return false;
-        };
-
-        // Log everything
-        console.log = (function(oldLog) {
-            return function(...args) {
-                alert('LOG: ' + args.join(' '));
-                oldLog.apply(console, args);
-            };
-        })(console.log);*/
-
         window.onload = function() {
             console.log('[PLAY] Loading game...');
             console.log('[PLAY] pendingGame from localStorage:', localStorage.getItem('pendingGame'));
-    
-            authToken = localStorage.getItem('authToken');
-            
 
-            
+            authToken = localStorage.getItem('authToken');
+
             if (!authToken) {
                 window.location.href = 'index.html';
                 return;
@@ -1110,45 +974,38 @@ let socket = null;
 
             try {
                 const gameData = JSON.parse(pendingGame);
-                //localStorage.removeItem('pendingGame');
-                
                 document.getElementById('loadingMessage').style.display = 'none';
                 startGame(gameData);
             } catch (error) {
                 console.error('Error loading game:', error);
                 showError('Failed to load game');
             }
+
             document.getElementById('debugPollBtn')?.addEventListener('click', async function(e) {
                 e.preventDefault();
                 e.stopPropagation();
                 await debugPoll();
                 return false;
             });
+
             initMultiplayer();
             initializeSocket();
         };
 
-                /**
-         * Show opponent solved animation (Phase 10)
-         */
-        function showOpponentSolved() {
+        function showOpponentSolvedDepreciated() {
             console.log('[MULTIPLAYER] TODO: Show opponent solved animation');
-            // For now, just move to next word
             nextWord();
         }
 
-        /**
-         * Show opponent won message (Phase 10)
-         */
-        function showOpponentWon() {
+        function showOpponentWonDepreciated() {
             console.log('[MULTIPLAYER] TODO: Show opponent won message');
             alert('Your opponent won! 🏆');
         }
 
         async function startGame(gameData) {
             console.log('=== START GAME ===', gameData.words);
-            
-            clueViewCount = 0;  // ← ADD THIS
+
+            clueViewCount = 0;
             currentGameData = gameData;
             gameResults = [];
             wordList = gameData.words;
@@ -1166,13 +1023,12 @@ let socket = null;
             letterSwapCount = 0;
             wordClues = [];
             console.log('Language:', currentLanguage);
-            
+
             document.getElementById('selectedTheme').textContent = `${selectedThemeWord} (${currentWordIndex + 1}/${wordList.length})`;
-            
+
             createKeyboard(currentLanguage);
             console.log('createKeyboard ok');
-            
-            // ADD WORD POOL VISUALIZATION
+
             const gameScreen = document.getElementById('gameScreen');
             const oldViz = document.getElementById('wordPoolContainer');
             if (oldViz) oldViz.remove();
@@ -1181,26 +1037,26 @@ let socket = null;
             const themeElement = document.querySelector('.theme-display');
             themeElement.parentNode.insertBefore(visualization, themeElement.nextSibling);
 
-            // Draw visualization
             if (gameData.wordPoolInfo) {
                 drawWordPoolVisualization(
                     gameData.wordPoolInfo.totalWords,
                     gameData.wordPoolInfo.selectedIndices
                 );
             }
+
             try {
                 await generateAllClues();
             } catch (error) {
                 console.error('ERROR generating clues:', error);
                 alert('Clue generation failed: ' + error.message);
-                wordClues = []; // Continue without clues
+                wordClues = [];
             }
 
             console.log('createWordBoxes');
             createWordBoxes();
             console.log('updateGuessCount');
             updateGuessCount();
-            
+
             if (wordClues.length > 0) {
                 showClueAuto(20000);
             }
@@ -1209,86 +1065,32 @@ let socket = null;
         function shareResults() {
             const totalWords = gameResults.length;
             const wordsWon = gameResults.filter(r => r.won).length;
-            const successRate = Math.round((wordsWon/totalWords)*100);
-            
-            // Create emoji grid (like Wordle)
+            const successRate = Math.round((wordsWon / totalWords) * 100);
+
             let shareText = `🐝 Wizbee - ${selectedThemeWord}\n`;
             shareText += `${wordsWon}/${totalWords} words (${successRate}%)\n\n`;
-            
+
             gameResults.forEach((result, index) => {
                 const icon = result.won ? '✅' : '❌';
                 shareText += `${icon} ${result.word}: ${result.guesses} guesses in ${result.timeSeconds}s\n`;
             });
-            
+
             shareText += `\nPlay at: https://wizbee.app`;
-            
-            // Copy to clipboard
+
             navigator.clipboard.writeText(shareText).then(() => {
                 alert('Results copied to clipboard! 📋');
             }).catch(err => {
                 console.error('Failed to copy:', err);
-                // Fallback - show text in alert
                 alert('Copy this:\n\n' + shareText);
             });
         }
 
-        function updatePreviousGuesses() {
-            const container = document.getElementById('previousGuesses');
-            container.innerHTML = ''; // Clear existing
-            
-            guessHistory.forEach(guess => {
-                showGuessFeedback(guess);
-            });
-        }
-
-        function showGuessFeedback(guess) {
-            const container = document.getElementById('previousGuesses');
-            const guessDiv = document.createElement('div');
-            guessDiv.className = 'previous-guess';
-
-            const wordCopy = currentWord.split('');
-            const guessCopy = guess.split('');
-            const feedback = new Array(guess.length).fill('absent');
-
-            for (let i = 0; i < guess.length; i++) {
-                if (guess[i] === currentWord[i]) {
-                    feedback[i] = 'correct';
-                    wordCopy[i] = null;
-                    guessCopy[i] = null;
-                }
-            }
-
-            for (let i = 0; i < guess.length; i++) {
-                if (guessCopy[i] !== null) {
-                    const index = wordCopy.indexOf(guessCopy[i]);
-                    if (index !== -1) {
-                        feedback[i] = 'present';
-                        wordCopy[index] = null;
-                    }
-                }
-            }
-
-            let fontSizeClass = '';
-            if (currentWord.length > 9) fontSizeClass = 'tiny-font';
-            else if (currentWord.length > 6) fontSizeClass = 'small-font';
-
-            for (let i = 0; i < guess.length; i++) {
-            const box = document.createElement('div');
-            box.className = `letter-box ${feedback[i]} ${fontSizeClass}`;
-            box.textContent = guess[i];
-            guessDiv.appendChild(box);
-            }
-
-            container.appendChild(guessDiv);
-        }
-
-        function getFeedbackForGuess(guess) {
+        function getFeedbackForGuessDepreciated(guess) {
             const feedback = [];
             const wordArray = currentWord.split('');
             const guessArray = guess.split('');
             const usedIndices = new Set();
 
-            // Mark correct positions
             for (let i = 0; i < guessArray.length; i++) {
                 if (guessArray[i] === wordArray[i]) {
                     feedback[i] = 'correct';
@@ -1296,7 +1098,6 @@ let socket = null;
                 }
             }
 
-            // Mark present letters
             for (let i = 0; i < guessArray.length; i++) {
                 if (feedback[i] !== 'correct') {
                     let found = false;
@@ -1321,13 +1122,13 @@ let socket = null;
             const container = document.createElement('div');
             container.id = 'wordPoolContainer';
             container.style.cssText = 'margin: 20px 0; text-align: center;';
-            
+
             const canvas = document.createElement('canvas');
             canvas.id = 'wordPoolCanvas';
             canvas.width = 800;
             canvas.height = 60;
             canvas.style.cssText = 'max-width: 100%; height: auto; border-radius: 8px;';
-            
+
             container.appendChild(canvas);
             return container;
         }
@@ -1335,38 +1136,35 @@ let socket = null;
         function drawWordPoolVisualization(totalWords, selectedIndices) {
             const canvas = document.getElementById('wordPoolCanvas');
             if (!canvas) return;
-            
+
             const ctx = canvas.getContext('2d');
             const width = canvas.width;
             const height = canvas.height;
-            
+
             ctx.clearRect(0, 0, width, height);
-            
-            // Draw gradient background (easy -> hard)
+
             const gradient = ctx.createLinearGradient(0, 0, width, 0);
             gradient.addColorStop(0, '#48bb78');
             gradient.addColorStop(0.5, '#ed8936');
             gradient.addColorStop(1, '#f56565');
-            
+
             ctx.fillStyle = gradient;
             ctx.fillRect(0, 20, width, 20);
-            
-            // Draw labels
+
             ctx.fillStyle = '#718096';
             ctx.font = '12px Arial';
             ctx.fillText('Easy', 10, 15);
             ctx.fillText('Hard', width - 35, 15);
-            
-            // Draw selected word markers
+
             if (selectedIndices && selectedIndices.length > 0) {
                 selectedIndices.forEach(index => {
                     const x = (index / totalWords) * width;
-                    
+
                     ctx.fillStyle = '#2d3748';
                     ctx.beginPath();
                     ctx.arc(x, 30, 4, 0, Math.PI * 2);
                     ctx.fill();
-                    
+
                     ctx.strokeStyle = 'white';
                     ctx.lineWidth = 2;
                     ctx.stroke();
@@ -1383,12 +1181,11 @@ let socket = null;
                     ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
                     ['ENTER', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', '⌫']
                 ],
-                fr: [
-                ['A','Z','E','R','T','Y','U','I','O','P'],
-                ['Q','S','D','F','G','H','J','K','L','M'],
-                ['W','X','C','V','B','N','É','È','Ê','À','⌫']
-            ]
-
+                'fr': [
+                    ['A', 'Z', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
+                    ['Q', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'M'],
+                    ['W', 'X', 'C', 'V', 'B', 'N', 'É', 'È', 'Ê', 'À', '⌫']
+                ]
             };
 
             const layout = layouts[language] || layouts['en'];
@@ -1427,7 +1224,7 @@ let socket = null;
             }
         }
 
-                /**
+        /**
          * Focus hidden input when user taps boxes (mobile)
          */
         function focusInput() {
@@ -1440,16 +1237,15 @@ let socket = null;
         function createWordBoxes() {
             const container = document.getElementById('wordBoxes');
             container.innerHTML = '';
-            
+
             for (let i = 0; i < currentWord.length; i++) {
                 const box = document.createElement('div');
                 box.className = 'letter-box';
                 box.id = `box-${i}`;
-                box.onclick = focusInput;  // ← ADD THIS
+                box.onclick = focusInput;
                 container.appendChild(box);
             }
-            
-            // Show cursor on first box
+
             const firstBox = document.getElementById('box-0');
             if (firstBox && !gameOver) {
                 firstBox.classList.add('active-input');
@@ -1461,8 +1257,7 @@ let socket = null;
                     firstBox.classList.add('active-input');
                     console.log('Added active-input class to box-0');
                 }
-                
-                // Focus hidden input for mobile keyboard
+
                 const guessInput = document.getElementById('guessInput');
                 if (guessInput) {
                     guessInput.focus();
@@ -1475,10 +1270,8 @@ let socket = null;
             for (let i = 0; i < currentWord.length; i++) {
                 const box = document.getElementById(`box-${i}`);
                 if (box) {
-                    // Set the letter
                     box.textContent = i < currentGuess.length ? currentGuess[i] : '';
-                    
-                    // Add cursor to next empty box
+
                     if (i === currentGuess.length && !gameOver) {
                         box.classList.add('active-input');
                     } else {
@@ -1496,7 +1289,7 @@ let socket = null;
             guessHistory.push(guess);
 
             updatePreviousGuesses();
-            
+
             const feedback = [];
             const wordArray = currentWord.split('');
             const guessArray = guess.split('');
@@ -1541,7 +1334,6 @@ let socket = null;
                 currentGuess = '';
                 updateWordBoxes();
             }
-            
         }
 
         function updateKeyboard(guess, feedback) {
@@ -1567,8 +1359,8 @@ let socket = null;
 
         function updatePreviousGuesses() {
             const container = document.getElementById('previousGuesses');
-            container.innerHTML = ''; // Clear existing
-            
+            container.innerHTML = '';
+
             guessHistory.forEach(guess => {
                 showGuessFeedback(guess);
             });
@@ -1578,11 +1370,11 @@ let socket = null;
             const container = document.getElementById('previousGuesses');
             const guessDiv = document.createElement('div');
             guessDiv.className = 'previous-guess';
-            
+
             const wordCopy = currentWord.split('');
             const guessCopy = guess.split('');
             const feedback = new Array(guess.length).fill('absent');
-            
+
             for (let i = 0; i < guess.length; i++) {
                 if (guess[i] === currentWord[i]) {
                     feedback[i] = 'correct';
@@ -1590,7 +1382,7 @@ let socket = null;
                     guessCopy[i] = null;
                 }
             }
-            
+
             for (let i = 0; i < guess.length; i++) {
                 if (guessCopy[i] !== null) {
                     const index = wordCopy.indexOf(guessCopy[i]);
@@ -1600,18 +1392,18 @@ let socket = null;
                     }
                 }
             }
-            
+
             let fontSizeClass = '';
             if (currentWord.length > 9) fontSizeClass = 'tiny-font';
             else if (currentWord.length > 6) fontSizeClass = 'small-font';
-            
+
             for (let i = 0; i < guess.length; i++) {
                 const box = document.createElement('div');
                 box.className = `letter-box ${feedback[i]} ${fontSizeClass}`;
                 box.textContent = guess[i];
                 guessDiv.appendChild(box);
             }
-            
+
             container.appendChild(guessDiv);
         }
 
@@ -1621,7 +1413,7 @@ let socket = null;
 
         async function recordWordAttempt(won) {
             if (!currentThemeId) return;
-            
+
             try {
                 await fetch(`${API_URL}/api/record-word-attempt`, {
                     method: 'POST',
@@ -1646,16 +1438,14 @@ let socket = null;
         }
 
         function celebrateWin() {
-            // Make boxes show the correct letters first!
             for (let i = 0; i < currentWord.length; i++) {
                 const box = document.getElementById(`box-${i}`);
                 if (box) {
-                    box.textContent = currentWord[i];  // ← ADD THIS
-                    box.classList.add('correct');       // ← ADD THIS
+                    box.textContent = currentWord[i];
+                    box.classList.add('correct');
                 }
             }
-            
-            // Then animate
+
             for (let i = 0; i < currentWord.length; i++) {
                 const box = document.getElementById(`box-${i}`);
                 if (box) {
@@ -1667,8 +1457,7 @@ let socket = null;
             }
         }
 
-
-        function celebrateWinDefunct() {
+        function celebrateWinDefunctDepreciated() {
             for (let i = 0; i < currentWord.length; i++) {
                 const box = document.getElementById(`box-${i}`);
                 setTimeout(() => box.classList.add('flash'), i * 150);
@@ -1681,20 +1470,18 @@ let socket = null;
         function showGameSummary() {
             console.log('=== SHOW GAME SUMMARY ===');
             console.log('gameResults:', gameResults);
+            console.trace('Call stack:');
+            console.log('gameResults.length:', gameResults.length);
 
-            console.trace('Call stack:'); // Shows WHO called this function
-    
-            console.log('gameResults:', gameResults);
-             console.log('gameResults.length:', gameResults.length);
             const totalWords = gameResults.length;
             const wordsWon = gameResults.filter(r => r.won).length;
             const totalTime = gameResults.reduce((sum, r) => sum + r.timeSeconds, 0);
             const totalGuesses = gameResults.reduce((sum, r) => sum + r.guesses, 0);
             const totalClues = gameResults.reduce((sum, r) => sum + r.cluesViewed, 0);
-            
+
             const avgTime = Math.round(totalTime / totalWords);
             const avgGuesses = (totalGuesses / totalWords).toFixed(1);
-            
+
             let html = `
                 <div class="summary-stats">
                     <h3>📊 Overall Stats</h3>
@@ -1704,11 +1491,11 @@ let socket = null;
                     <p><strong>Average Guesses:</strong> ${avgGuesses}</p>
                     <p><strong>Total Clues Used:</strong> ${totalClues}</p>
                 </div>
-                
+
                 <div class="summary-results">
                     <h3>📝 Word by Word</h3>
             `;
-            
+
             gameResults.forEach((result, index) => {
                 let icon, status;
                 if (result.bothSkipped) {
@@ -1727,18 +1514,16 @@ let socket = null;
                     icon = '❌';
                     status = `${result.guesses} guesses, ${result.timeSeconds}s, ${result.cluesViewed} clues`;
                 }
-                
+
                 html += `
                     <div style="padding: 10px; border-bottom: 1px solid #e2e8f0;">
                         ${icon} <strong>${result.word}</strong> - ${status}
                     </div>
                 `;
-                
-                
             });
-            
+
             html += '</div>';
-            
+
             document.getElementById('summaryContent').innerHTML = html;
             document.getElementById('summaryOverlay').classList.remove('hidden');
         }
@@ -1755,7 +1540,6 @@ let socket = null;
 
             await recordWordAttempt(won);
 
-            // Track result for summary
             gameResults.push({
                 word: currentWord,
                 won: won,
@@ -1770,28 +1554,21 @@ let socket = null;
                 celebrateWin();
                 messageDiv.textContent = `🎉 ${winMessage} ${currentWord}`;
                 messageDiv.className = 'message win';
-                
-                // ============================================================================
-                // AUTO-ADVANCE IN MULTIPLAYER (ADD THIS)
-                // ============================================================================
-                
+
                 if (isMultiplayerGame && multiplayerCode) {
                     console.log('[MULTIPLAYER] Solved! Broadcasting to opponent...');
-                    
-                    // Check if this is the last word
+
                     if (currentWordIndex >= wordList.length) {
-                        // Last word - complete the game
                         await delay(4000);
                         await completeMultiplayerGame();
                     } else {
-                        // Not last word - advance immediately
-                        await delay(2000); // Show celebration briefly
+                        await delay(2000);
                         await advanceMultiplayerGame();
                     }
-                    
-                    return; // Exit early - don't show "Next Word" button
+
+                    return;
                 }
-                
+
             } else {
                 messageDiv.textContent = `${loseMessage} ${currentWord}`;
                 messageDiv.className = 'message lose';
@@ -1801,36 +1578,30 @@ let socket = null;
             document.getElementById('showClueBtn').classList.add('hidden');
             document.getElementById('giveUpBtn').classList.add('hidden');
 
-            // Hide both buttons initially
             document.getElementById('resetButton').classList.add('hidden');
             document.getElementById('backButton').classList.add('hidden');
 
             const resetBtn = document.getElementById('resetButton');
             resetBtn.classList.remove('hidden');
-            
-            // Check if this is the LAST word
+
             if (currentWordIndex >= wordList.length - 1) {
-                // Last word - show "No More Words" briefly, then "View Summary"
                 resetBtn.textContent = '🏁 No More Words';
                 resetBtn.disabled = true;
                 resetBtn.style.opacity = '0.6';
                 resetBtn.style.cursor = 'not-allowed';
-                
-                // After 2 seconds, change to "View Summary"
+
                 setTimeout(() => {
                     resetBtn.textContent = '🎉 View Summary';
                     resetBtn.disabled = false;
                     resetBtn.style.opacity = '1';
                     resetBtn.style.cursor = 'pointer';
                 }, 2000);
-                
+
             } else {
-                // Not last word - SOLO mode only shows Next Word button
                 if (!isMultiplayerGame) {
                     resetBtn.textContent = 'Next Word →';
                     resetBtn.disabled = false;
                 } else {
-                    // Multiplayer: button already hidden by early return above
                     resetBtn.classList.add('hidden');
                 }
             }
@@ -1842,16 +1613,15 @@ let socket = null;
 
         /**
          * Notify server that we're advancing to the next word
-         * Call this whenever the current player moves forward
          */
         async function advanceMultiplayerGame() {
             if (!isMultiplayerGame || !multiplayerCode) {
                 return;
             }
-            
+
             try {
                 console.log(`[MULTIPLAYER] Advancing from word ${currentWordIndex}`);
-                
+
                 const response = await fetch(`${API_URL}/api/advance-game`, {
                     method: 'POST',
                     headers: {
@@ -1863,40 +1633,35 @@ let socket = null;
                         fromIndex: currentWordIndex
                     })
                 });
-                
+
                 const data = await response.json();
-                
+
                 if (data.success && data.advanced) {
                     console.log('[MULTIPLAYER] ✅ Successfully advanced game');
-                    
-                    // AUTO-JUMP to next word after broadcasting
+
                     const newIndex = currentWordIndex + 1;
-                    
+
                     if (newIndex < wordList.length) {
-                        // Not game complete - jump to next word
-                        await delay(500); // Brief pause
+                        await delay(500);
                         jumpToWord(newIndex);
-                        
-                        // Re-enable controls for new word
+
                         document.getElementById('submitGuess').classList.remove('hidden');
                         document.getElementById('showClueBtn').classList.remove('hidden');
                         document.getElementById('giveUpBtn').classList.remove('hidden');
                     } else {
-                        // Game complete
                         showGameSummary();
                     }
-                    
+
                 } else if (data.success && !data.advanced) {
                     console.log('[MULTIPLAYER] ⚠️ Opponent beat us to it');
                 } else {
                     console.error('[MULTIPLAYER] Failed to advance:', data.error);
                 }
-                
+
             } catch (error) {
                 console.error('[MULTIPLAYER] Advance error:', error);
             }
         }
-
 
         /**
          * Notify server and opponent that game is complete
@@ -1904,7 +1669,7 @@ let socket = null;
         async function completeMultiplayerGame() {
             try {
                 console.log('[MULTIPLAYER] Completing game:', multiplayerCode);
-                
+
                 const response = await fetch(`${API_URL}/api/complete-game`, {
                     method: 'POST',
                     headers: {
@@ -1915,13 +1680,13 @@ let socket = null;
                         shareCode: multiplayerCode
                     })
                 });
-                
+
                 const data = await response.json();
-                
+
                 if (data.success) {
                     console.log('[MULTIPLAYER] Game marked as complete');
                 }
-                
+
             } catch (error) {
                 console.error('[MULTIPLAYER] Complete game error:', error);
             }
@@ -1931,21 +1696,19 @@ let socket = null;
             console.log('=== NEXT WORD CALLED ===');
             console.log('currentWordIndex:', currentWordIndex);
             console.log('wordList.length:', wordList.length);
+
             const lastResult = gameResults[gameResults.length - 1];
             if (lastResult && lastResult.won) {
                 advanceMultiplayerGame();
             }
 
-            // Check if game is complete
             if (currentWordIndex >= wordList.length - 1) {
                 if (isMultiplayerGame && multiplayerCode) {
-                   completeMultiplayerGame();  // NEW function to broadcast completion
+                    completeMultiplayerGame();
                 }
                 showGameSummary();
                 return;
             }
-
-            // Move to next word
 
             currentWordIndex++;
             currentWord = wordList[currentWordIndex];
@@ -1973,7 +1736,6 @@ let socket = null;
             updateGuessCount();
 
             if (currentWordIndex >= wordList.length - 1) {
-                // This is the LAST word - show disabled "No More Words" button
                 const resetBtn = document.getElementById('resetButton');
                 resetBtn.textContent = '🏁 No More Words';
                 resetBtn.disabled = true;
@@ -1982,7 +1744,6 @@ let socket = null;
                 resetBtn.classList.remove('hidden');
             }
 
-            // Wire up hidden input for mobile keyboard
             const guessInput = document.getElementById('guessInput');
             if (guessInput) {
                 guessInput.value = '';
@@ -1995,15 +1756,12 @@ let socket = null;
             }
         }
 
-        /**
-         * Notify other players that you skipped a word
-         */
-        async function skipMultiplayerWord() {
+        async function skipMultiplayerWordDepreciated() {
             if (!isMultiplayerGame || !multiplayerCode) return;
-            
+
             try {
                 console.log('[MULTIPLAYER] Skipping word:', currentWordIndex);
-                
+
                 const response = await fetch(`${API_URL}/api/skip-word`, {
                     method: 'POST',
                     headers: {
@@ -2015,51 +1773,49 @@ let socket = null;
                         wordIndex: currentWordIndex
                     })
                 });
-                
+
                 const data = await response.json();
-                
+
                 if (data.success) {
                     console.log('[MULTIPLAYER] ✅ Skip broadcast to opponents');
                 }
-                
+
             } catch (error) {
                 console.error('[MULTIPLAYER] Skip error:', error);
             }
         }
 
         async function giveUp() {
-        console.log('[GAME] Player gave up on word:', currentWord);
-        
-        // End game locally - show answer, mark as lost
-        endGame(false);
-        
-        // If multiplayer, request skip from opponent
-        if (isMultiplayerGame && multiplayerCode) {
-            try {
-                console.log('[MULTIPLAYER] Requesting skip from opponent');
+            console.log('[GAME] Player gave up on word:', currentWord);
 
-                await delay(4000); // Small delay to ensure local endGame processes first
-                
-                const response = await fetch(`${API_URL}/api/request-skip`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${authToken}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        shareCode: multiplayerCode,
-                        wordIndex: currentWordIndex,
-                        word: currentWord
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    console.log('[MULTIPLAYER] Skip request sent');
-                    showWaitingForOpponent();
-                }
-                
+            endGame(false);
+
+            if (isMultiplayerGame && multiplayerCode) {
+                try {
+                    console.log('[MULTIPLAYER] Requesting skip from opponent');
+
+                    await delay(4000);
+
+                    const response = await fetch(`${API_URL}/api/request-skip`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${authToken}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            shareCode: multiplayerCode,
+                            wordIndex: currentWordIndex,
+                            word: currentWord
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        console.log('[MULTIPLAYER] Skip request sent');
+                        showWaitingForOpponent();
+                    }
+
                 } catch (error) {
                     console.error('[MULTIPLAYER] Skip request error:', error);
                 }
@@ -2072,31 +1828,29 @@ let socket = null;
         function showWaitingForOpponent() {
             const resetBtn = document.getElementById('resetButton');
             const msg = document.getElementById('gameMessage');
-            
+
             resetBtn.textContent = '⏳ Waiting for opponent...';
             resetBtn.disabled = true;
             resetBtn.classList.remove('hidden');
-            
+
             if (msg) {
                 msg.textContent = 'Waiting for opponent to decide...';
                 msg.className = 'message';
             }
         }
 
-
         function returnToBrowse() {
             window.location.href = 'browse.html';
         }
 
         async function generateAllClues() {
-            // Disable and show "thinking" on clue button
             const clueBtn = document.getElementById('showClueBtn');
             const originalText = clueBtn.textContent;
             clueBtn.disabled = true;
             clueBtn.textContent = '💭 Thinking...';
             clueBtn.style.background = '#cbd5e0';
             clueBtn.style.cursor = 'not-allowed';
-            
+
             try {
                 const response = await fetch(`${API_URL}/api/generate-clues`, {
                     method: 'POST',
@@ -2108,12 +1862,12 @@ let socket = null;
                         words: wordList,
                         theme: selectedThemeWord,
                         language: currentLanguage,
-                        difficulty: currentGameData.difficulty || 'medium' 
+                        difficulty: currentGameData.difficulty || 'medium'
                     })
                 });
 
                 const data = await response.json();
-                
+
                 if (data.clues) {
                     wordClues = data.clues;
                     if (data.winMessage) winMessage = data.winMessage;
@@ -2122,31 +1876,26 @@ let socket = null;
             } catch (error) {
                 console.error('Error generating clues:', error);
             } finally {
-                    // Re-enable button
-                    clueBtn.disabled = false;
-                    
-                    // Check if this is a multiplayer game
-                    const multiplayerCode = localStorage.getItem('sharedGameCode');
-                    const isMultiplayerGame = !!multiplayerCode;
+                clueBtn.disabled = false;
 
-                    console.log('[CLUES] multiplayerCode:', multiplayerCode);
-                    console.log('[CLUES] isMultiplayerGame:', isMultiplayerGame);
-                    
-                    if (isMultiplayerGame) {
-                        // Already in multiplayer - show clue button
-                        clueBtn.textContent = 'Show Clue';
-                        clueBtn.onclick = showClue;
-                    } else {
-                        // Solo game - ALWAYS show share button
-                        clueBtn.textContent = 'Share Game';
-                        clueBtn.onclick = shareGame;
-                    }
-                    
-                    clueBtn.style.background = '';
-                    clueBtn.style.cursor = '';
+                const multiplayerCode = localStorage.getItem('sharedGameCode');
+                const isMultiplayerGame = !!multiplayerCode;
+
+                console.log('[CLUES] multiplayerCode:', multiplayerCode);
+                console.log('[CLUES] isMultiplayerGame:', isMultiplayerGame);
+
+                if (isMultiplayerGame) {
+                    clueBtn.textContent = 'Show Clue';
+                    clueBtn.onclick = showClue;
+                } else {
+                    clueBtn.textContent = 'Share Game';
+                    clueBtn.onclick = shareGame;
                 }
-        }
 
+                clueBtn.style.background = '';
+                clueBtn.style.cursor = '';
+            }
+        }
 
         function showClue() {
             if (wordClues.length > currentWordIndex) {
@@ -2186,7 +1935,7 @@ let socket = null;
         // Keyboard support
         document.addEventListener('keydown', function(e) {
             if (gameOver) return;
-            
+
             if (e.key === 'Enter') {
                 submitGuess();
             } else if (e.key === 'Backspace') {
@@ -2196,13 +1945,12 @@ let socket = null;
             }
         });
 
-        // hint button support
-        function scramble(word) {
+        function scrambleDepreciated(word) {
             let arr = word.split("");
             do {
                 for (let i = arr.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [arr[i], arr[j]] = [arr[j], arr[i]];
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [arr[i], arr[j]] = [arr[j], arr[i]];
                 }
             } while (arr.join("") === word);
             return arr.join("");
