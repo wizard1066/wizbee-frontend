@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wizbee - AI Word Puzzle Game </title>
-    
+
     <!-- Google Sign-In -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <link rel="stylesheet" href="styles.css">
@@ -14,30 +14,30 @@
 </head>
 <body>
     <div class="container">
-	<h1><img src="bee4.png" alt="Wizbee" style="height: 48px; vertical-align: middle;"> Wizbee</h1>
+        <h1><img src="bee4.png" alt="Wizbee" style="height: 48px; vertical-align: middle;"> Wizbee</h1>
 
         <!-- Login Screen -->
         <div id="loginScreen" class="login-screen">
             <h2>Welcome to Wizbee!</h2>
             <p>Sign in with Google to play AI-powered word puzzles</p>
-		<div style="display: flex; justify-content: center;">
-    		<div id="google-signin-button"></div>
-		</div>
+            <div style="display: flex; justify-content: center;">
+                <div id="google-signin-button"></div>
+            </div>
         </div>
 
-	<!-- Theme Input Screen -->
+        <!-- Theme Input Screen -->
         <div id="themeInputScreen" class="theme-input-screen hidden">
             <div class="user-info">
-		<div>Signed in as: <span id="userEmail"></span></div>
-        	<button class="logout-btn" onclick="logout()">Logout</button>
+                <div>Signed in as: <span id="userEmail"></span></div>
+                <button class="logout-btn" onclick="logout()">Logout</button>
             </div>
-            
+
             <!-- New Theme Tab WITH REFINE SYSTEM -->
             <div id="newThemeTab" class="tab-content active">
                 <div id="themeCounter" style="text-align: center; margin-bottom: 20px; color: #667eea; font-weight: bold; font-size: 18px;">
                     <!-- Populated by JS -->
                 </div>
-                
+
                 <!-- Simplified Header -->
                 <div style="text-align: center; margin: 40px 0 30px 0;">
                     <h2 style="font-size: 32px; font-weight: 700; margin: 0; color: #2d3748;">
@@ -49,7 +49,7 @@
                             display: inline-block;
                             font-size: 12px;
                             font-weight: 600;
-                            color: #f59e0b; 
+                            color: #f59e0b;
                             animation: rotate3d 3s linear infinite;
                             transform-style: preserve-3d;
                         ">OR</div>
@@ -65,9 +65,9 @@
                     <div style="font-weight: 600; margin-bottom: 8px; color: #667eea;">Current Prompt:</div>
                     <div id="promptDisplay" style="white-space: pre-line;"></div>
                 </div>
-                
+
                 <div id="errorMessage" class="error-message hidden"></div>
-                
+
                 <div style="margin-bottom: 40px;">
                     <input type="text" id="themeInput" placeholder="Enter theme (e.g. common animals) or 4-digit game code (e.g. A3F2)" autofocus style="width: 90%; padding: 16px; font-size: 16px; border: 2px solid #e2e8f0; border-radius: 8px;">
                     <div>
@@ -82,20 +82,20 @@
                         </button>
                         <button id="scanQrBtn" onclick="toggleQrScanner()" class="back-btn">
                             Scan
-                         </button>
+                        </button>
                     </div>
                 </div>
                 <div id="qr-reader"></div>
                 <div id="generatingMessage" class="hidden" style="text-align: center; padding: 20px; font-size: 18px;">
                     <img src="bee4.png" style="height: 60px; vertical-align: middle;"> Generating words...
                 </div>
-                
+
                 <!-- Preview Section -->
                 <div id="previewSection" class="hidden" style="margin-top: 30px; border: 2px solid #e2e8f0; border-radius: 8px; padding: 20px; background: #f7fafc;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                         <div>
                             <div id="refinementChain" style="font-size: 18px; font-weight: 600; color: #2d3748;">
-                             <!-- Populated by JS -->
+                                <!-- Populated by JS -->
                             </div>
                             <div style="font-size: 14px; color: #718096; margin-top: 5px;">
                                 💡 Words ordered easy→hard. Check last section for trickiest words.
@@ -105,7 +105,7 @@
                             <div id="refineCounter" style="font-size: 14px; font-weight: 600; color: #667eea;"></div>
                         </div>
                     </div>
-                    
+
                     <div style="margin-bottom: 15px;">
                         <div style="font-weight: 600; color: #718096; margin-bottom: 8px;">Last Quartile (Hardest Words):</div>
                         <div id="lastQuartile" style="background: white; padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0; font-family: monospace; color: #2d3748; word-wrap: break-word; line-height: 1.6;">
@@ -120,7 +120,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Browse Themes Tab -->
             <div id="browseThemesTab" class="tab-content">
                 <h2>All Sets</h2>
@@ -131,44 +131,43 @@
         </div>
 
         <!-- Game Board -->
-<!-- Game Board -->
-<div id="gameScreen" class="game-screen hidden">
-    <div class="theme-display">Theme: <span id="selectedTheme"></span></div>
-    
-    <!-- CLUE DISPLAY -->
-    <div id="clueDisplay" class="clue-display hidden" style="
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 20px;
-        border-radius: 12px;
-        margin: 20px 0;
-        text-align: center;
-        font-size: 18px;
-        font-weight: 600;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
-    ">
-        <div style="font-size: 14px; opacity: 0.9; margin-bottom: 8px;">💡 Clue</div>
-        <div id="clueText"></div>
+        <div id="gameScreen" class="game-screen hidden">
+            <div class="theme-display">Theme: <span id="selectedTheme"></span></div>
+
+            <!-- CLUE DISPLAY -->
+            <div id="clueDisplay" class="clue-display hidden" style="
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                padding: 20px;
+                border-radius: 12px;
+                margin: 20px 0;
+                text-align: center;
+                font-size: 18px;
+                font-weight: 600;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+            ">
+                <div style="font-size: 14px; opacity: 0.9; margin-bottom: 8px;">💡 Clue</div>
+                <div id="clueText"></div>
+            </div>
+
+            <div id="wordBoxes" class="word-boxes"></div>
+            <div class="guesses-remaining">Guesses remaining: <span id="guessesRemaining"></span></div>
+            <div id="keyboard" class="keyboard"></div>
+
+            <div class="guess-input-container">
+                <button id="submitGuess" class="submit-guess" onclick="submitGuess()">Submit Word</button>
+                <button id="showClueBtn" class="hint-btn" onclick="showClue()">💡 Show Clue</button>
+                <button id="giveUpBtn" class="give-up-btn" onclick="giveUp()">Give Up</button>
+            </div>
+
+            <div id="hintDisplay" class="hint-display hidden"></div>
+            <div id="previousGuesses" class="previous-guesses"></div>
+            <div id="gameMessage" class="message"></div>
+            <button id="resetButton" class="play-again hidden" onclick="resetToTheme()">Reset</button>
+            <button id="buyButton" onclick="buyThemes()" class="upgrade-btn hidden">Buy 4 Themes for $0.99</button>
+        </div>
     </div>
-    
-    <div id="wordBoxes" class="word-boxes"></div>
-    <div class="guesses-remaining">Guesses remaining: <span id="guessesRemaining"></span></div>
-    <div id="keyboard" class="keyboard"></div>
-
-    <div class="guess-input-container">
-        <button id="submitGuess" class="submit-guess" onclick="submitGuess()">Submit Word</button>
-        <button id="showClueBtn" class="hint-btn" onclick="showClue()">💡 Show Clue</button>
-        <button id="giveUpBtn" class="give-up-btn" onclick="giveUp()">Give Up</button>
-    </div>
-
-    <div id="hintDisplay" class="hint-display hidden"></div>
-    <div id="previousGuesses" class="previous-guesses"></div>
-    <div id="gameMessage" class="message"></div>
-    <button id="resetButton" class="play-again hidden" onclick="resetToTheme()">Reset</button>
-    <button id="buyButton" onclick="buyThemes()" class="upgrade-btn hidden">Buy 4 Themes for $0.99</button>
-</div>
-
 
     <script>
         const API_URL = 'https://api.wizbee.app'
@@ -184,8 +183,8 @@
         let guessHistory = [];
         let gameOver = false;
         let selectedThemeWord = '';
-        let isResetting = false; 
-        let gameResults = []; // Track results for summary
+        let isResetting = false;
+        let gameResults = [];
         let hintsUsed = 0;
         let winMessage = '';
         let loseMessage = '';
@@ -195,18 +194,18 @@
         let currentWordIndex = 0;
         let themesPlayedCount = 0;
         // CLUE SYSTEM VARIABLES
-        let wordClues = [];           // Array of clues for current game
-        let clueViewCount = 0;        // How many times current clue was viewed
-        let currentClueTimeout = null; // Timeout for auto-hiding clue
-        
+        let wordClues = [];
+        let clueViewCount = 0;
+        let currentClueTimeout = null;
+
         // REFINE SYSTEM VARIABLES
         let refineAttempts = 0;
-        let baseTheme = '';           // Original theme
-        let refinements = [];         // Array of refinement strings
+        let baseTheme = '';
+        let refinements = [];
         const maxRefineAttempts = 3;
         let currentGeneratedWords = null;
         let currentThemeText = '';
-        
+
         let currentThemeId = null;
         let wordStartTime = null;
         let letterSwapCount = 0;
@@ -219,9 +218,8 @@
         function toggleQrScanner() {
             const scanBtn = document.getElementById('scanQrBtn');
             const readerDiv = document.getElementById('qr-reader');
-            
+
             if (qrScanner && qrScanner.isScanning) {
-                // Stop scanning
                 qrScanner.stop().then(() => {
                     qrScanner = null;
                     readerDiv.style.display = 'none';
@@ -229,7 +227,6 @@
                     scanBtn.style.background = '#805ad5';
                 });
             } else {
-                // Start scanning
                 startQrScanner();
             }
         }
@@ -240,15 +237,15 @@
         function startQrScanner() {
             const scanBtn = document.getElementById('scanQrBtn');
             const readerDiv = document.getElementById('qr-reader');
-            
+
             readerDiv.style.display = 'block';
             scanBtn.textContent = '⏹️ Stop Scanning';
             scanBtn.style.background = '#e53e3e';
-            
+
             qrScanner = new Html5Qrcode("qr-reader");
-            
+
             qrScanner.start(
-                { facingMode: "environment" }, // Use back camera
+                { facingMode: "environment" },
                 {
                     fps: 10,
                     qrbox: { width: 250, height: 250 }
@@ -269,20 +266,18 @@
          */
         function onQrCodeScanned(decodedText) {
             console.log('[QR] Scanned:', decodedText);
-            
+
             try {
-                // Parse URL: https://wizbee.app/?join=8BDC
                 const url = new URL(decodedText);
                 const code = url.searchParams.get('join');
-                
+
                 if (code && /^[0-9A-Fa-f]{4}$/.test(code)) {
-                    // Valid code found!
                     qrScanner.stop();
                     qrScanner = null;
                     document.getElementById('qr-reader').style.display = 'none';
                     document.getElementById('scanQrBtn').textContent = '📷 Scan QR Code';
                     document.getElementById('scanQrBtn').style.background = '#805ad5';
-                    
+
                     console.log('[QR] Valid code found:', code);
                     joinSharedGame(code.toUpperCase());
                 } else {
@@ -301,58 +296,6 @@
             // Ignore - these fire constantly while scanning
         }
 
-	const keyboardLayouts = {
-            en: [
-                ['Q','W','E','R','T','Y','U','I','O','P'],
-                ['A','S','D','F','G','H','J','K','L'],
-                ['Z','X','C','V','B','N','M','⌫']
-            ],
-            fr: [
-                ['A','Z','E','R','T','Y','U','I','O','P'],
-                ['Q','S','D','F','G','H','J','K','L','M'],
-                ['W','X','C','V','B','N','É','È','Ê','À','⌫']
-            ],
-            es: [
-                ['Q','W','E','R','T','Y','U','I','O','P'],
-                ['A','S','D','F','G','H','J','K','L','Ñ'],
-                ['Z','X','C','V','B','N','M','Á','É','Í','Ó','Ú','⌫']
-            ],
-	    de: [
-	        ['Q','W','E','R','T','Z','U','I','O','P','Ü'],
-        	['A','S','D','F','G','H','J','K','L','Ö','Ä'],
-        	['Y','X','C','V','B','N','M','ß','⌫']
-    	    ],
-    	    pl: [
-        	['Q','W','E','R','T','Y','U','I','O','P'],
-        	['A','S','D','F','G','H','J','K','L','Ł'],
-        	['Z','X','C','V','B','N','M','Ą','Ć','Ę','Ń','Ó','Ś','Ź','Ż','⌫']
-    	    ],
-    	    it: [
-    		['Q','W','E','R','T','Y','U','I','O','P'],
-    		['A','S','D','F','G','H','J','K','L'],
-    		['Z','X','C','V','B','N','M','À','È','É','Ì','Ò','Ù','⌫']
-	    ],
-	    pt: [
-    		['Q','W','E','R','T','Y','U','I','O','P'],
-    		['A','S','D','F','G','H','J','K','L','Ç'],
-    		['Z','X','C','V','B','N','M','Á','À','Â','Ã','É','É','Í','Ó','Ô','Õ','Ú','⌫']
-	    ],
-	    nl: [
-    		['Q','W','E','R','T','Y','U','I','O','P'],
-    		['A','S','D','F','G','H','J','K','L'],
-    		['Z','X','C','V','B','N','M','⌫']
-	    ],
-	    sv: [
-    		['Q','W','E','R','T','Y','U','I','O','P','Å'],
-    		['A','S','D','F','G','H','J','K','L','Ö','Ä'],
-    		['Z','X','C','V','B','N','M','⌫']
-	    ],
-	    fi: [
-       		['Q','W','E','R','T','Y','U','I','O','P','Å'],
-    		['A','S','D','F','G','H','J','K','L','Ö','Ä'],
-    		['Z','X','C','V','B','N','M','⌫']
-	    ]
-        };
 
         /**
          * Fetch wrapper with rate limit handling
@@ -360,25 +303,23 @@
         async function apiFetch(url, options = {}) {
             try {
                 const response = await fetch(url, options);
-                
-                // Handle rate limiting
+
                 if (response.status === 429) {
                     const data = await response.json();
                     const retryAfter = response.headers.get('retry-after');
                     const minutes = retryAfter ? Math.ceil(retryAfter / 60) : 'a few';
-                    
+
                     alert(`⏰ Too many requests!\n\n${data.error}\n\nPlease wait ${minutes} minutes and try again.`);
                     throw new Error('Rate limited');
                 }
-                
-                // Handle other errors
+
                 if (!response.ok) {
                     const data = await response.json().catch(() => ({}));
                     throw new Error(data.error || `HTTP ${response.status}`);
                 }
-                
+
                 return response;
-                
+
             } catch (error) {
                 if (error.message !== 'Rate limited') {
                     console.error('[API] Fetch error:', error);
@@ -388,20 +329,17 @@
             }
         }
 
-    function editWords() {
-    if (!currentCacheKey) {
-        showError('No theme to edit');
-        return;
-    }
-    // Save current theme info
-    localStorage.setItem('lastEditedTheme', JSON.stringify({
-        cacheKey: currentCacheKey,
-        themeName: selectedThemeWord
-    }));
-
-    
-    window.location.href = `edit.html?edit=${currentCacheKey}`;
-    }
+        function editWords() {
+            if (!currentCacheKey) {
+                showError('No theme to edit');
+                return;
+            }
+            localStorage.setItem('lastEditedTheme', JSON.stringify({
+                cacheKey: currentCacheKey,
+                themeName: selectedThemeWord
+            }));
+            window.location.href = `edit.html?edit=${currentCacheKey}`;
+        }
 
         function initializeGoogleSignIn() {
             if (typeof google !== 'undefined' && google.accounts) {
@@ -409,7 +347,7 @@
                     client_id: GOOGLE_CLIENT_ID,
                     callback: handleGoogleSignIn
                 });
-                
+
                 google.accounts.id.renderButton(
                     document.getElementById('google-signin-button'),
                     { theme: 'outline', size: 'large', text: 'signin_with' }
@@ -418,7 +356,6 @@
                 setTimeout(initializeGoogleSignIn, 100);
             }
         }
-      
 
         window.onload = function() {
             authToken = localStorage.getItem('authToken');
@@ -431,7 +368,7 @@
                 updateThemeCounter();
                 window.history.replaceState({}, document.title, window.location.pathname);
             }
-            
+
             // Check authentication
             if (authToken && userEmail) {
                 // Check for pending game from browse/edit (HIGHEST PRIORITY)
@@ -442,35 +379,31 @@
                         try {
                             const gameData = JSON.parse(pendingGame);
                             localStorage.removeItem('pendingGame');
-                            
-                            // DON'T call showThemeInput() - go straight to game
+
                             document.getElementById('loginScreen').classList.add('hidden');
                             document.getElementById('themeInputScreen').classList.add('hidden');
                             document.getElementById('gameScreen').classList.remove('hidden');
-                            
-                            // Start game
+
                             startGame(gameData);
-                            return; // Exit early - don't process other logic
+                            return;
                         } catch (e) {
                             console.error('Error loading pending game:', e);
                         }
                     }
                 }
 
-                // Only show theme input if NOT playing game
                 showThemeInput();
-                
+
                 // Check if returning from edit with clear preview flag
                 if (localStorage.getItem('clearPreview') === 'true') {
                     localStorage.removeItem('clearPreview');
-                    
-                    // Reset to initial state
+
                     currentGeneratedWords = null;
                     currentCacheKey = null;
                     refineAttempts = 0;
                     baseTheme = '';
                     refinements = [];
-                    
+
                     document.getElementById('previewSection').classList.add('hidden');
                     document.getElementById('themeInput').value = '';
                     document.getElementById('themeInput').placeholder = 'Enter theme (e.g. common animals) or 4-digit game code (e.g. A3F2)';
@@ -478,9 +411,9 @@
                     document.getElementById('generateBtn').disabled = false;
                     document.getElementById('editWordsBtn').disabled = true;
                     document.getElementById('playBtn').disabled = true;
-                    return; // Exit early
+                    return;
                 }
-                
+
                 // Check if user was editing a theme (for Play button memory)
                 const lastEditedTheme = localStorage.getItem('lastEditedTheme');
                 if (lastEditedTheme) {
@@ -488,20 +421,16 @@
                         const themeData = JSON.parse(lastEditedTheme);
                         currentCacheKey = themeData.cacheKey;
                         selectedThemeWord = themeData.themeName;
-                        
-                        // Enable Play button
+
                         document.getElementById('playBtn').disabled = false;
-                        
-                        // Show message
                         document.getElementById('themeInput').placeholder = `Ready to play: ${themeData.themeName}`;
-                        
+
                     } catch (e) {
                         console.error('Error loading last edited theme:', e);
                     }
                 }
-                
+
             } else {
-                // Not authenticated - show login
                 initializeGoogleSignIn();
             }
         };
@@ -509,7 +438,7 @@
         window.addEventListener('DOMContentLoaded', function() {
             const themeInput = document.getElementById('themeInput');
             const generateBtn = document.getElementById('generateBtn');
-            
+
             themeInput.addEventListener('keypress', function(event) {
                 if (event.key === 'Enter' && !generateBtn.disabled) {
                     event.preventDefault();
@@ -520,16 +449,15 @@
 
         window.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
-            
+
             if (urlParams.get('play') === 'true') {
                 const pendingGame = localStorage.getItem('pendingGame');
-                
+
                 if (pendingGame) {
                     console.log('[BROWSE-LAUNCH] Starting game from browse page');
                     const gameData = JSON.parse(pendingGame);
                     localStorage.removeItem('pendingGame');
-                    
-                    // Start the game
+
                     startGame(gameData);
                 } else {
                     console.error('[BROWSE-LAUNCH] No pending game found');
@@ -547,9 +475,9 @@
                         googleToken: response.credential
                     })
                 });
-                
+
                 const data = await apiResponse.json();
-                
+
                 if (data.token) {
                     authToken = data.token;
                     userEmail = data.email;
@@ -557,11 +485,11 @@
                     localStorage.setItem('userEmail', userEmail);
                     showThemeInput();
                 } else {
-		    showError('Authentication failed. Please try again.');
+                    showError('Authentication failed. Please try again.');
                 }
             } catch (error) {
                 console.error('Auth error:', error);
-		showError('Authentication failed. Please try again.');
+                showError('Authentication failed. Please try again.');
             }
         }
 
@@ -572,7 +500,7 @@
                 return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
             }).join(''));
             return JSON.parse(jsonPayload);
-	}
+        }
 
         /**
          * Join a shared multiplayer game
@@ -582,38 +510,33 @@
 
             document.getElementById('generatingMessage').classList.remove('hidden');
             document.getElementById('generatingMessage').innerHTML = `
-                <img src="bee4.png" style="height: 60px; vertical-align: middle;"> 
+                <img src="bee4.png" style="height: 60px; vertical-align: middle;">
                 Joining game <strong>${code}</strong>...
             `;
-            
+
             try {
                 const response = await fetch(`${API_URL}/api/get-shared-game/${code}`, {
-                    headers: { 
-                        'Authorization': `Bearer ${authToken}` 
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
                     }
                 });
-                
+
                 const data = await response.json();
-                
+
                 if (!data.success) {
                     document.getElementById('generatingMessage').classList.add('hidden');
                     showError(data.error || 'Invalid game code');
                     return;
                 }
-                
+
                 console.log('[MULTIPLAYER] Joined game:', code);
-                
-                // Save the share code for multiplayer
+
                 localStorage.setItem('sharedGameCode', code);
-                
-                // Save game data
                 localStorage.setItem('pendingGame', JSON.stringify(data.gameData));
                 console.log('[JOIN] Saved pendingGame:', localStorage.getItem('pendingGame'));
 
-                
-                // Redirect to play
                 window.location.href = 'play.html';
-                
+
             } catch (error) {
                 console.error('[MULTIPLAYER] Join error:', error);
                 document.getElementById('generatingMessage').classList.add('hidden');
@@ -621,53 +544,17 @@
             }
         }
 
-
-	async function resumeFromEdit(cacheKey) {
-    try {
-        // Fetch the edited theme from database
-        const response = await fetch(`${API_URL}/api/get-draft-theme/${cacheKey}`, {
-            headers: {
-                'Authorization': `Bearer ${authToken}`
-            }
-        });
-        
-        const data = await response.json();
-        
-        if (!response.ok || data.error) {
-            showError('Failed to load edited theme');
-            return;
-        }
-        
-        // Load the edited words into preview
-        currentGeneratedWords = data.words;
-        currentThemeText = data.theme;
-        refineAttempts = maxRefineAttempts; // Mark as fully refined (can't refine more)
-        
-        document.getElementById('themeInput').value = data.theme;
-        displayPreview(data.words);
-        
-        showError('✅ Theme loaded! Your edits are ready. Click Play when ready.');
-        
-        // Clean URL
-        window.history.replaceState({}, document.title, window.location.pathname);
-        
-    } catch (error) {
-        console.error('Error resuming:', error);
-        showError('Failed to load edited theme');
-    }
-}
-
         async function updateThemeCounter() {
             try {
                 const response = await apiFetch(`${API_URL}/api/user-info`, {
                     headers: { 'Authorization': `Bearer ${authToken}` }
-                });     
-                            
+                });
+
                 if (!response.ok) {
                     document.getElementById('themeCounter').innerHTML = '✨ Loading...';
-                    return; 
-                }           
-                    
+                    return;
+                }
+
                 const data = await response.json();
                 const remaining = data.themesRemaining;
                 const total = data.themesAllowed;
@@ -689,255 +576,183 @@
             }
         }
 
-	async function buyThemes() {
-  	    try {
-    		const response = await apiFetch(`${API_URL}/api/create-checkout-session`, {
-      		    method: 'POST',
-      		    headers: { 
-        	        'Authorization': `Bearer ${authToken}`,
-        	        'Content-Type': 'application/json'
-      		    }
-    	    });
-    
-    	    const { url } = await response.json();
-    	    if (url) {
-      		window.location.href = url;
-    	    } else {
-      		showError('Error creating checkout session');
-    	    }
-  	    } catch (error) {
-    		console.error('Payment error:', error);
-    		showError('Unable to start checkout. Please try again.');
-  	    }
-	}
+        async function buyThemes() {
+            try {
+                const response = await apiFetch(`${API_URL}/api/create-checkout-session`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
 
-	function createKeyboardDepreciated(language) {
-    	    const container = document.getElementById('keyboard');
-    	    container.innerHTML = '';
-    	    const layout = keyboardLayouts[language] || keyboardLayouts['en'];
-    
-    	    layout.forEach(row => {
-        	const rowDiv = document.createElement('div');
-        	rowDiv.className = 'keyboard-row';
-        	row.forEach(letter => {
-            	    const key = document.createElement('button');
-            	    key.className = 'key';
-            	    key.textContent = letter;
-            	    if (letter === '⌫') {
-                	key.onclick = () => deleteLetter();
-            	    } else {
-                	key.setAttribute('draggable', 'true');
-                	key.onclick = () => addLetter(letter);
-            	    }
-            	    rowDiv.appendChild(key);
-       		});
-        	container.appendChild(rowDiv);
-    	    });
-	}
+                const { url } = await response.json();
+                if (url) {
+                    window.location.href = url;
+                } else {
+                    showError('Error creating checkout session');
+                }
+            } catch (error) {
+                console.error('Payment error:', error);
+                showError('Unable to start checkout. Please try again.');
+            }
+        }
 
-	function showError(message) {
- 	    const errorDiv = document.getElementById('errorMessage');
-    	    errorDiv.textContent = message;
-    	    errorDiv.classList.remove('hidden');
-    	    const duration = message.length > 80 ? 8000 : 5000;
-    	    setTimeout(() => errorDiv.classList.add('hidden'), duration);
-	}
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.classList.remove('hidden');
+            const duration = message.length > 80 ? 8000 : 5000;
+            setTimeout(() => errorDiv.classList.add('hidden'), duration);
+        }
 
-	function showThemeInput() {
+        function showThemeInput() {
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('themeInputScreen').classList.remove('hidden');
             document.getElementById('userEmail').textContent = userEmail;
             loadBrowseThemes();
-	    updateThemeCounter();
-        }
-
-    function switchTab(tabName, event = null) {
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        
-        // If called from HTML onclick, use event.target
-        // If called from JS, find the tab button by name
-        if (event && event.target) {
-            event.target.classList.add('active');
-        } else {
-            // Find the tab button that matches this tab
-            const tabs = document.querySelectorAll('.tab');
-            tabs.forEach(tab => {
-                if (tab.textContent.toLowerCase().includes(tabName.toLowerCase().replace('theme', ''))) {
-                    tab.classList.add('active');
-                }
-            });
-        }
-        
-        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-        
-        if (tabName === 'newTheme') {
-            document.getElementById('newThemeTab').classList.add('active');
             updateThemeCounter();
-        } else if (tabName === 'browseThemes') {
-            document.getElementById('browseThemesTab').classList.add('active');
         }
-    }
-
-
-
 
         // ========================================================================
-        // REFINE SYSTEM - NEW FUNCTIONS
+        // REFINE SYSTEM
         // ========================================================================
-async function generateTheme() {
-    const input = document.getElementById('themeInput').value.trim();
-    localStorage.removeItem('sharedGameCode');
 
-    console.log('=================================');
-    console.log('GENERATE THEME CALLED');
-    console.log('Raw input:', `[${input}]`);
-    console.log('Input length:', input.length);
-    console.log('Input trimmed:', `[${input.trim()}]`);
-    console.log('Trimmed length:', input.trim().length);
-    console.log('=================================');
-    
-    if (!input) {
-        showError('Please enter a theme!');
-        return;
-    }
-    
-    // Remove the credit check - backend handles it
-       // Check if it's a 4-digit hex code (0-9, A-F)
-    const hexPattern = /^[0-9A-Fa-f]{4}$/;
+        async function generateTheme() {
+            const input = document.getElementById('themeInput').value.trim();
+            localStorage.removeItem('sharedGameCode');
 
-    
-    if (hexPattern.test(input)) {
-        // It's a join code!
-        await joinSharedGame(input.toUpperCase());
-        return;
-    }
-    
-    const themeInput = document.getElementById('themeInput');
-    themeInput.value = '';
-    themeInput.placeholder = "Enter theme (e.g. common animals) or 4-digit game code (e.g. A3F2)";
+            console.log('=================================');
+            console.log('GENERATE THEME CALLED');
+            console.log('Raw input:', `[${input}]`);
+            console.log('Input length:', input.length);
+            console.log('Input trimmed:', `[${input.trim()}]`);
+            console.log('Trimmed length:', input.trim().length);
+            console.log('=================================');
 
-    localStorage.removeItem('sharedGameCode');
-    
-    baseTheme = input;
-    refinements = [];
-    currentThemeText = input;
-    refineAttempts = 0;
-    
-    updatePromptDisplay();
-    await generateWordlist();
-}
+            if (!input) {
+                showError('Please enter a theme!');
+                return;
+            }
 
-function displayPreview(words) {
-    document.getElementById('previewSection').classList.remove('hidden');
-    //document.getElementById('wordCount').textContent = words.length;
-    //document.getElementById('themeName').textContent = currentThemeText; 
+            // Check if it's a 4-digit hex code (0-9, A-F)
+            const hexPattern = /^[0-9A-Fa-f]{4}$/;
 
-    // Add current refinement to history
-    if (refineAttempts === 0) {
-        // First generation
-        refinementHistory = [{prompt: baseTheme, wordCount: words.length}];
-    } else {
-        // Add refinement
-        refinementHistory.push({
-            prompt: '+ ' + refinements[refinements.length - 1],
-            wordCount: words.length
-        });
-    }
-    
-    // Build chain display
-    let chainHTML = refinementHistory.map(step => 
-        `[${step.prompt}] (${step.wordCount})`
-    ).join(' → ');
-    document.getElementById('refinementChain').innerHTML = chainHTML;
+            if (hexPattern.test(input)) {
+                await joinSharedGame(input.toUpperCase());
+                return;
+            }
 
-    
-    const quartileSize = Math.ceil(words.length / 4);
-    const lastQuartile = words.slice(-quartileSize);
-    document.getElementById('lastQuartile').textContent = '...' + lastQuartile.join(', ');
-    
-    const refineCounter = document.getElementById('refineCounter');
-    const remaining = maxRefineAttempts - refineAttempts;
-    
-    refineCounter.textContent = `Attempt ${refineAttempts + 1}/${maxRefineAttempts + 1}`;
-    
-    // Transform Generate button into Refine button
-    const generateBtn = document.getElementById('generateBtn');
-    const themeInput = document.getElementById('themeInput');
-    
-    const used = refineAttempts;
-    const total = maxRefineAttempts;
-    
-    if (remaining > 0) {
-        // Still have refines left
-        //generateBtn.textContent = `🔄 Refine (${used}/${total} used)`;
-        generateBtn.textContent = `Refine ${used}/${total}`;
-        generateBtn.onclick = refineTheme;
-        generateBtn.disabled = false;
-        themeInput.placeholder = 'Refine search here (e.g., "only 5-letter words", "exclude colors")';
-        themeInput.disabled = false;
-    } else {
-        // No refines left - disable
-        //generateBtn.textContent = `🔄 Refine (${used}/${total} used)`;
-        generateBtn.textContent = `Refine ${used}/${total}`;
-        generateBtn.onclick = null;
-        generateBtn.disabled = true;
-        themeInput.placeholder = 'No more refines available - Edit or Play';
-        themeInput.disabled = true;
-    }
-    
-    document.getElementById('editWordsBtn').disabled = false;
-    document.getElementById('playBtn').disabled = false;
-    // Scroll to preview section smoothly
-    setTimeout(() => {
-        document.getElementById('previewSection').scrollIntoView({ 
-            behavior: 'smooth', 
-            block: 'start' 
-        });
-    }, 100);
-} 
+            const themeInput = document.getElementById('themeInput');
+            themeInput.value = '';
+            themeInput.placeholder = "Enter theme (e.g. common animals) or 4-digit game code (e.g. A3F2)";
 
-async function refineTheme() {
-    const input = document.getElementById('themeInput').value.trim();
-    
-    if (!input) {
-        showError('Please enter refinement text!');
-        return;
-    }
-    
-    if (refineAttempts >= maxRefineAttempts) {
-        showError('Maximum refine attempts reached!');
-        return;
-    }
-    
-    // Add refinement to array
-    refinements.push(input);
-    refineAttempts++;
-    
-    // Build full prompt
-    currentThemeText = baseTheme + refinements.map(r => ' and ' + r).join('');
-    
-    // Clear input for next refinement
-    document.getElementById('themeInput').value = '';
-    
-    updatePromptDisplay();  // Show full progression
-    await generateWordlist();
-}
+            localStorage.removeItem('sharedGameCode');
 
-function updatePromptDisplay() {
-    const displayElement = document.getElementById('promptDisplay');
-    const container = document.getElementById('promptDisplayContainer');
-    if (!displayElement || !container) return;
-    
-    let html = baseTheme;
-    refinements.forEach(r => {
-        html += '\n+ ' + r;
-    });
-    
-    displayElement.textContent = html;
-    container.style.display = 'block';  // Show it
-}
+            baseTheme = input;
+            refinements = [];
+            currentThemeText = input;
+            refineAttempts = 0;
 
+            updatePromptDisplay();
+            await generateWordlist();
+        }
 
+        function displayPreview(words) {
+            document.getElementById('previewSection').classList.remove('hidden');
+
+            // Add current refinement to history
+            if (refineAttempts === 0) {
+                refinementHistory = [{prompt: baseTheme, wordCount: words.length}];
+            } else {
+                refinementHistory.push({
+                    prompt: '+ ' + refinements[refinements.length - 1],
+                    wordCount: words.length
+                });
+            }
+
+            // Build chain display
+            let chainHTML = refinementHistory.map(step =>
+                `[${step.prompt}] (${step.wordCount})`
+            ).join(' → ');
+            document.getElementById('refinementChain').innerHTML = chainHTML;
+
+            const quartileSize = Math.ceil(words.length / 4);
+            const lastQuartile = words.slice(-quartileSize);
+            document.getElementById('lastQuartile').textContent = '...' + lastQuartile.join(', ');
+
+            const refineCounter = document.getElementById('refineCounter');
+            const remaining = maxRefineAttempts - refineAttempts;
+
+            refineCounter.textContent = `Attempt ${refineAttempts + 1}/${maxRefineAttempts + 1}`;
+
+            const generateBtn = document.getElementById('generateBtn');
+            const themeInput = document.getElementById('themeInput');
+
+            const used = refineAttempts;
+            const total = maxRefineAttempts;
+
+            if (remaining > 0) {
+                generateBtn.textContent = `Refine ${used}/${total}`;
+                generateBtn.onclick = refineTheme;
+                generateBtn.disabled = false;
+                themeInput.placeholder = 'Refine search here (e.g., "only 5-letter words", "exclude colors")';
+                themeInput.disabled = false;
+            } else {
+                generateBtn.textContent = `Refine ${used}/${total}`;
+                generateBtn.onclick = null;
+                generateBtn.disabled = true;
+                themeInput.placeholder = 'No more refines available - Edit or Play';
+                themeInput.disabled = true;
+            }
+
+            document.getElementById('editWordsBtn').disabled = false;
+            document.getElementById('playBtn').disabled = false;
+            setTimeout(() => {
+                document.getElementById('previewSection').scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }, 100);
+        }
+
+        async function refineTheme() {
+            const input = document.getElementById('themeInput').value.trim();
+
+            if (!input) {
+                showError('Please enter refinement text!');
+                return;
+            }
+
+            if (refineAttempts >= maxRefineAttempts) {
+                showError('Maximum refine attempts reached!');
+                return;
+            }
+
+            refinements.push(input);
+            refineAttempts++;
+
+            currentThemeText = baseTheme + refinements.map(r => ' and ' + r).join('');
+
+            document.getElementById('themeInput').value = '';
+
+            updatePromptDisplay();
+            await generateWordlist();
+        }
+
+        function updatePromptDisplay() {
+            const displayElement = document.getElementById('promptDisplay');
+            const container = document.getElementById('promptDisplayContainer');
+            if (!displayElement || !container) return;
+
+            let html = baseTheme;
+            refinements.forEach(r => {
+                html += '\n+ ' + r;
+            });
+
+            displayElement.textContent = html;
+            container.style.display = 'block';
+        }
 
         // ========================================================================
         // END REFINE SYSTEM
@@ -945,14 +760,14 @@ function updatePromptDisplay() {
 
         async function loadBrowseThemes() {
             const themesList = document.getElementById('themesList');
-            
+
             try {
                 const response = await fetch(`${API_URL}/api/browse-themes`, {
                     headers: { 'Authorization': `Bearer ${authToken}` }
                 });
-                
+
                 const data = await response.json();
-                
+
                 if (!response.ok) {
                     themesList.innerHTML = '<div style="text-align: center; padding: 40px; color: #718096;">Failed to load themes</div>';
                     return;
@@ -972,7 +787,7 @@ function updatePromptDisplay() {
 
                 let html = '';
                 const myThemes = [];
-                
+
                 Object.keys(data.themes).forEach(lang => {
                     ['easy', 'medium', 'hard'].forEach(difficulty => {
                         const themes = data.themes[lang][difficulty] || [];
@@ -983,12 +798,12 @@ function updatePromptDisplay() {
                         });
                     });
                 });
-                
+
                 if (myThemes.length > 0) {
                     myThemes.sort((a, b) => a.displayName.localeCompare(b.displayName));
                     html += `<div style="max-height: 300px; overflow-y: auto; margin-bottom: 20px; border: 2px solid #667eea; border-radius: 8px; padding: 10px; background: #f7fafc;">`;
                     html += `<div style="font-weight: bold; font-size: 18px; color: #667eea; margin-bottom: 10px; padding: 10px;">👑 Private Themes</div>`;
-                    
+
                     myThemes.forEach(theme => {
                         const langIcon = languageNames[theme.lang]?.split(' ')[0] || '';
                         const diffIcon = theme.difficulty === 'easy' ? '⭐' : theme.difficulty === 'medium' ? '⭐⭐' : '⭐⭐⭐';
@@ -1004,21 +819,20 @@ function updatePromptDisplay() {
                     });
                     html += `</div>`;
                 }
-                
+
                 html += `<div style="font-weight: bold; font-size: 18px; color: #48bb78; margin-bottom: 10px; padding: 10px;">🌍 Public Themes</div>`;
                 html += `<div style="max-height: 400px; overflow-y: auto;">`;
-                
-		const sortedLanguages = Object.keys(data.themes).sort((a, b) => {
-  			if (a === 'en') return -1;  // English first
-  			if (b === 'en') return 1;
-  		return a.localeCompare(b);  // Others alphabetically
-		});
 
+                const sortedLanguages = Object.keys(data.themes).sort((a, b) => {
+                    if (a === 'en') return -1;
+                    if (b === 'en') return 1;
+                    return a.localeCompare(b);
+                });
 
                 sortedLanguages.forEach(lang => {
                     const languageName = languageNames[lang] || lang.toUpperCase();
                     html += `<div class="language-section"><div class="language-header">${languageName}</div>`;
-                    
+
                     ['easy', 'medium', 'hard'].forEach(difficulty => {
                         const themes = data.themes[lang][difficulty];
                         if (themes && themes.length > 0) {
@@ -1049,289 +863,142 @@ function updatePromptDisplay() {
             }
         }
 
-// ============================================================================
-// COMPLETE FUNCTIONS TO REPLACE IN INDEX.HTML
-// Find and replace these 3 functions completely
-// ============================================================================
+        async function generateWordlist() {
+            document.getElementById('generatingMessage').classList.remove('hidden');
+            document.getElementById('generateBtn').disabled = true;
+            document.getElementById('previewSection').classList.add('hidden');
 
-// ============================================================================
-// 1. REPLACE: async function generateWordlist()
-// ============================================================================
-async function generateWordlist() {
-    document.getElementById('generatingMessage').classList.remove('hidden');
-    document.getElementById('generateBtn').disabled = true;
-    document.getElementById('previewSection').classList.add('hidden');
-    
-    try {
-        const response = await fetch(`${API_URL}/api/preview-theme`, {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${authToken}`
-            },
-            body: JSON.stringify({ 
-                theme: currentThemeText
-            })
-        });
-        
-        const data = await response.json();
-        document.getElementById('generatingMessage').classList.add('hidden');
+            try {
+                const response = await fetch(`${API_URL}/api/preview-theme`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({
+                        theme: currentThemeText
+                    })
+                });
 
-         // ===== HANDLE EXISTING THEME =====
-        if (response.status === 409 && data.redirect === 'browse') {
-            showError(data.message || 'Theme already exists. Loading it now...');
-            
-            // Wait 2 seconds to show message, then redirect
-            setTimeout(() => {
-                window.location.href = `browse.html?highlight=${data.cacheKey}`;
-            }, 2000);
-            
-            return;
+                const data = await response.json();
+                document.getElementById('generatingMessage').classList.add('hidden');
+
+                if (response.status === 409 && data.redirect === 'browse') {
+                    showError(data.message || 'Theme already exists. Loading it now...');
+                    setTimeout(() => {
+                        window.location.href = `browse.html?highlight=${data.cacheKey}`;
+                    }, 2000);
+                    return;
+                }
+
+                if (response.status === 429 || response.status === 503) {
+                    document.getElementById('generateBtn').disabled = false;
+                    showError(data.message || 'Theme limit reached!');
+                    updateThemeCounter();
+                    return;
+                }
+
+                if (!response.ok || data.error) {
+                    showError(data.message || 'Failed to generate words');
+                    document.getElementById('generateBtn').disabled = false;
+                    return;
+                }
+
+                currentGeneratedWords = data.preview;
+                currentCacheKey = data.cacheKey;
+
+                displayPreview(currentGeneratedWords);
+
+            } catch (error) {
+                console.error('Generation error:', error);
+                document.getElementById('generatingMessage').classList.add('hidden');
+                document.getElementById('generateBtn').disabled = false;
+                showError('Connection error');
+            }
         }
-        
-        if (response.status === 429 || response.status === 503) {
-            document.getElementById('generateBtn').disabled = false;
-            showError(data.message || 'Theme limit reached!');
-            updateThemeCounter();
-            return;
-        }
-        
-        if (!response.ok || data.error) {
-            showError(data.message || 'Failed to generate words');
-            document.getElementById('generateBtn').disabled = false;
-            return;
-        }
-        
-        currentGeneratedWords = data.preview;
-        currentCacheKey = data.cacheKey;
-        
-        displayPreview(currentGeneratedWords);
-        
-    } catch (error) {
-        console.error('Generation error:', error);
-        document.getElementById('generatingMessage').classList.add('hidden');
-        document.getElementById('generateBtn').disabled = false;
-        showError('Connection error');
-    }
-}
 
-// ============================================================================
-// 2. REPLACE: async function acceptAndPlay()
-// ============================================================================
-// ============================================================================
-// COMPLETE REPLACEMENT: async function acceptAndPlay()
-// Replace your entire acceptAndPlay function with this
-// ============================================================================
+        async function acceptAndPlay() {
+            const playBtn = document.getElementById('playBtn');
+            if (playBtn.disabled) return;
+            playBtn.disabled = true;
 
-async function acceptAndPlay() {
-    const playBtn = document.getElementById('playBtn');
-    if (playBtn.disabled) return;
-    playBtn.disabled = true;
+            const input = document.getElementById('themeInput').value.trim();
 
-    const input = document.getElementById('themeInput').value.trim();
+            const hexPattern = /^[0-9A-Fa-f]{4}$/;
 
-    // Check if it's a 4-digit hex code
-    const hexPattern = /^[0-9A-Fa-f]{4}$/;
-    
-    if (hexPattern.test(input)) {
-        console.log('[PLAY] Hex code detected, joining game:', input);
-        await joinSharedGame(input.toUpperCase());
-        return;
-    }
+            if (hexPattern.test(input)) {
+                console.log('[PLAY] Hex code detected, joining game:', input);
+                await joinSharedGame(input.toUpperCase());
+                return;
+            }
 
-    if (!currentCacheKey) {
-        showError('No theme selected!');
-        playBtn.disabled = false;
-        return;
-    }
-    
-    // Otherwise, proceed with normal accept/play flow
-    console.log('[PLAY] Normal theme, accepting...');
-
-    console.log('[ACCEPT] About to call accept-theme API');
-    console.log('[ACCEPT] cacheKey:', currentCacheKey);
-
-    try {
-        const response = await fetch(`${API_URL}/api/accept-theme`, {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${authToken}`
-            },
-            body: JSON.stringify({ 
-                cacheKey: currentCacheKey
-            })
-        });
-        
-        const data = await response.json();
-        
-        if (!response.ok || data.error) {
-            showError(data.message || 'Failed to create theme');
-            playBtn.disabled = false;
-            return;
-        }
-        
-        // Redirect to play.html
-        localStorage.setItem('pendingGame', JSON.stringify(data));
-        window.location.href = 'play.html';
-        
-    } catch (error) {
-        console.error('Error:', error);
-        showError('Connection error');
-        playBtn.disabled = false;
-    }
-}
-
-
-async function acceptAndPlayDepreciated() {
-    const playBtn = document.getElementById('playBtn');
-    if (playBtn.disabled) return;
-    playBtn.disabled = true;
-    
-    // Check if we have a theme to play
-    if (!currentCacheKey) {
-        showError('No theme selected!');
-        playBtn.disabled = false;
-        return;
-    }
-    
-    try {
-        // If we have generated words in memory, use accept-theme
-        if (currentGeneratedWords && currentGeneratedWords.length > 0) {
-            const response = await fetch(`${API_URL}/api/accept-theme`, {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${authToken}`
-                },
-                body: JSON.stringify({ cacheKey: currentCacheKey })
-            });
-            
-            const data = await response.json();
-            
-            if (!response.ok) {
-                showError(data.message || 'Failed to create theme');
+            if (!currentCacheKey) {
+                showError('No theme selected!');
                 playBtn.disabled = false;
                 return;
             }
-            
-            startGame(data);
-            
-        } else {
-            // If returning from edit, load the theme from backend
-            const response = await fetch(`${API_URL}/api/play-theme`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${authToken}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ cacheKey: currentCacheKey })
-            });
-            
-            const data = await response.json();
-            
-            if (!response.ok) {
-                showError(data.message || 'Failed to load theme');
+
+            console.log('[PLAY] Normal theme, accepting...');
+            console.log('[ACCEPT] About to call accept-theme API');
+            console.log('[ACCEPT] cacheKey:', currentCacheKey);
+
+            try {
+                const response = await fetch(`${API_URL}/api/accept-theme`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({
+                        cacheKey: currentCacheKey
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok || data.error) {
+                    showError(data.message || 'Failed to create theme');
+                    playBtn.disabled = false;
+                    return;
+                }
+
+                localStorage.setItem('pendingGame', JSON.stringify(data));
+                window.location.href = 'play.html';
+
+            } catch (error) {
+                console.error('Error:', error);
+                showError('Connection error');
                 playBtn.disabled = false;
-                return;
             }
-            
-            startGame(data);
         }
-        
-    } catch (error) {
-        console.error('Error:', error);
-        showError('Connection error');
-        playBtn.disabled = false;
-    }
-}
 
+        async function launchThemeFromBrowser(cacheKey) {
+            try {
+                const response = await fetch(`${API_URL}/api/play-theme`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({
+                        cacheKey: cacheKey
+                    })
+                });
 
+                const data = await response.json();
 
-// ============================================================================
-// END: Complete acceptAndPlay function
-// ============================================================================
+                if (!response.ok || data.error) {
+                    showError(data.message || 'Failed to launch theme');
+                    return;
+                }
 
-async function playExistingTheme() {
-    if (!currentCacheKey) {
-        showError('No theme selected');
-        return;
-    }
-    
-    try {
-        const response = await fetch(`${API_URL}/api/play-theme`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${authToken}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ cacheKey: currentCacheKey })
-        });
-        
-        const data = await response.json();
-        
-        if (!response.ok) {
-            showError(data.message || 'Failed to load theme');
-            return;
+                startGame(data);
+
+            } catch (error) {
+                console.error('Error launching theme:', error);
+                showError('Connection error');
+            }
         }
-        
-        localStorage.removeItem('lastEditedTheme');
-        startGame(data);
-        
-    } catch (error) {
-        console.error('Error loading theme:', error);
-        showError('Failed to load theme');
-    }
-}
-
-
-
-
-
-
-
-// ============================================================================
-// 3. REPLACE: async function launchThemeFromBrowser(cacheKey)
-// ============================================================================
-async function launchThemeFromBrowser(cacheKey) {
-    try {
-        const response = await fetch(`${API_URL}/api/play-theme`, {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${authToken}`
-            },
-            body: JSON.stringify({ 
-                cacheKey: cacheKey
-            })
-        });
-        
-        const data = await response.json();
-        
-        if (!response.ok || data.error) {
-            showError(data.message || 'Failed to launch theme');
-            return;
-        }
-        
-        // Switch to game tab
-        //switchTab('newTheme');
-        
-        // Start the game
-        startGame(data);
-        
-    } catch (error) {
-        console.error('Error launching theme:', error);
-        showError('Connection error');
-    }
-}
-
-// ============================================================================
-// END: Complete function replacements
-// ============================================================================
-
-	
-
-
 
         function logout() {
             localStorage.removeItem('authToken');
@@ -1339,198 +1006,29 @@ async function launchThemeFromBrowser(cacheKey) {
             location.reload();
         }
 
-        async function fetchAndStartGame(theme, forcePlay = false) {
-            if (!theme) {
-                showError('Error: No theme provided');
-                return;
-            }
-            
-            try {
-                const response = await fetch(`${API_URL}/api/generate-word`, {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${authToken}`
-                    },
-                    body: JSON.stringify({ theme, forcePlay })
-                });
-                
-                const data = await response.json();
-
-		if (response.status === 429 || response.status === 503) {
-		    showError(data.message || 'Theme limit reached!');
-		    updateThemeCounter();
-    		    return;
-		}
-
-                if (data.themesRemaining !== undefined) {
-                    updateThemeCounter();
-                }
-
-                if (response.status === 400 && data.error === 'Theme exhausted') {
-                    showError(data.message || 'Theme exhausted!');
-                    return;
-                }
-
-                if (data.error) {
-                    showError(data.message || 'Failed to generate puzzle');
-                    return;
-                }
-
-               
-
-                startGame(data);
-                
-            } catch (error) {
-                console.error('API Error:', error);
-                showError('Connection error: ' + error.message);
-            }
-        }
-
-        async function startGameDepreciated(gameData) {
-            console.log('=== START GAME ===');
-            console.log('gameData:', gameData);
-            console.log('gameData.theme:', gameData.theme);
-
-            console.log('gameData winMessage:', gameData.winMessage);
-            console.log('gameData loseMessage:', gameData.loseMessage);
-
-            gameResults = []; // ← ADD THIS to reset results
-
-           
-
-            
-            wordList = gameData.words;
-            currentWordIndex = 0;
-            selectedThemeWord = gameData.theme;
-            currentWord = wordList[currentWordIndex];
-            maxGuesses = gameData.guesses;
-            remainingGuesses = maxGuesses;
-            currentLanguage = gameData.language || 'en';
-            winMessage = gameData.winMessage;  
-            loseMessage = gameData.loseMessage;
-            currentThemeId = gameData.themeId || null;
-            wordStartTime = Date.now();
-            letterSwapCount = 0;
-            wordClues = []; // Reset clues
-            
-            createKeyboard(currentLanguage);
-            
-            document.getElementById('themeInputScreen').classList.add('hidden');
-            document.getElementById('gameScreen').classList.remove('hidden');
-            document.getElementById('selectedTheme').textContent = `${selectedThemeWord} (${currentWordIndex + 1}/${wordList.length})`;
-            
-            // Added 9 Jan 2026
-            // ADD WORD POOL VISUALIZATION
-            const gameScreen = document.getElementById('gameScreen');
-            const oldViz = document.getElementById('wordPoolContainer');
-            if (oldViz) oldViz.remove();
-
-            const visualization = createWordPoolCanvas();
-            const themeElement = document.getElementById('selectedTheme');
-            themeElement.parentNode.insertBefore(visualization, themeElement.nextSibling);
-
-            // Draw visualization (using dummy data for now - will update from backend later)
-            // 8 Jan 2026
-            if (gameData.wordPoolInfo) {
-                drawWordPoolVisualization(
-                    gameData.wordPoolInfo.totalWords,
-                    gameData.wordPoolInfo.selectedIndices
-                );
-            }
-            
-            // Generate clues for all words
-            console.log('startGame gen CLUES', gameData.words);
-            await generateAllClues();
-            
-            createWordBoxes();
-            updateGuessCount();
-            
-            // Show first clue automatically
-            if (wordClues.length > 0) {
-                showClueAuto(20000); // Show for 20 seconds
-            }
-            // Scroll to game screen
-            setTimeout(() => {
-                document.getElementById('gameScreen').scrollIntoView({ 
-                    behavior: 'smooth', 
-                    block: 'start' 
-                });
-            }, 300);
-        }
-
-        async function generateAllCluesDepreciated15Jan2026() {
-            console.log('[CLUES] Generating clues for', wordList.length, 'words');
-            
-            const clueBtn = document.getElementById('showClueBtn');
-            clueBtn.textContent = '⏳ Loading clues...';
-            clueBtn.disabled = true;
-            
-            try {
-                const response = await fetch(`${API_URL}/api/generate-clues`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        words: wordList,
-                        theme: selectedThemeWord,
-                        difficulty: 'medium',
-                        language: currentLanguage  // ← Send language
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (!response.ok || data.error) {
-                    console.error('[CLUES] Failed:', data.message);
-                    wordClues = [];
-                } else {
-                    wordClues = data.clues || [];
-                    // Store translated messages
-                    if (data.winMessage) winMessage = data.winMessage;      // ← Store win message
-                    if (data.loseMessage) loseMessage = data.loseMessage;  // ← Store lose message
-                    console.log('[CLUES] Got', wordClues.length, 'clues +', winMessage);
-                }
-                
-            } catch (error) {
-                console.error('[CLUES] Error:', error);
-                wordClues = [];
-            } finally {
-                clueBtn.textContent = '💡 Show Clue';
-                clueBtn.disabled = false;
-            }
-        }
-
-        
-
         function showClueAuto(duration = 20000) {
             if (!wordClues || wordClues.length === 0 || currentWordIndex >= wordClues.length) {
                 return;
             }
 
-            // CRITICAL: Clear any existing timeout FIRST
             if (currentClueTimeout) {
                 clearTimeout(currentClueTimeout);
                 currentClueTimeout = null;
             }
-            
+
             const clueDisplay = document.getElementById('clueDisplay');
             const clueText = document.getElementById('clueText');
-            
+
             clueText.textContent = wordClues[currentWordIndex];
             clueDisplay.classList.remove('hidden');
             clueDisplay.style.opacity = '0';
             clueDisplay.style.transform = 'translateY(-10px)';
-            
-            // Fade in
+
             setTimeout(() => {
                 clueDisplay.style.opacity = '1';
                 clueDisplay.style.transform = 'translateY(0)';
             }, 10);
-            
-            // Auto-hide after duration
+
             if (currentClueTimeout) clearTimeout(currentClueTimeout);
             currentClueTimeout = setTimeout(() => {
                 hideClue();
@@ -1554,37 +1052,32 @@ async function launchThemeFromBrowser(cacheKey) {
                 showError('No clue available for this word');
                 return;
             }
-            
+
             clueViewCount++;
             console.log('[CLUES] User viewed clue', clueViewCount, 'times');
-            
+
             const clueDisplay = document.getElementById('clueDisplay');
             const clueText = document.getElementById('clueText');
 
-
-            
-            // If already visible, just keep it visible longer
             if (!clueDisplay.classList.contains('hidden')) {
                 if (currentClueTimeout) clearTimeout(currentClueTimeout);
                 currentClueTimeout = setTimeout(() => {
                     hideClue();
-                }, 8000); // Keep visible for 8 more seconds
+                }, 8000);
                 return;
             }
-            
-            // Show the clue & speak the clue
+
             clueText.textContent = wordClues[currentWordIndex];
             clueDisplay.classList.remove('hidden');
             clueDisplay.style.opacity = '0';
             clueDisplay.style.transform = 'translateY(-10px)';
             saySomething(clueText.textContent);
-            
+
             setTimeout(() => {
                 clueDisplay.style.opacity = '1';
                 clueDisplay.style.transform = 'translateY(0)';
             }, 10);
-            
-            // Auto-hide after 8 seconds
+
             if (currentClueTimeout) clearTimeout(currentClueTimeout);
             currentClueTimeout = setTimeout(() => {
                 hideClue();
@@ -1596,43 +1089,14 @@ async function launchThemeFromBrowser(cacheKey) {
                 clearTimeout(currentClueTimeout);
                 currentClueTimeout = null;
             }
-            
+
             const clueDisplay = document.getElementById('clueDisplay');
             clueDisplay.style.opacity = '0';
             clueDisplay.style.transform = 'translateY(-10px)';
-            
+
             setTimeout(() => {
                 clueDisplay.classList.add('hidden');
             }, 500);
-        }
-
-        function hideClueDepreciated() {
-            const clueDisplay = document.getElementById('clueDisplay');
-            clueDisplay.style.opacity = '0';
-            clueDisplay.style.transform = 'translateY(-10px)';
-            
-            setTimeout(() => {
-                clueDisplay.classList.add('hidden');
-            }, 500); // Wait for fade out animation
-        }
-
-        
-
-        function createWordBoxesDepreciated() {
-            const container = document.getElementById('wordBoxes');
-            container.innerHTML = '';
-    
-            let fontSizeClass = '';
-            if (currentWord.length > 9) fontSizeClass = 'tiny-font';
-            else if (currentWord.length > 6) fontSizeClass = 'small-font';
-            
-            for (let i = 0; i < currentWord.length; i++) {
-                const box = document.createElement('div');
-                box.className = `letter-box ${fontSizeClass}`;
-                box.id = `box-${i}`;
-                box.setAttribute('draggable', 'true');
-                container.appendChild(box);
-            }
         }
 
         function addLetter(letter) {
@@ -1656,55 +1120,15 @@ async function launchThemeFromBrowser(cacheKey) {
             }
         }
 
-        function submitGuessDepreciated() {
-            if (gameOver) return;
-
-            const guess = currentGuess.toUpperCase();
-            
-            if (guess.length !== currentWord.length) {
-		showError(`Please enter a ${currentWord.length}-letter word!`);
-                return;
-            }
-            
-            guessHistory.push(guess);
-            remainingGuesses--;
-            
-            showGuessFeedback(guess);
-            updateKeyboard(guess);
-            
-            if (guess === currentWord) {
-                for (let i = 0; i < currentWord.length; i++) {
-                    const box = document.getElementById(`box-${i}`);
-                    box.textContent = currentWord[i];
-                    box.classList.add('correct');
-                }
-                endGame(true);
-            } else if (remainingGuesses === 0) {
-                endGame(false);
-            } else {
-                let preservedGuess = '';
-                for (let i = 0; i < currentWord.length; i++) {
-                    const box = document.getElementById(`box-${i}`);
-                    if (box.style.opacity === '0.5') {
-                        preservedGuess += box.textContent;
-                    }
-                }
-                currentGuess = preservedGuess;
-                updateCurrentGuessDisplay();
-            }
-            
-            updateGuessCount();
-        }
-
         function showGuessFeedback(guess) {
             const container = document.getElementById('previousGuesses');
             const guessDiv = document.createElement('div');
             guessDiv.className = 'previous-guess';
-            
+
             const wordCopy = currentWord.split('');
             const guessCopy = guess.split('');
             const feedback = new Array(guess.length).fill('absent');
-            
+
             for (let i = 0; i < guess.length; i++) {
                 if (guess[i] === currentWord[i]) {
                     feedback[i] = 'correct';
@@ -1712,7 +1136,7 @@ async function launchThemeFromBrowser(cacheKey) {
                     guessCopy[i] = null;
                 }
             }
-            
+
             for (let i = 0; i < guess.length; i++) {
                 if (guessCopy[i] !== null) {
                     const index = wordCopy.indexOf(guessCopy[i]);
@@ -1722,29 +1146,29 @@ async function launchThemeFromBrowser(cacheKey) {
                     }
                 }
             }
-            
+
             let fontSizeClass = '';
             if (currentWord.length > 9) fontSizeClass = 'tiny-font';
             else if (currentWord.length > 6) fontSizeClass = 'small-font';
-            
+
             for (let i = 0; i < guess.length; i++) {
                 const box = document.createElement('div');
                 box.className = `letter-box ${feedback[i]} ${fontSizeClass}`;
                 box.textContent = guess[i];
                 guessDiv.appendChild(box);
             }
-            
+
             container.appendChild(guessDiv);
         }
 
         function updateKeyboard(guess) {
             const wordCopy = currentWord.split('');
-            
+
             for (let i = 0; i < guess.length; i++) {
                 const letter = guess[i];
                 const key = Array.from(document.querySelectorAll('.key')).find(k => k.textContent === letter);
                 if (!key) continue;
-                
+
                 if (guess[i] === currentWord[i]) {
                     key.classList.add('correct');
                     key.classList.remove('present', 'used');
@@ -1763,7 +1187,7 @@ async function launchThemeFromBrowser(cacheKey) {
 
         async function recordWordAttempt(won) {
             if (!currentThemeId) return;
-            
+
             try {
                 await fetch(`${API_URL}/api/record-word-attempt`, {
                     method: 'POST',
@@ -1787,52 +1211,6 @@ async function launchThemeFromBrowser(cacheKey) {
             }
         }
 
-        
-
-        async function endGameDepreciated(won) {
-            gameOver = true;
-            await recordWordAttempt(won);
-
-             // Track result for summary
-            gameResults.push({
-                word: currentWord,
-                won: won,
-                guesses: maxGuesses - remainingGuesses,
-                timeSeconds: Math.floor((Date.now() - wordStartTime) / 1000),
-                cluesViewed: clueViewCount
-            });
-            
-            const messageDiv = document.getElementById('gameMessage');
-            document.getElementById('giveUpBtn').classList.add('hidden');
-            document.getElementById('resetButton').classList.remove('hidden');
-            document.getElementById('hintDisplay').classList.add('hidden');
-           
-            document.getElementById('showClueBtn').classList.add('hidden');
-            document.getElementById('submitGuess').classList.add('hidden');
-
-            if (won) {
-                celebrateWin();
-                messageDiv.textContent = `🎉 ${winMessage} ${currentWord}`;
-                    messageDiv.className = 'message win';
-                } else {
-                messageDiv.textContent = `${loseMessage} ${currentWord}`;
-                    messageDiv.className = 'message lose';
-                }
-
-                if (currentWordIndex < wordList.length - 1) {
-                    document.getElementById('resetButton').textContent = 'Next Word →';
-                } else {
-                    document.getElementById('resetButton').textContent = 'New Theme';
-            }
-            // Scroll to show the message
-            setTimeout(() => {
-                messageDiv.scrollIntoView({ 
-                    behavior: 'smooth', 
-                    block: 'center' 
-                });
-            }, 100);
-        }
-
         function celebrateWin() {
             for (let i = 0; i < currentWord.length; i++) {
                 const box = document.getElementById(`box-${i}`);
@@ -1848,78 +1226,161 @@ async function launchThemeFromBrowser(cacheKey) {
             endGame(false);
         }
 
-	async function getHint() {
-            if (gameOver || hintsUsed >= MAX_HINTS) {
-		showError('No hints available!');
-                return;
-            }
-            
-            const hintBtn = document.getElementById('hintBtn');
-            const hintDisplay = document.getElementById('hintDisplay');
+        function showGameSummary() {
+            const totalWords = gameResults.length;
+            const solvedWords = gameResults.filter(r => r.won).length;
+            const totalTime = gameResults.reduce((sum, r) => sum + r.timeSeconds, 0);
+            const avgTime = Math.floor(totalTime / totalWords);
 
-	    if (hintsUsed < 2) {
-        	const emptyBoxes = [];
-        	for (let i = 0; i < currentWord.length; i++) {
-            	    if (!document.getElementById(`box-${i}`).textContent) {
-                	emptyBoxes.push(i);
-            	    }
-        	}
-        
-        	if (emptyBoxes.length > 0) {
-            	    const box = document.getElementById(`box-${emptyBoxes[0]}`);
-            	    box.textContent = currentWord[emptyBoxes[0]];
-            	    box.style.opacity = '0.5';
-            	    currentGuess += currentWord[emptyBoxes[0]];
-        	}
-        
-            	hintsUsed++;
-            	hintBtn.textContent = `💡 Hint (${3 - hintsUsed} left)`;
-            	return;
-    	    }
-            
-            hintBtn.disabled = true;
-            hintDisplay.textContent = '💡 Generating hint...';
-            hintDisplay.classList.remove('hidden');
-            
-            try {
-                const response = await fetch(`${API_URL}/api/get-hint`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${authToken}`
-                    },
-                    body: JSON.stringify({ word: currentWord, theme: selectedThemeWord })
-                });
-                
-                const data = await response.json();
-                
-                if (data.hint) {
-                    hintDisplay.textContent = '💡 ' + data.hint;
-                    hintsUsed++;
-                    hintBtn.textContent = hintsUsed >= MAX_HINTS ? '💡 No hints left' : `💡 Get Hint (${MAX_HINTS - hintsUsed} left)`;
-                    hintBtn.disabled = hintsUsed >= MAX_HINTS;
-                } else {
-                    throw new Error('No hint');
+            let html = `
+                <div class="summary-overlay" onclick="closeSummaryOnOverlay(event)">
+                    <div class="summary-modal" onclick="event.stopPropagation()">
+                        <h2 style="margin: 0 0 10px 0; color: #2d3748;">🎉 Theme Complete!</h2>
+                        <div style="font-size: 20px; font-weight: 600; color: #667eea; margin-bottom: 5px;">
+                            ${selectedThemeWord}
+                        </div>
+                        <div style="font-size: 16px; color: #718096; margin-bottom: 25px;">
+                            Score: ${solvedWords}/${totalWords} words • ${formatTime(totalTime)} total
+                        </div>
+
+                        <div class="summary-results">
+            `;
+
+            gameResults.forEach(result => {
+                const icon = result.won ? '✅' : '❌';
+                const guessText = result.won ? `${result.guesses} ${result.guesses === 1 ? 'guess' : 'guesses'}` : 'Failed';
+
+                let stars = '';
+                if (result.won) {
+                    if (result.guesses === 1) stars = '⭐⭐⭐⭐⭐';
+                    else if (result.guesses <= 3) stars = '⭐⭐⭐⭐';
+                    else if (result.guesses <= 5) stars = '⭐⭐⭐';
+                    else if (result.guesses <= 7) stars = '⭐⭐';
+                    else stars = '⭐';
                 }
-            } catch (error) {
-                hintDisplay.textContent = '❌ Failed to generate hint';
-                hintBtn.disabled = false;
+
+                const timeText = formatTime(result.timeSeconds);
+
+                html += `
+                    <div style="display: flex; align-items: center; padding: 12px; border-bottom: 1px solid #e2e8f0; ${result.won ? '' : 'opacity: 0.6;'}">
+                        <span style="font-size: 24px; margin-right: 12px;">${icon}</span>
+                        <div style="flex: 1;">
+                            <div style="font-weight: 600; font-size: 16px; color: #2d3748;">${result.word}</div>
+                            <div style="font-size: 14px; color: #718096;">${guessText} • ${timeText}</div>
+                        </div>
+                        <span style="font-size: 18px;">${stars}</span>
+                    </div>
+                `;
+            });
+
+            html += `
+                        </div>
+
+                        <div style="display: flex; gap: 10px; margin-top: 25px;">
+                            <button onclick="shareResults()" style="flex: 1; padding: 12px; background: #48bb78; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 16px;">
+                                📋 Share
+                            </button>
+                            <button onclick="playThemeAgain()" style="flex: 1; padding: 12px; background: #667eea; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 16px;">
+                                🔄 Play Again
+                            </button>
+                            <button onclick="closeSummaryAndReset()" style="flex: 1; padding: 12px; background: #718096; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 16px;">
+                                🏠 New Theme
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.body.insertAdjacentHTML('beforeend', html);
+        }
+
+        function formatTime(seconds) {
+            if (seconds < 60) return `${seconds}s`;
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins}m ${secs}s`;
+        }
+
+        function closeSummaryOnOverlay(event) {
+            if (event.target.classList.contains('summary-overlay')) {
+                closeSummaryAndReset();
             }
         }
 
-    function resetToThemeDepreciated15012026() {
-        console.trace('[RESET] resetToTheme called from:');
+        function shareResults() {
+            const solvedWords = gameResults.filter(r => r.won).length;
+            const totalWords = gameResults.length;
+            const totalTime = gameResults.reduce((sum, r) => sum + r.timeSeconds, 0);
 
-        if (isResetting) {
-            console.log('[RESET] Already resetting, ignoring duplicate call');
-            return;
+            let shareText = `🐝 Wizbee - ${selectedThemeWord}\n`;
+            shareText += `Score: ${solvedWords}/${totalWords} • ${formatTime(totalTime)}\n\n`;
+
+            gameResults.forEach(result => {
+                const icon = result.won ? '✅' : '❌';
+                const guessText = result.won ? `${result.guesses}` : 'X';
+                shareText += `${icon} ${result.word} (${guessText})\n`;
+            });
+
+            shareText += `\nPlay at https://wizbee.app`;
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(shareText).then(() => {
+                    const btn = event.target;
+                    const originalText = btn.textContent;
+                    btn.textContent = '✅ Copied!';
+                    setTimeout(() => btn.textContent = originalText, 2000);
+                }).catch((err) => {
+                    console.error('Clipboard error:', err);
+                    fallbackCopyToClipboard(shareText);
+                });
+            } else {
+                fallbackCopyToClipboard(shareText);
+            }
         }
-        isResetting = true;
-        
-        if (currentWordIndex < wordList.length - 1 && wordList.length > 0) {
-            // Next word logic
-            currentWordIndex++;
-            currentWord = wordList[currentWordIndex];
+
+        function fallbackCopyToClipboard(text) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.top = '0';
+            textarea.style.left = '0';
+            textarea.style.width = '2em';
+            textarea.style.height = '2em';
+            textarea.style.padding = '0';
+            textarea.style.border = 'none';
+            textarea.style.outline = 'none';
+            textarea.style.boxShadow = 'none';
+            textarea.style.background = 'transparent';
+            document.body.appendChild(textarea);
+
+            textarea.focus();
+            textarea.select();
+
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    const btn = event.target;
+                    const originalText = btn.textContent;
+                    btn.textContent = '✅ Copied!';
+                    setTimeout(() => btn.textContent = originalText, 2000);
+                } else {
+                    alert('Failed to copy. Please manually copy the text:\n\n' + text);
+                }
+            } catch (err) {
+                console.error('Fallback copy failed:', err);
+                alert('Failed to copy. Please manually copy the text:\n\n' + text);
+            }
+
+            document.body.removeChild(textarea);
+        }
+
+        function playThemeAgain() {
+            document.querySelector('.summary-overlay').remove();
+
+            currentWordIndex = 0;
+            gameResults = [];
+
+            currentWord = wordList[0];
             maxGuesses = 8;
             remainingGuesses = maxGuesses;
             currentGuess = '';
@@ -1930,14 +1391,7 @@ async function launchThemeFromBrowser(cacheKey) {
             wordStartTime = Date.now();
             letterSwapCount = 0;
 
-            // Clear any existing timeout FIRST
-            console.log('[RESET] Clearing old clue timeout:', currentClueTimeout);
-            if (currentClueTimeout) {
-                clearTimeout(currentClueTimeout);
-                currentClueTimeout = null;
-            }
-        
-            document.getElementById('selectedTheme').textContent = `${selectedThemeWord} (${currentWordIndex + 1}/${wordList.length})`;
+            document.getElementById('selectedTheme').textContent = `${selectedThemeWord} (1/${wordList.length})`;
             document.getElementById('previousGuesses').innerHTML = '';
             document.getElementById('gameMessage').textContent = '';
             document.getElementById('resetButton').classList.add('hidden');
@@ -1946,495 +1400,27 @@ async function launchThemeFromBrowser(cacheKey) {
             document.getElementById('submitGuess').disabled = false;
             document.getElementById('showClueBtn').classList.remove('hidden');
             document.getElementById('showClueBtn').disabled = false;
-            document.getElementById('hintDisplay').classList.add('hidden');
-            
+
             document.querySelectorAll('.key').forEach(key => {
                 key.classList.remove('correct', 'present', 'used');
             });
-            
+
             createWordBoxes();
             updateGuessCount();
-        
-            // Show new clue
-            console.log('[RESET] About to show clue. wordClues.length:', wordClues.length, 'currentWordIndex:', currentWordIndex);
-            if (wordClues.length > currentWordIndex) {
-                console.log('[RESET] Calling showClueAuto(20000)');
+
+            if (wordClues.length > 0) {
                 showClueAuto(20000);
-            } else {
-                console.log('[RESET] NOT showing clue - no clue available');
             }
-            
-            isResetting = false; 
-            return;
         }
-    
-        // ===== ALL WORDS COMPLETE - SHOW SUMMARY =====
-        if (gameResults.length === wordList.length && wordList.length > 0) {
-            console.log('[RESET] All words complete! Showing summary...');
-            isResetting = false;
-            showGameSummary();
-            return;
-        }
-        
-        // ===== Reset to theme input =====
-        currentWord = '';
-        wordList = [];
-        currentWordIndex = 0;
-        gameResults = [];
-        maxGuesses = 0;
-        remainingGuesses = 0;
-        currentGuess = '';
-        guessHistory = [];
-        gameOver = false;
-        selectedThemeWord = '';
-        hintsUsed = 0;
-        currentThemeId = null;
-        wordStartTime = null;
-        letterSwapCount = 0;
-        wordClues = [];
-        
-        hideClue();
-        
-        document.getElementById('generateBtn').textContent = 'Generate';
-        document.getElementById('generateBtn').onclick = generateTheme;
-        document.getElementById('generateBtn').disabled = false;
-        
-        document.getElementById('hintDisplay').classList.add('hidden');
-        document.getElementById('themeInput').value = '';
-        document.getElementById('gameScreen').classList.add('hidden');
-        document.getElementById('themeInputScreen').classList.remove('hidden');
-        document.getElementById('previousGuesses').innerHTML = '';
-        document.getElementById('gameMessage').textContent = '';
-        document.getElementById('resetButton').classList.add('hidden');
-        document.getElementById('resetButton').textContent = 'Reset';
-        document.getElementById('giveUpBtn').classList.remove('hidden');
-        document.getElementById('submitGuess').disabled = false;
-        document.getElementById('submitGuess').classList.remove('hidden');
-        
-        document.querySelectorAll('.key').forEach(key => {
-            key.classList.remove('correct', 'present', 'used');
-        });
-        
-        updateThemeCounter();
-        isResetting = false;
 
-        wordClues = [];
+        function closeSummaryAndReset() {
+            const overlay = document.querySelector('.summary-overlay');
+            if (overlay) overlay.remove();
 
-        // Clear refine state
-        refineAttempts = 0;
-        refinements = [];
-        baseTheme = '';
-        currentThemeText = '';
-        refinementHistory = [];
-        document.getElementById('refineCounter').textContent = '';
-        document.getElementById('previewSection').classList.add('hidden');
-        document.getElementById('themeInput').disabled = false;
-        document.getElementById('editWordsBtn').disabled = true;
-        document.getElementById('playBtn').disabled = true;
-    }
-
-    
-
-function showGameSummary() {
-    const totalWords = gameResults.length;
-    const solvedWords = gameResults.filter(r => r.won).length;
-    const totalTime = gameResults.reduce((sum, r) => sum + r.timeSeconds, 0);
-    const avgTime = Math.floor(totalTime / totalWords);
-    
-    let html = `
-        <div class="summary-overlay" onclick="closeSummaryOnOverlay(event)">
-            <div class="summary-modal" onclick="event.stopPropagation()">
-                <h2 style="margin: 0 0 10px 0; color: #2d3748;">🎉 Theme Complete!</h2>
-                <div style="font-size: 20px; font-weight: 600; color: #667eea; margin-bottom: 5px;">
-                    ${selectedThemeWord}
-                </div>
-                <div style="font-size: 16px; color: #718096; margin-bottom: 25px;">
-                    Score: ${solvedWords}/${totalWords} words • ${formatTime(totalTime)} total
-                </div>
-                
-                <div class="summary-results">
-    `;
-    
-    gameResults.forEach(result => {
-        const icon = result.won ? '✅' : '❌';
-        const guessText = result.won ? `${result.guesses} ${result.guesses === 1 ? 'guess' : 'guesses'}` : 'Failed';
-        
-        // Star rating: 1 guess = 5★, 2-3 = 4★, 4-5 = 3★, 6-7 = 2★, 8 = 1★
-        let stars = '';
-        if (result.won) {
-            if (result.guesses === 1) stars = '⭐⭐⭐⭐⭐';
-            else if (result.guesses <= 3) stars = '⭐⭐⭐⭐';
-            else if (result.guesses <= 5) stars = '⭐⭐⭐';
-            else if (result.guesses <= 7) stars = '⭐⭐';
-            else stars = '⭐';
-        }
-        
-        const timeText = formatTime(result.timeSeconds);
-        
-        html += `
-            <div style="display: flex; align-items: center; padding: 12px; border-bottom: 1px solid #e2e8f0; ${result.won ? '' : 'opacity: 0.6;'}">
-                <span style="font-size: 24px; margin-right: 12px;">${icon}</span>
-                <div style="flex: 1;">
-                    <div style="font-weight: 600; font-size: 16px; color: #2d3748;">${result.word}</div>
-                    <div style="font-size: 14px; color: #718096;">${guessText} • ${timeText}</div>
-                </div>
-                <span style="font-size: 18px;">${stars}</span>
-            </div>
-        `;
-    });
-    
-    html += `
-                </div>
-                
-                <div style="display: flex; gap: 10px; margin-top: 25px;">
-                    <button onclick="shareResults()" style="flex: 1; padding: 12px; background: #48bb78; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 16px;">
-                        📋 Share
-                    </button>
-                    <button onclick="playThemeAgain()" style="flex: 1; padding: 12px; background: #667eea; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 16px;">
-                        🔄 Play Again
-                    </button>
-                    <button onclick="closeSummaryAndReset()" style="flex: 1; padding: 12px; background: #718096; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 16px;">
-                        🏠 New Theme
-                    </button>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    document.body.insertAdjacentHTML('beforeend', html);
-}
-
-function formatTime(seconds) {
-    if (seconds < 60) return `${seconds}s`;
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}m ${secs}s`;
-}
-
-function closeSummaryOnOverlay(event) {
-    if (event.target.classList.contains('summary-overlay')) {
-        closeSummaryAndReset();
-    }
-}
-
-function shareResults() {
-    const solvedWords = gameResults.filter(r => r.won).length;
-    const totalWords = gameResults.length;
-    const totalTime = gameResults.reduce((sum, r) => sum + r.timeSeconds, 0);
-    
-    let shareText = `🐝 Wizbee - ${selectedThemeWord}\n`;
-    shareText += `Score: ${solvedWords}/${totalWords} • ${formatTime(totalTime)}\n\n`;
-    
-    gameResults.forEach(result => {
-        const icon = result.won ? '✅' : '❌';
-        const guessText = result.won ? `${result.guesses}` : 'X';
-        shareText += `${icon} ${result.word} (${guessText})\n`;
-    });
-    
-    shareText += `\nPlay at https://wizbee.app`;
-    
-    // Try modern clipboard API first
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(shareText).then(() => {
-            const btn = event.target;
-            const originalText = btn.textContent;
-            btn.textContent = '✅ Copied!';
-            setTimeout(() => btn.textContent = originalText, 2000);
-        }).catch((err) => {
-            console.error('Clipboard error:', err);
-            fallbackCopyToClipboard(shareText);
-        });
-    } else {
-        // Fallback for older browsers
-        fallbackCopyToClipboard(shareText);
-    }
-}
-
-function fallbackCopyToClipboard(text) {
-    // Create temporary textarea
-    const textarea = document.createElement('textarea');
-    textarea.value = text;
-    textarea.style.position = 'fixed';
-    textarea.style.top = '0';
-    textarea.style.left = '0';
-    textarea.style.width = '2em';
-    textarea.style.height = '2em';
-    textarea.style.padding = '0';
-    textarea.style.border = 'none';
-    textarea.style.outline = 'none';
-    textarea.style.boxShadow = 'none';
-    textarea.style.background = 'transparent';
-    document.body.appendChild(textarea);
-    
-    // Select and copy
-    textarea.focus();
-    textarea.select();
-    
-    try {
-        const successful = document.execCommand('copy');
-        if (successful) {
-            const btn = event.target;
-            const originalText = btn.textContent;
-            btn.textContent = '✅ Copied!';
-            setTimeout(() => btn.textContent = originalText, 2000);
-        } else {
-            alert('Failed to copy. Please manually copy the text:\n\n' + text);
-        }
-    } catch (err) {
-        console.error('Fallback copy failed:', err);
-        alert('Failed to copy. Please manually copy the text:\n\n' + text);
-    }
-    
-    document.body.removeChild(textarea);
-}
-
-
-function shareResultsDepreciated() {
-    const solvedWords = gameResults.filter(r => r.won).length;
-    const totalWords = gameResults.length;
-    const totalTime = gameResults.reduce((sum, r) => sum + r.timeSeconds, 0);
-    
-    let shareText = `🐝 Wizbee - ${selectedThemeWord}\n`;
-    shareText += `Score: ${solvedWords}/${totalWords} • ${formatTime(totalTime)}\n\n`;
-    
-    gameResults.forEach(result => {
-        const icon = result.won ? '✅' : '❌';
-        const guessText = result.won ? `${result.guesses}` : 'X';
-        shareText += `${icon} ${result.word} (${guessText})\n`;
-    });
-    
-    shareText += `\nPlay at https://wizbee.app`;
-    
-    navigator.clipboard.writeText(shareText).then(() => {
-        const btn = event.target;
-        const originalText = btn.textContent;
-        btn.textContent = '✅ Copied!';
-        setTimeout(() => btn.textContent = originalText, 2000);
-    }).catch(() => {
-        alert('Failed to copy. Please try again.');
-    });
-}
-
-function playThemeAgain() {
-    // Close summary
-    document.querySelector('.summary-overlay').remove();
-    
-    // Reset game state
-    currentWordIndex = 0;
-    gameResults = [];
-    
-    // Restart with same words
-    currentWord = wordList[0];
-    maxGuesses = 8;
-    remainingGuesses = maxGuesses;
-    currentGuess = '';
-    guessHistory = [];
-    gameOver = false;
-    hintsUsed = 0;
-    clueViewCount = 0;
-    wordStartTime = Date.now();
-    letterSwapCount = 0;
-    
-    document.getElementById('selectedTheme').textContent = `${selectedThemeWord} (1/${wordList.length})`;
-    document.getElementById('previousGuesses').innerHTML = '';
-    document.getElementById('gameMessage').textContent = '';
-    document.getElementById('resetButton').classList.add('hidden');
-    document.getElementById('giveUpBtn').classList.remove('hidden');
-    document.getElementById('submitGuess').classList.remove('hidden');
-    document.getElementById('submitGuess').disabled = false;
-    document.getElementById('showClueBtn').classList.remove('hidden');
-    document.getElementById('showClueBtn').disabled = false;
-    
-    document.querySelectorAll('.key').forEach(key => {
-        key.classList.remove('correct', 'present', 'used');
-    });
-    
-    createWordBoxes();
-    updateGuessCount();
-    
-    if (wordClues.length > 0) {
-        showClueAuto(20000);
-    }
-}
-
-function closeSummaryAndReset() {
-    // Remove summary popup
-    const overlay = document.querySelector('.summary-overlay');
-    if (overlay) overlay.remove();
-    
-    // Full reset to theme input
-    currentWord = '';
-    wordList = [];
-    currentWordIndex = 0;
-    gameResults = [];
-    maxGuesses = 0;
-    remainingGuesses = 0;
-    currentGuess = '';
-    guessHistory = [];
-    gameOver = false;
-    selectedThemeWord = '';
-    hintsUsed = 0;
-    currentThemeId = null;
-    wordStartTime = null;
-    letterSwapCount = 0;
-    wordClues = [];
-    
-    hideClue();
-    
-    document.getElementById('generateBtn').textContent = 'Generate';
-    document.getElementById('generateBtn').onclick = generateTheme;
-    document.getElementById('generateBtn').disabled = false;
-    
-    document.getElementById('themeInput').value = '';
-    document.getElementById('gameScreen').classList.add('hidden');
-    document.getElementById('themeInputScreen').classList.remove('hidden');
-    document.getElementById('previousGuesses').innerHTML = '';
-    document.getElementById('gameMessage').textContent = '';
-    document.getElementById('resetButton').classList.add('hidden');
-    document.getElementById('resetButton').textContent = 'Reset';
-    document.getElementById('giveUpBtn').classList.remove('hidden');
-    document.getElementById('submitGuess').disabled = false;
-    document.getElementById('submitGuess').classList.remove('hidden');
-    
-    document.querySelectorAll('.key').forEach(key => {
-        key.classList.remove('correct', 'present', 'used');
-    });
-    
-    updateThemeCounter();
-}
-
-/**
- * ============================================================================
- * WORD POOL VISUALIZATION
- * Shows where in the theme the selected words come from
- * ============================================================================
- */
-
-function createWordPoolCanvas() {
-  const container = document.createElement('div');
-  container.id = 'wordPoolContainer';
-  container.style.cssText = `
-    margin: 20px auto;
-    padding: 15px;
-    max-width: 600px;
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  `;
-  
-  const canvas = document.createElement('canvas');
-  canvas.id = 'wordPoolCanvas';
-  canvas.width = 550;
-  canvas.height = 30;
-  canvas.style.cssText = `
-    display: block;
-    margin: 0 auto;
-  `;
-  
-  const label = document.createElement('div');
-  label.id = 'wordPoolLabel';
-  label.style.cssText = `
-    font-size: 14px;
-    color: #718096;
-    margin-top: 10px;
-    display: flex;
-    justify-content: space-between;
-    font-weight: 600;
-  `;
-  label.innerHTML = '<span>Easy</span><span>Hard</span>';
-  
-  container.appendChild(canvas);
-  container.appendChild(label);
-  
-  return container;
-}
-
-function drawWordPoolVisualization(totalWords, selectedIndices, canvasId = 'wordPoolCanvas') {
-  const canvas = document.getElementById(canvasId);
-  if (!canvas) return;
-  
-  const ctx = canvas.getContext('2d');
-  const width = canvas.width;
-  const height = canvas.height;
-  const padding = 6;
-  
-  // Clear canvas
-  ctx.clearRect(0, 0, width, height);
-  
-  // Draw light grey FILLED background
-  ctx.fillStyle = '#F7FAFC';
-  ctx.fillRect(padding, padding, width - padding * 2, height - padding * 2);
-  
-  // Draw grey pattern/dots for unused words
-  ctx.fillStyle = '#E2E8F0';
-  for (let x = padding; x < width - padding; x += 4) {
-    for (let y = padding; y < height - padding; y += 4) {
-      ctx.fillRect(x, y, 2, 2);
-    }
-  }
-  
-  // Draw BORDER (hollow rectangle)
-  ctx.strokeStyle = '#2D3748';
-  ctx.lineWidth = 2;
-  ctx.strokeRect(padding, padding, width - padding * 2, height - padding * 2);
-  
-  // Calculate selected range
-  if (selectedIndices.length === 0) return;
-  
-  const minIndex = Math.min(...selectedIndices);
-  const maxIndex = Math.max(...selectedIndices);
-  
-  // Calculate bar position
-  const innerWidth = width - padding * 4;
-  const innerHeight = height - padding * 4;
-  const barStart = padding * 2 + (minIndex / totalWords) * innerWidth;
-  const barWidth = ((maxIndex - minIndex + 1) / totalWords) * innerWidth;
-  
-  // Draw filled dark bar (selected words)
-  ctx.fillStyle = '#2D3748';
-  ctx.fillRect(barStart, padding * 2, barWidth, innerHeight);
-}
-
-
-
-	function resetToThemeDepreciated() {
-            if (currentWordIndex < wordList.length - 1 && wordList.length > 0) {
-                currentWordIndex++;
-                currentWord = wordList[currentWordIndex];
-                maxGuesses = 8;
-                remainingGuesses = maxGuesses;
-                currentGuess = '';
-                guessHistory = [];
-                gameOver = false;
-                hintsUsed = 0;
-                wordStartTime = Date.now();
-                letterSwapCount = 0;
-                
-                document.getElementById('selectedTheme').textContent = `${selectedThemeWord} (${currentWordIndex + 1}/${wordList.length})`;
-                document.getElementById('previousGuesses').innerHTML = '';
-                document.getElementById('gameMessage').textContent = '';
-                document.getElementById('resetButton').classList.add('hidden');
-                document.getElementById('giveUpBtn').classList.remove('hidden');
-                document.getElementById('submitGuess').classList.remove('hidden');
-                document.getElementById('submitGuess').disabled = false;
-                document.getElementById('hintBtn').classList.remove('hidden');
-                document.getElementById('hintBtn').disabled = false;
-                document.getElementById('hintBtn').textContent = '💡 Get Hint';
-                document.getElementById('hintDisplay').classList.add('hidden');
-                
-                document.querySelectorAll('.key').forEach(key => {
-                    key.classList.remove('correct', 'present', 'used');
-                });
-                
-                createWordBoxes();
-                updateGuessCount();
-                return;
-            }
-            
-            // Reset to theme input
             currentWord = '';
             wordList = [];
             currentWordIndex = 0;
+            gameResults = [];
             maxGuesses = 0;
             remainingGuesses = 0;
             currentGuess = '';
@@ -2445,14 +1431,14 @@ function drawWordPoolVisualization(totalWords, selectedIndices, canvasId = 'word
             currentThemeId = null;
             wordStartTime = null;
             letterSwapCount = 0;
+            wordClues = [];
 
-		document.getElementById('generateBtn').textContent = 'Generate';
-document.getElementById('generateBtn').onclick = generateTheme;
-document.getElementById('generateBtn').disabled = false;
-            
-            document.getElementById('hintBtn').disabled = false;
-            document.getElementById('hintBtn').textContent = '💡 Get Hint';
-            document.getElementById('hintDisplay').classList.add('hidden');
+            hideClue();
+
+            document.getElementById('generateBtn').textContent = 'Generate';
+            document.getElementById('generateBtn').onclick = generateTheme;
+            document.getElementById('generateBtn').disabled = false;
+
             document.getElementById('themeInput').value = '';
             document.getElementById('gameScreen').classList.add('hidden');
             document.getElementById('themeInputScreen').classList.remove('hidden');
@@ -2462,14 +1448,95 @@ document.getElementById('generateBtn').disabled = false;
             document.getElementById('resetButton').textContent = 'Reset';
             document.getElementById('giveUpBtn').classList.remove('hidden');
             document.getElementById('submitGuess').disabled = false;
-            document.getElementById('hintBtn').classList.remove('hidden');
             document.getElementById('submitGuess').classList.remove('hidden');
-            
+
             document.querySelectorAll('.key').forEach(key => {
                 key.classList.remove('correct', 'present', 'used');
             });
-            
+
             updateThemeCounter();
+        }
+
+        /**
+         * WORD POOL VISUALIZATION
+         * Shows where in the theme the selected words come from
+         */
+        function createWordPoolCanvas() {
+            const container = document.createElement('div');
+            container.id = 'wordPoolContainer';
+            container.style.cssText = `
+                margin: 20px auto;
+                padding: 15px;
+                max-width: 600px;
+                background: white;
+                border-radius: 12px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            `;
+
+            const canvas = document.createElement('canvas');
+            canvas.id = 'wordPoolCanvas';
+            canvas.width = 550;
+            canvas.height = 30;
+            canvas.style.cssText = `
+                display: block;
+                margin: 0 auto;
+            `;
+
+            const label = document.createElement('div');
+            label.id = 'wordPoolLabel';
+            label.style.cssText = `
+                font-size: 14px;
+                color: #718096;
+                margin-top: 10px;
+                display: flex;
+                justify-content: space-between;
+                font-weight: 600;
+            `;
+            label.innerHTML = '<span>Easy</span><span>Hard</span>';
+
+            container.appendChild(canvas);
+            container.appendChild(label);
+
+            return container;
+        }
+
+        function drawWordPoolVisualization(totalWords, selectedIndices, canvasId = 'wordPoolCanvas') {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+            const padding = 6;
+
+            ctx.clearRect(0, 0, width, height);
+
+            ctx.fillStyle = '#F7FAFC';
+            ctx.fillRect(padding, padding, width - padding * 2, height - padding * 2);
+
+            ctx.fillStyle = '#E2E8F0';
+            for (let x = padding; x < width - padding; x += 4) {
+                for (let y = padding; y < height - padding; y += 4) {
+                    ctx.fillRect(x, y, 2, 2);
+                }
+            }
+
+            ctx.strokeStyle = '#2D3748';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(padding, padding, width - padding * 2, height - padding * 2);
+
+            if (selectedIndices.length === 0) return;
+
+            const minIndex = Math.min(...selectedIndices);
+            const maxIndex = Math.max(...selectedIndices);
+
+            const innerWidth = width - padding * 4;
+            const innerHeight = height - padding * 4;
+            const barStart = padding * 2 + (minIndex / totalWords) * innerWidth;
+            const barWidth = ((maxIndex - minIndex + 1) / totalWords) * innerWidth;
+
+            ctx.fillStyle = '#2D3748';
+            ctx.fillRect(barStart, padding * 2, barWidth, innerHeight);
         }
 
         document.addEventListener('keydown', (e) => {
@@ -2523,16 +1590,16 @@ document.getElementById('generateBtn').disabled = false;
         document.getElementById('wordBoxes').addEventListener('drop', (e) => {
             if (gameOver) return;
             if (!e.target.classList.contains('letter-box')) return;
-            
+
             e.preventDefault();
             e.target.classList.remove('drag-over');
-            
+
             const targetIndex = parseInt(e.target.id.split('-')[1]);
-            
+
             if (dragSourceType === 'box' && dragSourceIndex !== null && dragSourceIndex !== targetIndex) {
                 letterSwapCount++;
                 let guessArray = currentGuess.split('');
-                
+
                 if (targetIndex < guessArray.length && guessArray[targetIndex]) {
                     const temp = guessArray[targetIndex];
                     guessArray[targetIndex] = guessArray[dragSourceIndex];
@@ -2541,7 +1608,7 @@ document.getElementById('generateBtn').disabled = false;
                     guessArray.splice(dragSourceIndex, 1);
                     guessArray.splice(targetIndex, 0, draggedLetter);
                 }
-                
+
                 currentGuess = guessArray.join('');
                 updateCurrentGuessDisplay();
             } else if (dragSourceType === 'keyboard') {
@@ -2549,7 +1616,7 @@ document.getElementById('generateBtn').disabled = false;
                     addLetter(draggedLetter);
                 }
             }
-            
+
             dragSourceType = null;
             dragSourceIndex = null;
             draggedLetter = null;
