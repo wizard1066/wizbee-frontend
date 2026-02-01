@@ -1570,6 +1570,16 @@
                 }
 
             } else {
+                // Fill in the answer boxes with the correct word
+                for (let i = 0; i < currentWord.length; i++) {
+                    const box = document.getElementById(`box-${i}`);
+                    if (box) {
+                        box.textContent = currentWord[i];
+                        box.classList.remove('active-input');
+                        box.classList.add('correct');
+                    }
+                }
+
                 messageDiv.textContent = `${loseMessage} ${currentWord}`;
                 messageDiv.className = 'message lose';
             }
