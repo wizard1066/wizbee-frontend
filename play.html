@@ -123,6 +123,7 @@
         let winMessage = 'Correct!';
         let loseMessage = 'Not quite! The word was';
         let wordClues = [];
+        let clueDirection = '';
         let currentClueTimeout = null;
         let hintsUsed = 0;
         let clueViewCount = 0;
@@ -453,7 +454,11 @@
                 box.classList.remove('correct', 'present', 'absent', 'active-input');
             });
 
-            for (let i = 0; i < word.length; i++) {
+            const startIdx = clueDirection === 'RL' ? word.length - 1 : 0;
+            const endIdx = clueDirection === 'RL' ? -1 : word.length;
+            const step = clueDirection === 'RL' ? -1 : 1;
+
+            for (let i = startIdx; i !== endIdx; i += step) {
                 const box = boxes[i];
                 box.textContent = word[i];
                 box.classList.add('correct');
@@ -1577,7 +1582,11 @@
                     box.classList.remove('correct', 'present', 'absent', 'active-input');
                 });
 
-                for (let i = 0; i < currentWord.length; i++) {
+                const startIdx = clueDirection === 'RL' ? currentWord.length - 1 : 0;
+                const endIdx = clueDirection === 'RL' ? -1 : currentWord.length;
+                const step = clueDirection === 'RL' ? -1 : 1;
+
+                for (let i = startIdx; i !== endIdx; i += step) {
                     const box = boxes[i];
                     if (box) {
                         box.textContent = currentWord[i];
@@ -1890,6 +1899,7 @@
                     wordClues = data.clues;
                     if (data.winMessage) winMessage = data.winMessage;
                     if (data.loseMessage) loseMessage = data.loseMessage;
+                    if (data.direction) clueDirection = data.direction;
                 }
             } catch (error) {
                 console.error('Error generating clues:', error);
