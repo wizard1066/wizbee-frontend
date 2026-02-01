@@ -1570,13 +1570,21 @@
                 }
 
             } else {
-                // Fill in the answer boxes with the correct word
+                // Animate the answer letter by letter
+                const boxes = document.querySelectorAll('.letter-box');
+                boxes.forEach(box => {
+                    box.textContent = '';
+                    box.classList.remove('correct', 'present', 'absent', 'active-input');
+                });
+
                 for (let i = 0; i < currentWord.length; i++) {
-                    const box = document.getElementById(`box-${i}`);
+                    const box = boxes[i];
                     if (box) {
                         box.textContent = currentWord[i];
-                        box.classList.remove('active-input');
                         box.classList.add('correct');
+                        box.style.animation = 'none';
+                        setTimeout(() => { box.style.animation = 'pop 0.3s ease-in-out'; }, 10);
+                        await delay(150);
                     }
                 }
 
