@@ -924,15 +924,26 @@
             qrSection.style.cssText = 'margin-bottom: 20px;';
             qrSection.innerHTML = '<div style="font-size: 14px; color: #718096; margin-bottom: 12px;">Or scan with phone:</div><div id="qrcode" style="display: inline-block;"></div>';
 
+            const buttonContainer = document.createElement('div');
+            buttonContainer.style.cssText = 'display: flex; gap: 12px; justify-content: center;';
+
+            const monitorBtn = document.createElement('button');
+            monitorBtn.textContent = 'Monitor Game';
+            monitorBtn.style.cssText = 'padding: 12px 24px; background: #4299e1; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px;';
+            monitorBtn.onclick = () => window.open('monitor.html?code=' + shareCode, '_blank');
+
             const doneBtn = document.createElement('button');
             doneBtn.textContent = 'Done';
             doneBtn.style.cssText = 'padding: 12px 32px; background: #48bb78; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px;';
             doneBtn.onclick = () => backdrop.remove();
 
+            buttonContainer.appendChild(monitorBtn);
+            buttonContainer.appendChild(doneBtn);
+
             modal.appendChild(title);
             modal.appendChild(codeSection);
             modal.appendChild(qrSection);
-            modal.appendChild(doneBtn);
+            modal.appendChild(buttonContainer);
             backdrop.appendChild(modal);
             document.body.appendChild(backdrop);
 
