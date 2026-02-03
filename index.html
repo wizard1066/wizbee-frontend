@@ -380,18 +380,12 @@
 
             // ============================================================================
             // CHECK FOR JOIN CODE FIRST (Classroom Mode)
+            // Always use guest join for ?join= URLs (simpler for classroom)
             // ============================================================================
             const joinCode = urlParams.get('join');
             if (joinCode) {
                 console.log('[JOIN] Join code detected:', joinCode);
-
-                // If user is logged in, join directly
-                if (authToken && userEmail) {
-                    joinSharedGame(joinCode.toUpperCase());
-                    return;
-                }
-
-                // Not logged in - show guest join modal
+                // Always use guest mode for join links - even teachers enter their name
                 showGuestJoinModal(joinCode);
                 return;
             }
