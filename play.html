@@ -143,6 +143,26 @@
         let pollInterval = null;
 
         // ============================================================================
+        // GUEST PLAYER SUPPORT
+        // ============================================================================
+
+        let isGuestPlayer = false;
+        let guestGameCode = null;
+        let guestPlayerName = null;
+
+        function getAuthHeaders() {
+            if (isGuestPlayer && guestGameCode && guestPlayerName) {
+                return {
+                    'X-Game-Code': guestGameCode,
+                    'X-Player-Name': encodeURIComponent(guestPlayerName)
+                };
+            }
+            return {
+                'Authorization': `Bearer ${authToken}`
+            };
+        }
+
+        // ============================================================================
         // SOCKET.IO CONNECTION
         // ============================================================================
 
@@ -158,13 +178,26 @@
             }
 
             console.log('[SOCKET] Connecting to server...');
+            console.log('[SOCKET] isGuestPlayer:', isGuestPlayer);
             console.log('[SOCKET] authToken exists:', !!authToken);
-            console.log('[SOCKET] authToken value:', authToken ? authToken.substring(0, 20) + '...' : 'NULL');
+
+            // Build auth object based on player type
+            let socketAuth;
+            if (isGuestPlayer && guestGameCode && guestPlayerName) {
+                socketAuth = {
+                    gameCode: guestGameCode,
+                    playerName: guestPlayerName
+                };
+                console.log('[SOCKET] Using guest auth:', guestPlayerName);
+            } else {
+                socketAuth = {
+                    token: authToken
+                };
+                console.log('[SOCKET] Using JWT auth');
+            }
 
             socket = io('https://api.wizbee.app', {
-                auth: {
-                    token: authToken
-                },
+                auth: socketAuth,
                 reconnection: true,
                 reconnectionAttempts: 5,
                 reconnectionDelay: 1000
@@ -192,9 +225,10 @@
                 console.log('[SOCKET] 🎯 Opponent advanced to index:', data.newIndex);
                 console.log('[SOCKET] Solver:', data.solver);
 
-                const currentUserEmail = localStorage.getItem('userEmail');
+                // Check if we solved it (either as user or guest)
+                const myIdentity = isGuestPlayer ? guestPlayerName : localStorage.getItem('userEmail');
 
-                if (data.solver === currentUserEmail) {
+                if (data.solver === myIdentity) {
                     console.log('[SOCKET] Ignoring - we solved it ourselves');
                     return;
                 }
@@ -501,9 +535,7 @@
                 console.log('[DEBUG] Polling game:', multiplayerCode);
 
                 const response = await fetch(`${API_URL}/api/poll-game/${multiplayerCode}`, {
-                    headers: {
-                        'Authorization': `Bearer ${authToken}`
-                    }
+                    headers: getAuthHeaders()
                 });
 
                 const data = await response.json();
@@ -798,7 +830,7 @@
                 const apiResponse = await fetch(`${API_URL}/api/respond-skip`, {
                     method: 'POST',
                     headers: {
-                        'Authorization': `Bearer ${authToken}`,
+                        ...getAuthHeaders(),
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
@@ -928,9 +960,7 @@
             pollInterval = setInterval(async () => {
                 try {
                     const response = await fetch(`${API_URL}/api/poll-game/${code}`, {
-                        headers: {
-                            'Authorization': `Bearer ${authToken}`
-                        }
+                        headers: getAuthHeaders()
                     });
 
                     const data = await response.json();
@@ -966,7 +996,14 @@
 
             authToken = localStorage.getItem('authToken');
 
-            if (!authToken) {
+            // Check for guest player credentials
+            guestGameCode = localStorage.getItem('guestGameCode');
+            guestPlayerName = localStorage.getItem('guestPlayerName');
+
+            if (guestGameCode && guestPlayerName) {
+                isGuestPlayer = true;
+                console.log('[PLAY] Guest player mode:', guestPlayerName, 'in game', guestGameCode);
+            } else if (!authToken) {
                 window.location.href = 'index.html';
                 return;
             }
@@ -1652,7 +1689,7 @@
                 const response = await fetch(`${API_URL}/api/advance-game`, {
                     method: 'POST',
                     headers: {
-                        'Authorization': `Bearer ${authToken}`,
+                        ...getAuthHeaders(),
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
@@ -1700,7 +1737,7 @@
                 const response = await fetch(`${API_URL}/api/complete-game`, {
                     method: 'POST',
                     headers: {
-                        'Authorization': `Bearer ${authToken}`,
+                        ...getAuthHeaders(),
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
@@ -1792,7 +1829,7 @@
                 const response = await fetch(`${API_URL}/api/skip-word`, {
                     method: 'POST',
                     headers: {
-                        'Authorization': `Bearer ${authToken}`,
+                        ...getAuthHeaders(),
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
@@ -1826,7 +1863,7 @@
                     const response = await fetch(`${API_URL}/api/request-skip`, {
                         method: 'POST',
                         headers: {
-                            'Authorization': `Bearer ${authToken}`,
+                            ...getAuthHeaders(),
                             'Content-Type': 'application/json'
                         },
                         body: JSON.stringify({

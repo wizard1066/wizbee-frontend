@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Monitor - Wizbee</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <style>
+        .monitor-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .monitor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .game-code {
+            font-size: 2em;
+            font-weight: bold;
+            font-family: monospace;
+            color: #333;
+        }
+
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+
+        .status-badge.active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-badge.completed {
+            background: #cce5ff;
+            color: #004085;
+        }
+
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .status-indicator.active {
+            background: #28a745;
+        }
+
+        .status-indicator.completed {
+            background: #007bff;
+            animation: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .game-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .info-card {
+            background: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .info-card .label {
+            font-size: 0.85em;
+            color: #6c757d;
+            margin-bottom: 5px;
+        }
+
+        .info-card .value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .players-section h2 {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .player-count {
+            background: #ffc107;
+            color: #333;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 0.7em;
+        }
+
+        .players-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .players-table th {
+            background: #343a40;
+            color: #fff;
+            padding: 12px 15px;
+            text-align: left;
+            font-weight: 500;
+        }
+
+        .players-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .players-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .players-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .player-type {
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.85em;
+        }
+
+        .player-type.host {
+            background: #cce5ff;
+            color: #004085;
+        }
+
+        .player-type.guest {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .progress-bar {
+            width: 100px;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-bar .fill {
+            height: 100%;
+            background: #28a745;
+            transition: width 0.3s ease;
+        }
+
+        .activity-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .activity-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .activity-dot.active {
+            background: #28a745;
+        }
+
+        .activity-dot.idle {
+            background: #ffc107;
+        }
+
+        .activity-dot.inactive {
+            background: #dc3545;
+        }
+
+        .no-players {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+
+        .no-players p {
+            margin-bottom: 10px;
+        }
+
+        .share-code-display {
+            font-size: 1.5em;
+            font-family: monospace;
+            background: #f8f9fa;
+            padding: 10px 20px;
+            border-radius: 8px;
+            display: inline-block;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="monitor-container">
+        <a href="index.html" class="back-link">&larr; Back to Home</a>
+
+        <div id="loading" class="loading">
+            <p>Loading game data...</p>
+        </div>
+
+        <div id="error" class="error-message" style="display: none;">
+            <p id="error-text">Error loading game</p>
+            <a href="index.html">Return to Home</a>
+        </div>
+
+        <div id="monitor-content" style="display: none;">
+            <div class="monitor-header">
+                <div>
+                    <div class="game-code" id="game-code">----</div>
+                    <div style="color: #6c757d; font-size: 0.9em;">Share this code with students</div>
+                </div>
+                <div class="status-badge active" id="status-badge">
+                    <span class="status-indicator active" id="status-indicator"></span>
+                    <span id="status-text">Live</span>
+                </div>
+            </div>
+
+            <div class="game-info">
+                <div class="info-card">
+                    <div class="label">Current Word</div>
+                    <div class="value"><span id="current-word">0</span> / <span id="total-words">0</span></div>
+                </div>
+                <div class="info-card">
+                    <div class="label">Players</div>
+                    <div class="value" id="player-count">0</div>
+                </div>
+                <div class="info-card">
+                    <div class="label">Game Started</div>
+                    <div class="value" id="game-started" style="font-size: 1em;">--:--</div>
+                </div>
+            </div>
+
+            <div class="players-section">
+                <h2>Players <span class="player-count" id="player-count-badge">0</span></h2>
+
+                <div id="no-players" class="no-players">
+                    <p>Waiting for players to join...</p>
+                    <p>Share this code with your students:</p>
+                    <div class="share-code-display" id="share-code-display">----</div>
+                </div>
+
+                <table class="players-table" id="players-table" style="display: none;">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Type</th>
+                            <th>Progress</th>
+                            <th>Words Solved</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="players-body">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="monitor.js"></script>
+</body>
+</html>

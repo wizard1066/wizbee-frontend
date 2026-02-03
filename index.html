@@ -25,6 +25,21 @@
             </div>
         </div>
 
+        <!-- Guest Join Modal (for classroom mode) -->
+        <div id="guestJoinModal" class="login-screen hidden" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px; border-radius: 16px; color: white;">
+            <h2 style="color: white; margin-bottom: 10px;">Join Game</h2>
+            <p style="color: rgba(255,255,255,0.9); margin-bottom: 20px;">Enter your name to join game <strong id="guestJoinCode" style="font-family: monospace; font-size: 1.2em;">----</strong></p>
+            <input type="text" id="guestNameInput" placeholder="Your name (e.g. Sarah M.)" maxlength="50" style="width: 80%; padding: 14px; font-size: 16px; border: none; border-radius: 8px; margin-bottom: 15px;">
+            <div style="margin-top: 10px;">
+                <button onclick="joinAsGuest()" style="background: #f59e0b; color: white; border: none; padding: 14px 40px; font-size: 16px; font-weight: 600; border-radius: 8px; cursor: pointer;">
+                    Join Game
+                </button>
+            </div>
+            <p style="margin-top: 20px; font-size: 12px; color: rgba(255,255,255,0.7);">
+                Have an account? <a href="#" onclick="showLoginFromGuest()" style="color: white; text-decoration: underline;">Sign in instead</a>
+            </p>
+        </div>
+
         <!-- Theme Input Screen -->
         <div id="themeInputScreen" class="theme-input-screen hidden">
             <div class="user-info">
@@ -361,8 +376,27 @@
             authToken = localStorage.getItem('authToken');
             userEmail = localStorage.getItem('userEmail');
 
-            // Handle payment success
             const urlParams = new URLSearchParams(window.location.search);
+
+            // ============================================================================
+            // CHECK FOR JOIN CODE FIRST (Classroom Mode)
+            // ============================================================================
+            const joinCode = urlParams.get('join');
+            if (joinCode) {
+                console.log('[JOIN] Join code detected:', joinCode);
+
+                // If user is logged in, join directly
+                if (authToken && userEmail) {
+                    joinSharedGame(joinCode.toUpperCase());
+                    return;
+                }
+
+                // Not logged in - show guest join modal
+                showGuestJoinModal(joinCode);
+                return;
+            }
+
+            // Handle payment success
             if (urlParams.get('success') === 'true') {
                 showError('🎉 Payment successful! 4 more themes added to your account.');
                 updateThemeCounter();
@@ -542,6 +576,104 @@
                 document.getElementById('generatingMessage').classList.add('hidden');
                 showError('Failed to join game. Please check the code and try again.');
             }
+        }
+
+        // ============================================================================
+        // GUEST JOIN FUNCTIONS (Classroom Mode)
+        // ============================================================================
+
+        let pendingGuestJoinCode = null;
+
+        function showGuestJoinModal(code) {
+            pendingGuestJoinCode = code.toUpperCase();
+            document.getElementById('guestJoinCode').textContent = pendingGuestJoinCode;
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('themeInputScreen').classList.add('hidden');
+            document.getElementById('guestJoinModal').classList.remove('hidden');
+            document.getElementById('guestNameInput').focus();
+
+            // Allow Enter key to submit
+            document.getElementById('guestNameInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    joinAsGuest();
+                }
+            });
+        }
+
+        async function joinAsGuest() {
+            const nameInput = document.getElementById('guestNameInput');
+            const playerName = nameInput.value.trim();
+
+            if (!playerName) {
+                nameInput.style.border = '2px solid #e53e3e';
+                nameInput.placeholder = 'Please enter your name';
+                return;
+            }
+
+            if (playerName.length < 2) {
+                nameInput.style.border = '2px solid #e53e3e';
+                alert('Please enter a name with at least 2 characters');
+                return;
+            }
+
+            // Store guest credentials
+            localStorage.setItem('guestGameCode', pendingGuestJoinCode);
+            localStorage.setItem('guestPlayerName', playerName);
+            localStorage.removeItem('authToken'); // Ensure we're in guest mode
+
+            console.log('[GUEST JOIN] Joining as:', playerName, 'Game:', pendingGuestJoinCode);
+
+            // Show loading
+            document.getElementById('guestJoinModal').innerHTML = `
+                <div style="text-align: center; padding: 40px;">
+                    <img src="bee4.png" style="height: 60px;">
+                    <p style="color: white; margin-top: 15px;">Joining game as <strong>${playerName}</strong>...</p>
+                </div>
+            `;
+
+            try {
+                const response = await fetch(`${API_URL}/api/get-shared-game/${pendingGuestJoinCode}`, {
+                    headers: {
+                        'X-Game-Code': pendingGuestJoinCode,
+                        'X-Player-Name': encodeURIComponent(playerName)
+                    }
+                });
+
+                const data = await response.json();
+
+                if (!data.success) {
+                    document.getElementById('guestJoinModal').innerHTML = `
+                        <div style="text-align: center; padding: 40px;">
+                            <p style="color: #fef3c7; font-size: 18px;">${data.error || 'Failed to join game'}</p>
+                            <button onclick="location.reload()" style="margin-top: 20px; background: white; color: #667eea; border: none; padding: 12px 30px; border-radius: 8px; cursor: pointer;">Try Again</button>
+                        </div>
+                    `;
+                    return;
+                }
+
+                console.log('[GUEST JOIN] Successfully joined game:', pendingGuestJoinCode);
+
+                // Store game data and redirect to play
+                localStorage.setItem('sharedGameCode', pendingGuestJoinCode);
+                localStorage.setItem('pendingGame', JSON.stringify(data.gameData));
+
+                window.location.href = 'play.html';
+
+            } catch (error) {
+                console.error('[GUEST JOIN] Error:', error);
+                document.getElementById('guestJoinModal').innerHTML = `
+                    <div style="text-align: center; padding: 40px;">
+                        <p style="color: #fef3c7; font-size: 18px;">Connection error. Please try again.</p>
+                        <button onclick="location.reload()" style="margin-top: 20px; background: white; color: #667eea; border: none; padding: 12px 30px; border-radius: 8px; cursor: pointer;">Try Again</button>
+                    </div>
+                `;
+            }
+        }
+
+        function showLoginFromGuest() {
+            document.getElementById('guestJoinModal').classList.add('hidden');
+            document.getElementById('loginScreen').classList.remove('hidden');
+            initializeGoogleSignIn();
         }
 
         async function updateThemeCounter() {
