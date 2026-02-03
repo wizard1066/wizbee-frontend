@@ -23,6 +23,17 @@
             <div style="display: flex; justify-content: center;">
                 <div id="google-signin-button"></div>
             </div>
+
+            <!-- Join Game Section for guests -->
+            <div style="margin-top: 40px; padding-top: 30px; border-top: 1px solid #e2e8f0;">
+                <p style="color: #718096; margin-bottom: 15px;">Or join a classroom game with a code:</p>
+                <div style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
+                    <input type="text" id="loginGameCodeInput" placeholder="Enter 4-digit code" maxlength="4" style="width: 160px; padding: 12px; font-size: 18px; font-family: monospace; text-align: center; border: 2px solid #e2e8f0; border-radius: 8px; text-transform: uppercase;">
+                    <button onclick="joinFromLoginScreen()" style="background: #f59e0b; color: white; border: none; padding: 12px 24px; font-size: 16px; font-weight: 600; border-radius: 8px; cursor: pointer;">
+                        Join Game
+                    </button>
+                </div>
+            </div>
         </div>
 
         <!-- Guest Join Modal (for classroom mode) -->
@@ -478,6 +489,17 @@
                     generateTheme();
                 }
             });
+
+            // Allow Enter key for game code input on login screen
+            const loginGameCodeInput = document.getElementById('loginGameCodeInput');
+            if (loginGameCodeInput) {
+                loginGameCodeInput.addEventListener('keypress', function(event) {
+                    if (event.key === 'Enter') {
+                        event.preventDefault();
+                        joinFromLoginScreen();
+                    }
+                });
+            }
         });
 
         window.addEventListener('DOMContentLoaded', () => {
@@ -673,6 +695,30 @@
             document.getElementById('guestJoinModal').classList.add('hidden');
             document.getElementById('loginScreen').classList.remove('hidden');
             initializeGoogleSignIn();
+        }
+
+        function joinFromLoginScreen() {
+            const codeInput = document.getElementById('loginGameCodeInput');
+            const code = codeInput.value.trim().toUpperCase();
+
+            if (!code) {
+                codeInput.style.border = '2px solid #e53e3e';
+                codeInput.placeholder = 'Enter code';
+                return;
+            }
+
+            // Validate it's a 4-digit hex code
+            const hexPattern = /^[0-9A-Fa-f]{4}$/;
+            if (!hexPattern.test(code)) {
+                codeInput.style.border = '2px solid #e53e3e';
+                codeInput.value = '';
+                codeInput.placeholder = 'Invalid code';
+                return;
+            }
+
+            // Valid code - show guest join modal
+            codeInput.style.border = '2px solid #e2e8f0';
+            showGuestJoinModal(code);
         }
 
         async function updateThemeCounter() {
