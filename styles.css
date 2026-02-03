@@ -921,7 +921,7 @@
         }
 
         .hidden {
-            display: none;
+            display: none !important;
         }
 
 	.tutorial-overlay {
@@ -1215,4 +1215,12 @@
     #scanQrBtn {
         display: none !important;
     }
+}
+
+/* Override for .hidden - must come last to win specificity battles */
+.theme-input-screen.hidden,
+.game-screen.hidden,
+.login-screen.hidden,
+.hidden {
+    display: none !important;
 }
