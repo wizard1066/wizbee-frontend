@@ -294,7 +294,7 @@
                     document.getElementById('scanQrBtn').style.background = '#805ad5';
 
                     console.log('[QR] Valid code found:', code);
-                    joinSharedGame(code.toUpperCase());
+                    showGuestJoinModal(code.toUpperCase());
                 } else {
                     alert('Invalid QR code. Please scan a Wizbee game code.');
                 }
@@ -765,7 +765,8 @@
             const hexPattern = /^[0-9A-Fa-f]{4}$/;
 
             if (hexPattern.test(input)) {
-                await joinSharedGame(input.toUpperCase());
+                // Use guest join modal for all game code entries
+                showGuestJoinModal(input.toUpperCase());
                 return;
             }
 
@@ -1053,8 +1054,8 @@
             const hexPattern = /^[0-9A-Fa-f]{4}$/;
 
             if (hexPattern.test(input)) {
-                console.log('[PLAY] Hex code detected, joining game:', input);
-                await joinSharedGame(input.toUpperCase());
+                console.log('[PLAY] Hex code detected, showing guest join modal:', input);
+                showGuestJoinModal(input.toUpperCase());
                 return;
             }
 
