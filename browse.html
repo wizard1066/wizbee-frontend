@@ -221,8 +221,11 @@
 
         async function playTheme(cacheKey) {
             console.log('[BROWSE] Playing theme:', cacheKey);
+            // Clear any stale guest session data when starting a fresh game
             localStorage.removeItem('sharedGameCode');
-            
+            localStorage.removeItem('guestGameCode');
+            localStorage.removeItem('guestPlayerName');
+
             try {
                 const response = await fetch(`${API_URL}/api/play-theme`, {
                     method: 'POST',

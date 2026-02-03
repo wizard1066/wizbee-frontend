@@ -1035,10 +1035,29 @@
             guestGameCode = localStorage.getItem('guestGameCode');
             guestPlayerName = localStorage.getItem('guestPlayerName');
 
-            if (guestGameCode && guestPlayerName) {
+            // Only treat as guest if we have guest credentials AND the game data has clues
+            // (indicating this is a shared game join, not a fresh solo game)
+            const pendingGameRaw = localStorage.getItem('pendingGame');
+            let hasClues = false;
+            try {
+                const parsed = JSON.parse(pendingGameRaw);
+                hasClues = parsed?.gameData?.clues?.length > 0 || parsed?.clues?.length > 0;
+            } catch (e) {}
+
+            if (guestGameCode && guestPlayerName && hasClues) {
                 isGuestPlayer = true;
                 console.log('[PLAY] Guest player mode:', guestPlayerName, 'in game', guestGameCode);
-            } else if (!authToken) {
+            } else if (guestGameCode && guestPlayerName && !hasClues) {
+                // Stale guest credentials from a previous session - clear them
+                console.log('[PLAY] Clearing stale guest credentials');
+                localStorage.removeItem('guestGameCode');
+                localStorage.removeItem('guestPlayerName');
+                guestGameCode = null;
+                guestPlayerName = null;
+                isGuestPlayer = false;
+            }
+
+            if (!authToken && !isGuestPlayer) {
                 window.location.href = 'index.html';
                 return;
             }

@@ -826,7 +826,10 @@
 
         async function generateTheme() {
             const input = document.getElementById('themeInput').value.trim();
+            // Clear any stale game session data
             localStorage.removeItem('sharedGameCode');
+            localStorage.removeItem('guestGameCode');
+            localStorage.removeItem('guestPlayerName');
 
             console.log('=================================');
             console.log('GENERATE THEME CALLED');
@@ -1138,6 +1141,11 @@
                 showGuestJoinModal(input.toUpperCase());
                 return;
             }
+
+            // Clear any stale guest session data when starting a fresh game
+            localStorage.removeItem('sharedGameCode');
+            localStorage.removeItem('guestGameCode');
+            localStorage.removeItem('guestPlayerName');
 
             if (!currentCacheKey) {
                 showError('No theme selected!');
