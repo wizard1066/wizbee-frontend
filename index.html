@@ -459,6 +459,11 @@
                 }
 
             } else {
+                // Not authenticated - ensure login screen is visible
+                document.getElementById('themeInputScreen').classList.add('hidden');
+                document.getElementById('gameScreen').classList.add('hidden');
+                document.getElementById('guestJoinModal').classList.add('hidden');
+                document.getElementById('loginScreen').classList.remove('hidden');
                 initializeGoogleSignIn();
             }
         };
