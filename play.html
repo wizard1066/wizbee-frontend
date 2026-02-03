@@ -1122,6 +1122,9 @@
             }
 
             // Use existing clues if available (shared games), otherwise generate
+            console.log('[CLUES] gameData.clues:', gameData.clues);
+            console.log('[CLUES] sharedGameCode in storage:', localStorage.getItem('sharedGameCode'));
+
             if (gameData.clues && gameData.clues.length > 0) {
                 console.log('[CLUES] Using existing clues from game data');
                 wordClues = gameData.clues;
@@ -1997,6 +2000,7 @@
             } catch (error) {
                 console.error('Error generating clues:', error);
             } finally {
+                console.log('[CLUES] Finally block reached');
                 clueBtn.disabled = false;
 
                 const multiplayerCode = localStorage.getItem('sharedGameCode');
@@ -2006,15 +2010,18 @@
                 console.log('[CLUES] isMultiplayerGame:', isMultiplayerGame);
 
                 if (isMultiplayerGame) {
+                    console.log('[CLUES] Setting button to Show Clue');
                     clueBtn.textContent = 'Show Clue';
                     clueBtn.onclick = showClue;
                 } else {
+                    console.log('[CLUES] Setting button to Share Game');
                     clueBtn.textContent = 'Share Game';
                     clueBtn.onclick = shareGame;
                 }
 
                 clueBtn.style.background = '';
                 clueBtn.style.cursor = '';
+                console.log('[CLUES] Button text is now:', clueBtn.textContent);
             }
         }
 
