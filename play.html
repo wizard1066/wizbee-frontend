@@ -151,11 +151,15 @@
         let guestPlayerName = null;
 
         function getAuthHeaders() {
+            console.log('[AUTH HEADERS] isGuestPlayer:', isGuestPlayer, 'authToken:', !!authToken, 'guestGameCode:', guestGameCode);
             if (isGuestPlayer && guestGameCode && guestPlayerName) {
                 return {
                     'X-Game-Code': guestGameCode,
                     'X-Player-Name': encodeURIComponent(guestPlayerName)
                 };
+            }
+            if (!authToken) {
+                console.error('[AUTH HEADERS] WARNING: No authToken available!');
             }
             return {
                 'Authorization': `Bearer ${authToken}`
@@ -1086,12 +1090,21 @@
                 );
             }
 
-            try {
-                await generateAllClues();
-            } catch (error) {
-                console.error('ERROR generating clues:', error);
-                alert('Clue generation failed: ' + error.message);
-                wordClues = [];
+            // Use existing clues if available (shared games), otherwise generate
+            if (gameData.clues && gameData.clues.length > 0) {
+                console.log('[CLUES] Using existing clues from game data');
+                wordClues = gameData.clues;
+                if (gameData.winMessage) winMessage = gameData.winMessage;
+                if (gameData.loseMessage) loseMessage = gameData.loseMessage;
+                if (gameData.direction) clueDirection = gameData.direction;
+            } else {
+                try {
+                    await generateAllClues();
+                } catch (error) {
+                    console.error('ERROR generating clues:', error);
+                    alert('Clue generation failed: ' + error.message);
+                    wordClues = [];
+                }
             }
 
             console.log('createWordBoxes');
@@ -1454,6 +1467,11 @@
         }
 
         async function recordWordAttempt(won) {
+            // Skip recording for guest players (no JWT auth)
+            if (isGuestPlayer) {
+                console.log('[RECORD] Skipping record-word-attempt for guest player');
+                return;
+            }
             if (!currentThemeId) return;
 
             try {
@@ -1908,6 +1926,12 @@
         }
 
         async function generateAllClues() {
+            // Guest players already have clues from the shared game data
+            if (isGuestPlayer) {
+                console.log('[CLUES] Guest player - using existing clues from game data');
+                return;
+            }
+
             const clueBtn = document.getElementById('showClueBtn');
             const originalText = clueBtn.textContent;
             clueBtn.disabled = true;
