@@ -469,6 +469,74 @@
 
             if (isMultiplayerGame) {
                 console.log('[MULTIPLAYER] Joined game:', multiplayerCode);
+
+                // Sync state when page becomes visible again (e.g., returning from monitor)
+                document.addEventListener('visibilitychange', async () => {
+                    if (!document.hidden && isMultiplayerGame && multiplayerCode) {
+                        console.log('[SYNC] Page visible - checking for game updates...');
+                        await syncGameState();
+                    }
+                });
+            }
+        }
+
+        /**
+         * Sync local game state with server (used when returning to page)
+         */
+        async function syncGameState() {
+            if (!multiplayerCode) return;
+
+            try {
+                const response = await fetch(`${API_URL}/api/poll-game/${multiplayerCode}`, {
+                    headers: getAuthHeaders()
+                });
+
+                const data = await response.json();
+
+                if (!data.success) {
+                    console.log('[SYNC] Game ended or not found');
+                    return;
+                }
+
+                console.log('[SYNC] Server index:', data.currentIndex, 'Local index:', currentWordIndex);
+
+                if (data.currentIndex > currentWordIndex) {
+                    console.log('[SYNC] Game advanced while away - catching up...');
+
+                    // Mark missed words as opponent-solved
+                    while (currentWordIndex < data.currentIndex && currentWordIndex < wordList.length) {
+                        gameResults.push({
+                            word: wordList[currentWordIndex],
+                            won: false,
+                            solvedByOpponent: true,
+                            guesses: 0,
+                            timeSeconds: 0,
+                            cluesViewed: 0
+                        });
+                        currentWordIndex++;
+                    }
+
+                    // Jump to current position
+                    if (data.currentIndex < wordList.length) {
+                        jumpToWord(data.currentIndex);
+                    } else {
+                        // Game completed while away
+                        document.getElementById('submitGuess').classList.add('hidden');
+                        document.getElementById('showClueBtn').classList.add('hidden');
+                        document.getElementById('giveUpBtn').classList.add('hidden');
+
+                        const resetBtn = document.getElementById('resetButton');
+                        resetBtn.textContent = '🎉 View Summary';
+                        resetBtn.classList.remove('hidden');
+                        resetBtn.disabled = false;
+                        resetBtn.onclick = showGameSummary;
+
+                        document.getElementById('gameMessage').textContent = '🏁 Game Complete!';
+                    }
+                }
+
+            } catch (error) {
+                console.error('[SYNC] Error syncing game state:', error);
             }
         }
 
