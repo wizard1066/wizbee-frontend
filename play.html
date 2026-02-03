@@ -243,13 +243,14 @@
                         word: wordList[currentWordIndex],
                         won: false,
                         solvedByOpponent: true,
+                        solverName: data.solver,
                         guesses: 0,
                         timeSeconds: 0,
                         cluesViewed: 0
                     });
 
                     await animateOpponentSolution();
-                    showOpponentSolvedMessage();
+                    showOpponentSolvedMessage(data.solver);
                     await delay(2000);
 
                     if (data.newIndex >= wordList.length) {
@@ -579,9 +580,28 @@
         }
 
         /**
+         * Convert email to display name (e.g., "john.doe@school.com" -> "John Doe")
+         */
+        function formatPlayerName(name) {
+            if (!name) return 'Opponent';
+            // If it's an email, extract and format the part before @
+            if (name.includes('@')) {
+                const localPart = name.split('@')[0];
+                // Replace dots/underscores with spaces and capitalize each word
+                return localPart
+                    .replace(/[._]/g, ' ')
+                    .split(' ')
+                    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                    .join(' ');
+            }
+            return name;
+        }
+
+        /**
          * Show message when opponent solves
          */
-        function showOpponentSolvedMessage() {
+        function showOpponentSolvedMessage(solverName) {
+            const displayName = formatPlayerName(solverName);
             const msg = document.createElement('div');
             msg.style.cssText = `
                 position: fixed;
@@ -598,7 +618,7 @@
                 box-shadow: 0 10px 40px rgba(0,0,0,0.3);
                 animation: slideIn 0.3s ease-out;
             `;
-            msg.textContent = '👤 Opponent solved it!';
+            msg.textContent = `${displayName} solved it!`;
             document.body.appendChild(msg);
 
             setTimeout(() => {
@@ -1566,7 +1586,8 @@
                     status = '<span style="color: #f59e0b;">Time expired</span>';
                 } else if (result.solvedByOpponent) {
                     icon = '👤';
-                    status = '<span style="color: #667eea;">Solved by opponent</span>';
+                    const solverDisplay = formatPlayerName(result.solverName);
+                    status = `<span style="color: #667eea;">Solved by ${solverDisplay}</span>`;
                 } else if (result.won) {
                     icon = '✅';
                     status = `${result.guesses} guesses, ${result.timeSeconds}s, ${result.cluesViewed} clues`;
