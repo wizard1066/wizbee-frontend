@@ -1689,10 +1689,10 @@
                     status = `<span style="color: #667eea;">Solved by ${solverDisplay}</span>`;
                 } else if (result.won) {
                     icon = '✅';
-                    status = `${result.guesses} guesses, ${result.timeSeconds}s`;
+                    status = `${result.guesses} ${result.guesses === 1 ? 'guess' : 'guesses'}, ${result.timeSeconds}s`;
                 } else {
                     icon = '❌';
-                    status = `${result.guesses} guesses, ${result.timeSeconds}s`;
+                    status = `${result.guesses} ${result.guesses === 1 ? 'guess' : 'guesses'}, ${result.timeSeconds}s`;
                 }
 
                 html += `
