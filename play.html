@@ -1659,8 +1659,6 @@
             const wordsWon = gameResults.filter(r => r.won).length;
             const totalTime = gameResults.reduce((sum, r) => sum + r.timeSeconds, 0);
             const totalGuesses = gameResults.reduce((sum, r) => sum + r.guesses, 0);
-            const totalClues = gameResults.reduce((sum, r) => sum + r.cluesViewed, 0);
-
             const avgTime = Math.round(totalTime / totalWords);
             const avgGuesses = (totalGuesses / totalWords).toFixed(1);
 
@@ -1671,7 +1669,6 @@
                     <p><strong>Success Rate:</strong> ${Math.round((wordsWon/totalWords)*100)}%</p>
                     <p><strong>Average Time:</strong> ${avgTime}s per word</p>
                     <p><strong>Average Guesses:</strong> ${avgGuesses}</p>
-                    <p><strong>Total Clues Used:</strong> ${totalClues}</p>
                 </div>
 
                 <div class="summary-results">
@@ -1692,10 +1689,10 @@
                     status = `<span style="color: #667eea;">Solved by ${solverDisplay}</span>`;
                 } else if (result.won) {
                     icon = '✅';
-                    status = `${result.guesses} guesses, ${result.timeSeconds}s, ${result.cluesViewed} clues`;
+                    status = `${result.guesses} guesses, ${result.timeSeconds}s`;
                 } else {
                     icon = '❌';
-                    status = `${result.guesses} guesses, ${result.timeSeconds}s, ${result.cluesViewed} clues`;
+                    status = `${result.guesses} guesses, ${result.timeSeconds}s`;
                 }
 
                 html += `
