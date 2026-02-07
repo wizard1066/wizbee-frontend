@@ -109,7 +109,8 @@ async function joinGame() {
         updateStatus('Loading game data...');
 
         gameData = data.gameData;
-        currentWordIndex = gameData.currentIndex || 0;
+        // currentIndex starts at -1 (no word yet), becomes 0+ when word starts
+        currentWordIndex = gameData.currentIndex;
         wordStartedAt = gameData.wordStartedAt ? new Date(gameData.wordStartedAt) : null;
 
         updateStatus('Connecting to live updates...');
