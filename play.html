@@ -996,15 +996,34 @@
             const buttonContainer = document.createElement('div');
             buttonContainer.style.cssText = 'display: flex; gap: 12px; justify-content: center;';
 
+            // Helper function to start the game (notifies waiting guests)
+            async function startGameAndDo(action) {
+                try {
+                    const response = await fetch(`${API_URL}/api/start-game`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${authToken}`
+                        },
+                        body: JSON.stringify({ shareCode })
+                    });
+                    const data = await response.json();
+                    console.log('[SHARE] Game started:', data);
+                } catch (error) {
+                    console.error('[SHARE] Error starting game:', error);
+                }
+                action();
+            }
+
             const monitorBtn = document.createElement('button');
             monitorBtn.textContent = 'Monitor Game';
             monitorBtn.style.cssText = 'padding: 12px 24px; background: #4299e1; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px;';
-            monitorBtn.onclick = () => window.open('monitor.html?code=' + shareCode, '_blank');
+            monitorBtn.onclick = () => startGameAndDo(() => window.open('monitor.html?code=' + shareCode, '_blank'));
 
             const doneBtn = document.createElement('button');
             doneBtn.textContent = 'Done';
             doneBtn.style.cssText = 'padding: 12px 32px; background: #48bb78; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px;';
-            doneBtn.onclick = () => backdrop.remove();
+            doneBtn.onclick = () => startGameAndDo(() => backdrop.remove());
 
             buttonContainer.appendChild(monitorBtn);
             buttonContainer.appendChild(doneBtn);

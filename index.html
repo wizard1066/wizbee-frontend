@@ -613,11 +613,18 @@
                     return;
                 }
 
-                console.log('[MULTIPLAYER] Joined game:', code);
+                console.log('[MULTIPLAYER] Joined game:', code, 'started:', data.started);
 
                 localStorage.setItem('sharedGameCode', code);
                 localStorage.setItem('pendingGame', JSON.stringify(data.gameData));
                 console.log('[JOIN] Saved pendingGame:', localStorage.getItem('pendingGame'));
+
+                // If game hasn't started yet, show waiting room for logged-in user too
+                if (!data.started) {
+                    document.getElementById('generatingMessage').classList.add('hidden');
+                    showWaitingRoomLoggedIn(code);
+                    return;
+                }
 
                 window.location.href = 'play.html';
 
@@ -626,6 +633,82 @@
                 document.getElementById('generatingMessage').classList.add('hidden');
                 showError('Failed to join game. Please check the code and try again.');
             }
+        }
+
+        function showWaitingRoomLoggedIn(gameCode) {
+            console.log('[WAITING] Showing waiting room for logged-in user in game', gameCode);
+
+            // Create a waiting overlay
+            const overlay = document.createElement('div');
+            overlay.id = 'waitingOverlay';
+            overlay.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; z-index: 10000;';
+
+            overlay.innerHTML = `
+                <div style="text-align: center; padding: 40px;">
+                    <img src="bee4.png" style="height: 80px; animation: bounce 1s infinite;">
+                    <h2 style="color: white; margin: 20px 0 10px 0;">Waiting for host...</h2>
+                    <p style="color: #e2e8f0; margin-bottom: 20px;">The game will start when the host is ready.</p>
+                    <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px;">
+                        <div style="color: #a0aec0; font-size: 14px;">Game Code</div>
+                        <div style="color: white; font-size: 24px; font-weight: bold; letter-spacing: 3px;">${gameCode}</div>
+                    </div>
+                    <p id="waitingStatusLoggedIn" style="color: #a0aec0; margin-top: 20px; font-size: 14px;">Connecting...</p>
+                </div>
+                <style>
+                    @keyframes bounce {
+                        0%, 100% { transform: translateY(0); }
+                        50% { transform: translateY(-10px); }
+                    }
+                </style>
+            `;
+
+            document.body.appendChild(overlay);
+
+            // Connect to Socket.IO
+            const socket = io(API_URL, {
+                auth: {
+                    token: authToken
+                },
+                transports: ['websocket', 'polling']
+            });
+
+            socket.on('connect', () => {
+                console.log('[WAITING] Socket connected');
+                document.getElementById('waitingStatusLoggedIn').textContent = 'Connected! Waiting for host to start...';
+                socket.emit('join_game', gameCode);
+            });
+
+            socket.on('connect_error', (error) => {
+                console.error('[WAITING] Socket error:', error);
+                document.getElementById('waitingStatusLoggedIn').textContent = 'Connection issue - will retry...';
+            });
+
+            socket.on('game_started', (data) => {
+                console.log('[WAITING] Game started!', data);
+                document.getElementById('waitingStatusLoggedIn').textContent = 'Game starting!';
+                socket.disconnect();
+                window.location.href = 'play.html';
+            });
+
+            // Also poll in case Socket.IO misses the event
+            const pollInterval = setInterval(async () => {
+                try {
+                    const response = await fetch(`${API_URL}/api/get-shared-game/${gameCode}`, {
+                        headers: {
+                            'Authorization': `Bearer ${authToken}`
+                        }
+                    });
+                    const data = await response.json();
+                    if (data.success && data.started) {
+                        console.log('[WAITING] Poll detected game started');
+                        clearInterval(pollInterval);
+                        socket.disconnect();
+                        window.location.href = 'play.html';
+                    }
+                } catch (e) {
+                    console.error('[WAITING] Poll error:', e);
+                }
+            }, 3000);
         }
 
         // ============================================================================
@@ -701,11 +784,17 @@
                     return;
                 }
 
-                console.log('[GUEST JOIN] Successfully joined game:', pendingGuestJoinCode);
+                console.log('[GUEST JOIN] Successfully joined game:', pendingGuestJoinCode, 'started:', data.started);
 
-                // Store game data and redirect to play
+                // Store game data
                 localStorage.setItem('sharedGameCode', pendingGuestJoinCode);
                 localStorage.setItem('pendingGame', JSON.stringify(data.gameData));
+
+                // If game hasn't started yet, show waiting room
+                if (!data.started) {
+                    showWaitingRoom(playerName, pendingGuestJoinCode);
+                    return;
+                }
 
                 window.location.href = 'play.html';
 
@@ -718,6 +807,77 @@
                     </div>
                 `;
             }
+        }
+
+        function showWaitingRoom(playerName, gameCode) {
+            console.log('[WAITING] Showing waiting room for', playerName, 'in game', gameCode);
+
+            document.getElementById('guestJoinModal').innerHTML = `
+                <div style="text-align: center; padding: 40px;">
+                    <img src="bee4.png" style="height: 80px; animation: bounce 1s infinite;">
+                    <h2 style="color: white; margin: 20px 0 10px 0;">Waiting for host...</h2>
+                    <p style="color: #e2e8f0; margin-bottom: 20px;">Hi <strong>${playerName}</strong>! The game will start when the host is ready.</p>
+                    <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px;">
+                        <div style="color: #a0aec0; font-size: 14px;">Game Code</div>
+                        <div style="color: white; font-size: 24px; font-weight: bold; letter-spacing: 3px;">${gameCode}</div>
+                    </div>
+                    <p id="waitingStatus" style="color: #a0aec0; margin-top: 20px; font-size: 14px;">Connecting...</p>
+                </div>
+                <style>
+                    @keyframes bounce {
+                        0%, 100% { transform: translateY(0); }
+                        50% { transform: translateY(-10px); }
+                    }
+                </style>
+            `;
+
+            // Connect to Socket.IO to listen for game_started
+            const socket = io(API_URL, {
+                auth: {
+                    gameCode: gameCode,
+                    playerName: playerName
+                },
+                transports: ['websocket', 'polling']
+            });
+
+            socket.on('connect', () => {
+                console.log('[WAITING] Socket connected');
+                document.getElementById('waitingStatus').textContent = 'Connected! Waiting for host to start...';
+                socket.emit('join_game', gameCode);
+            });
+
+            socket.on('connect_error', (error) => {
+                console.error('[WAITING] Socket error:', error);
+                document.getElementById('waitingStatus').textContent = 'Connection issue - will retry...';
+            });
+
+            socket.on('game_started', (data) => {
+                console.log('[WAITING] Game started!', data);
+                document.getElementById('waitingStatus').textContent = 'Game starting!';
+                socket.disconnect();
+                window.location.href = 'play.html';
+            });
+
+            // Also poll in case Socket.IO misses the event
+            const pollInterval = setInterval(async () => {
+                try {
+                    const response = await fetch(`${API_URL}/api/get-shared-game/${gameCode}`, {
+                        headers: {
+                            'X-Game-Code': gameCode,
+                            'X-Player-Name': encodeURIComponent(playerName)
+                        }
+                    });
+                    const data = await response.json();
+                    if (data.success && data.started) {
+                        console.log('[WAITING] Poll detected game started');
+                        clearInterval(pollInterval);
+                        socket.disconnect();
+                        window.location.href = 'play.html';
+                    }
+                } catch (e) {
+                    console.error('[WAITING] Poll error:', e);
+                }
+            }, 3000);
         }
 
         function showLoginFromGuest() {
