@@ -120,18 +120,16 @@ async function joinGame() {
         console.log('[PLAYER] Deciding screen - started:', data.started, 'wordIndex:', currentWordIndex, 'wordStartedAt:', wordStartedAt);
 
         if (!data.started) {
+            // Game hasn't started yet - wait for host to click "Start Game"
             console.log('[PLAYER] Game not started, showing waiting screen');
             showWaitingScreen();
-        } else if (currentWordIndex >= 0 && currentWordIndex < gameData.words.length) {
-            // Game is started and we have a valid word index - show game screen
-            // (even if wordStartedAt is null, the host has started so we should show the word)
-            console.log('[PLAYER] Game started with word', currentWordIndex, '- showing game screen');
-            if (!wordStartedAt) {
-                wordStartedAt = new Date(); // Use current time if not set
-            }
+        } else if (wordStartedAt) {
+            // Game started AND a word has started - show game screen
+            console.log('[PLAYER] Word in progress, showing game screen');
             showGameScreen();
         } else {
-            console.log('[PLAYER] Between words or invalid index, showing waiting');
+            // Game started but no word yet - show "Get ready!"
+            console.log('[PLAYER] Game started, waiting for first word');
             showBetweenWords();
         }
 
@@ -226,17 +224,25 @@ async function resyncGameState() {
 
         console.log('[PLAYER] Re-sync: started=', gameStarted, 'wordIndex=', newWordIndex, 'wordStartedAt=', newWordStartedAt);
 
-        // If game has started and we have a valid word, but we're not showing the game screen
-        const gameScreen = document.getElementById('game-screen');
-        const isShowingGame = gameScreen.style.display !== 'none';
+        // Check what screen we're currently showing
+        const waitingScreen = document.getElementById('waiting-screen');
+        const isShowingWaiting = waitingScreen.style.display !== 'none';
 
-        if (gameStarted && newWordIndex >= 0 && newWordIndex < gameData.words.length && !isShowingGame) {
-            console.log('[PLAYER] Re-sync: Game started while we were connecting! Showing game screen.');
-            currentWordIndex = newWordIndex;
-            wordStartedAt = newWordStartedAt || new Date();
-            hasSubmittedResult = false;
-            guessCount = 0;
-            showGameScreen();
+        // If game started but we're still showing waiting screen, update
+        if (gameStarted && isShowingWaiting) {
+            if (newWordStartedAt) {
+                // Word has started - show game screen
+                console.log('[PLAYER] Re-sync: Word started while we were connecting! Showing game screen.');
+                currentWordIndex = newWordIndex;
+                wordStartedAt = newWordStartedAt;
+                hasSubmittedResult = false;
+                guessCount = 0;
+                showGameScreen();
+            } else {
+                // Game started but word hasn't - show "Get ready!"
+                console.log('[PLAYER] Re-sync: Game started while we were connecting! Showing get ready screen.');
+                showBetweenWords();
+            }
         }
     } catch (error) {
         console.error('[PLAYER] Re-sync error:', error);

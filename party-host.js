@@ -15,6 +15,7 @@ let leaderboard = [];
 let currentSort = 'rank';
 let wordRevealed = false;
 let timerInterval = null;
+let gameStarted = false;
 
 // ============================================================================
 // INITIALIZATION
@@ -64,6 +65,7 @@ async function loadGameData() {
         gameData = data.gameData;
         currentWordIndex = gameData.currentIndex;
         wordStartedAt = gameData.wordStartedAt;
+        gameStarted = data.started;
 
         renderHostDisplay();
         loadLeaderboard();
@@ -71,6 +73,31 @@ async function loadGameData() {
     } catch (error) {
         console.error('[HOST] Error loading game:', error);
         showError('Failed to connect to server.');
+    }
+}
+
+async function startGame() {
+    try {
+        const response = await fetch(`${API_URL}/api/party/start`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify({
+                shareCode: gameCode
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            gameStarted = true;
+            document.getElementById('clueDisplay').textContent = 'Get ready! Starting first word...';
+            updateControls();
+        }
+    } catch (error) {
+        console.error('[HOST] Error starting game:', error);
     }
 }
 
@@ -243,18 +270,25 @@ function updateWordDisplay() {
 }
 
 function updateControls() {
+    const startGameBtn = document.getElementById('startGameBtn');
     const startBtn = document.getElementById('startWordBtn');
     const nextBtn = document.getElementById('nextWordBtn');
     const revealBtn = document.getElementById('revealWordBtn');
     const endBtn = document.getElementById('endGameBtn');
 
     const isLastWord = currentWordIndex >= gameData.words.length - 1;
-    const hasStarted = currentWordIndex >= 0;
+    const hasStartedWord = currentWordIndex >= 0;
 
-    startBtn.style.display = !hasStarted ? 'block' : 'none';
-    nextBtn.style.display = hasStarted && !isLastWord ? 'block' : 'none';
-    revealBtn.style.display = hasStarted && !wordRevealed ? 'block' : 'none';
-    endBtn.style.display = hasStarted && isLastWord && wordRevealed ? 'block' : 'none';
+    // Show Start Game button if game hasn't started yet
+    startGameBtn.style.display = !gameStarted ? 'block' : 'none';
+
+    // Show Start First Word only after game started but before first word
+    startBtn.style.display = gameStarted && !hasStartedWord ? 'block' : 'none';
+
+    // Show Next Word after first word, if not last word
+    nextBtn.style.display = hasStartedWord && !isLastWord ? 'block' : 'none';
+    revealBtn.style.display = hasStartedWord && !wordRevealed ? 'block' : 'none';
+    endBtn.style.display = hasStartedWord && isLastWord && wordRevealed ? 'block' : 'none';
 
     nextBtn.disabled = !wordRevealed;
 }
@@ -406,6 +440,10 @@ function stopTimer() {
 // ============================================================================
 
 function setupEventListeners() {
+    document.getElementById('startGameBtn').addEventListener('click', () => {
+        startGame();
+    });
+
     document.getElementById('startWordBtn').addEventListener('click', () => {
         startWord(0);
         updateControls();
