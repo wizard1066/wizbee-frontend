@@ -288,9 +288,20 @@ function showBetweenWords() {
 }
 
 function showGameScreen() {
+    console.log('[PLAYER] showGameScreen() called');
+    console.log('[PLAYER] currentWordIndex:', currentWordIndex);
+    console.log('[PLAYER] gameData:', gameData);
+
     hideAll();
     const screen = document.getElementById('game-screen');
     screen.style.display = 'block';
+
+    // Safety check
+    if (!gameData || !gameData.words || currentWordIndex < 0 || currentWordIndex >= gameData.words.length) {
+        console.error('[PLAYER] Invalid game state:', { gameData, currentWordIndex });
+        showError('Game data not ready. Please refresh.');
+        return;
+    }
 
     // Update display
     document.getElementById('gameCodeDisplay').textContent = gameCode.toUpperCase();
@@ -301,20 +312,37 @@ function showGameScreen() {
     // Show clue
     const clues = gameData.clues[currentWordIndex];
     const clueText = Array.isArray(clues) ? clues.join(' | ') : clues;
-    document.getElementById('clueText').textContent = clueText;
+    document.getElementById('clueText').textContent = clueText || 'No clue available';
+    console.log('[PLAYER] Clue:', clueText);
 
     // Show word boxes
     const word = gameData.words[currentWordIndex];
-    const boxesHtml = word.split('').map(letter =>
-        `<div class="letter-box">${letter === ' ' ? ' ' : ''}</div>`
-    ).join('');
-    document.getElementById('wordBoxes').innerHTML = boxesHtml;
+    console.log('[PLAYER] Word:', word, 'Length:', word?.length);
 
-    // Reset input
-    document.getElementById('guessInput').value = '';
-    document.getElementById('guessInput').focus();
+    if (word) {
+        const boxesHtml = word.split('').map(letter =>
+            `<div class="letter-box">${letter === ' ' ? ' ' : ''}</div>`
+        ).join('');
+        document.getElementById('wordBoxes').innerHTML = boxesHtml;
+        console.log('[PLAYER] Created', word.length, 'letter boxes');
+    } else {
+        console.error('[PLAYER] No word at index', currentWordIndex);
+    }
+
+    // Reset input and force focus
+    const input = document.getElementById('guessInput');
+    input.value = '';
+    input.disabled = false;
+    input.readOnly = false;
     document.getElementById('guessCount').textContent = guessCount;
     document.getElementById('feedback').style.display = 'none';
+
+    // Delayed focus for better cross-browser support
+    setTimeout(() => {
+        input.focus();
+        input.click();
+        console.log('[PLAYER] Input focused, activeElement:', document.activeElement?.id);
+    }, 100);
 
     // Start timer
     startTimer();
