@@ -412,11 +412,32 @@ function setupEventListeners() {
 
     // Enter key on guess input
     document.getElementById('guessInput').addEventListener('keypress', (e) => {
+        console.log('[PLAYER] Keypress:', e.key);
         if (e.key === 'Enter') submitGuess();
+    });
+
+    // Debug: log when input receives focus
+    document.getElementById('guessInput').addEventListener('focus', () => {
+        console.log('[PLAYER] Input focused');
+    });
+
+    document.getElementById('guessInput').addEventListener('click', () => {
+        console.log('[PLAYER] Input clicked');
+    });
+
+    // Leave button
+    document.getElementById('leaveBtn').addEventListener('click', () => {
+        if (confirm('Leave this game?')) {
+            localStorage.removeItem('partyPlayerName');
+            localStorage.removeItem('partyGameCode');
+            if (socket) socket.disconnect();
+            window.location.href = 'index.html';
+        }
     });
 
     // Update word boxes as user types
     document.getElementById('guessInput').addEventListener('input', (e) => {
+        console.log('[PLAYER] Input event:', e.target.value);
         const value = e.target.value.toUpperCase();
         const boxes = document.querySelectorAll('.letter-box');
         const word = gameData?.words[currentWordIndex]?.toUpperCase() || '';
@@ -448,4 +469,14 @@ function formatTime(ms) {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
     return minutes > 0 ? `${minutes}m ${remainingSeconds}s` : `${seconds}s`;
+}
+
+// Global function for leave buttons in HTML
+function leaveGame() {
+    if (confirm('Leave this game?')) {
+        localStorage.removeItem('partyPlayerName');
+        localStorage.removeItem('partyGameCode');
+        if (socket) socket.disconnect();
+        window.location.href = 'index.html';
+    }
 }

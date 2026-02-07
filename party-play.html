@@ -374,6 +374,7 @@
             <img src="bee4.png" alt="Waiting...">
             <h2>Waiting for host...</h2>
             <p>The game will start soon!</p>
+            <button onclick="leaveGame()" style="margin-top: 30px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 12px 24px; border-radius: 8px; cursor: pointer;">Leave Game</button>
         </div>
 
         <!-- Waiting for next word -->
@@ -381,13 +382,17 @@
             <img src="bee4.png" alt="Waiting...">
             <h2>Get ready!</h2>
             <p>Next word coming up...</p>
+            <button onclick="leaveGame()" style="margin-top: 30px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 12px 24px; border-radius: 8px; cursor: pointer;">Leave Game</button>
         </div>
 
         <!-- Game Play Screen -->
         <div id="game-screen" style="display: none;">
-            <div class="game-header">
-                <div class="game-code">Game: <span id="gameCodeDisplay">----</span></div>
-                <div class="player-name-display" id="playerNameDisplay">Player</div>
+            <div class="game-header" style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <div class="game-code">Game: <span id="gameCodeDisplay">----</span></div>
+                    <div class="player-name-display" id="playerNameDisplay">Player</div>
+                </div>
+                <button id="leaveBtn" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 14px;">Leave</button>
             </div>
 
             <div class="word-progress">
