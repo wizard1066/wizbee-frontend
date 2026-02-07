@@ -71,9 +71,19 @@ function handleJoin() {
 
 async function joinGame() {
     hideAll();
-    document.getElementById('loading').style.display = 'flex';
+    const loadingEl = document.getElementById('loading');
+    loadingEl.style.display = 'flex';
+
+    // Show status updates in loading screen
+    const statusEl = loadingEl.querySelector('p');
+    const updateStatus = (msg) => {
+        console.log('[PLAYER]', msg);
+        if (statusEl) statusEl.textContent = msg;
+    };
 
     try {
+        updateStatus('Connecting to game...');
+
         const response = await fetch(`${API_URL}/api/party/game/${gameCode}`, {
             headers: {
                 'X-Game-Code': gameCode,
@@ -81,30 +91,46 @@ async function joinGame() {
             }
         });
 
+        updateStatus('Got response, parsing...');
+
         const data = await response.json();
+        console.log('[PLAYER] API response:', data);
 
         if (!data.success) {
             showError(data.error || 'Failed to join game');
             return;
         }
 
+        if (!data.gameData) {
+            showError('No game data received');
+            return;
+        }
+
+        updateStatus('Loading game data...');
+
         gameData = data.gameData;
-        currentWordIndex = gameData.currentIndex;
+        currentWordIndex = gameData.currentIndex || 0;
         wordStartedAt = gameData.wordStartedAt ? new Date(gameData.wordStartedAt) : null;
 
+        updateStatus('Connecting to live updates...');
         connectSocket();
 
+        updateStatus('Ready!');
+
         if (!data.started) {
+            console.log('[PLAYER] Game not started, showing waiting screen');
             showWaitingScreen();
         } else if (currentWordIndex >= 0 && wordStartedAt) {
+            console.log('[PLAYER] Word active, showing game screen');
             showGameScreen();
         } else {
+            console.log('[PLAYER] Between words, showing waiting');
             showBetweenWords();
         }
 
     } catch (error) {
         console.error('[PLAYER] Join error:', error);
-        showError('Failed to connect to game.');
+        showError('Failed to connect: ' + error.message);
     }
 }
 
@@ -236,6 +262,7 @@ async function submitResult(solved, gaveUp) {
 // ============================================================================
 
 function hideAll() {
+    console.log('[PLAYER] hideAll() called');
     document.getElementById('loading').style.display = 'none';
     document.getElementById('join-screen').style.display = 'none';
     document.getElementById('waiting-screen').style.display = 'none';
@@ -245,11 +272,16 @@ function hideAll() {
 }
 
 function showWaitingScreen() {
+    console.log('[PLAYER] showWaitingScreen() called');
     hideAll();
-    document.getElementById('waiting-screen').style.display = 'flex';
+    const el = document.getElementById('waiting-screen');
+    console.log('[PLAYER] waiting-screen element:', el);
+    el.style.display = 'flex';
+    console.log('[PLAYER] waiting-screen display set to flex');
 }
 
 function showBetweenWords() {
+    console.log('[PLAYER] showBetweenWords() called');
     hideAll();
     stopTimer();
     document.getElementById('between-words').style.display = 'flex';
