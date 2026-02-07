@@ -768,6 +768,63 @@
 
         async function shareGame() {
             console.log('[SHARE] Running shareGame()');
+            showGameModeSelector();
+        }
+
+        function showGameModeSelector() {
+            const backdrop = document.createElement('div');
+            backdrop.id = 'modeSelectBackdrop';
+            backdrop.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); display: flex; align-items: center; justify-content: center; z-index: 10000;';
+
+            const modal = document.createElement('div');
+            modal.style.cssText = 'background: white; padding: 40px; border-radius: 16px; text-align: center; max-width: 500px; box-shadow: 0 10px 40px rgba(0,0,0,0.3);';
+
+            modal.innerHTML = `
+                <h2 style="margin: 0 0 10px 0; color: #2d3748;">Choose Game Mode</h2>
+                <p style="color: #718096; margin-bottom: 30px;">How do you want to play with others?</p>
+
+                <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
+                    <div id="coopModeBtn" style="flex: 1; min-width: 180px; padding: 25px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border-radius: 12px; cursor: pointer; transition: transform 0.2s;">
+                        <div style="font-size: 36px; margin-bottom: 10px;">👥</div>
+                        <div style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">Co-op Mode</div>
+                        <div style="font-size: 13px; opacity: 0.9;">Work together on the same word. First to solve advances everyone.</div>
+                    </div>
+
+                    <div id="partyModeBtn" style="flex: 1; min-width: 180px; padding: 25px; background: linear-gradient(135deg, #f093fb, #f5576c); color: white; border-radius: 12px; cursor: pointer; transition: transform 0.2s;">
+                        <div style="font-size: 36px; margin-bottom: 10px;">🎉</div>
+                        <div style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">Party Mode</div>
+                        <div style="font-size: 13px; opacity: 0.9;">Everyone solves independently. Leaderboard tracks scores.</div>
+                    </div>
+                </div>
+
+                <button id="cancelModeBtn" style="margin-top: 25px; padding: 10px 30px; background: #e2e8f0; color: #4a5568; border: none; border-radius: 8px; cursor: pointer; font-size: 14px;">Cancel</button>
+            `;
+
+            backdrop.appendChild(modal);
+            document.body.appendChild(backdrop);
+
+            // Add hover effects
+            document.getElementById('coopModeBtn').onmouseover = function() { this.style.transform = 'scale(1.03)'; };
+            document.getElementById('coopModeBtn').onmouseout = function() { this.style.transform = 'scale(1)'; };
+            document.getElementById('partyModeBtn').onmouseover = function() { this.style.transform = 'scale(1.03)'; };
+            document.getElementById('partyModeBtn').onmouseout = function() { this.style.transform = 'scale(1)'; };
+
+            document.getElementById('coopModeBtn').onclick = () => {
+                backdrop.remove();
+                createCoopGame();
+            };
+
+            document.getElementById('partyModeBtn').onclick = () => {
+                backdrop.remove();
+                createPartyGame();
+            };
+
+            document.getElementById('cancelModeBtn').onclick = () => {
+                backdrop.remove();
+            };
+        }
+
+        async function createCoopGame() {
             const btn = document.getElementById('showClueBtn');
             btn.disabled = true;
             btn.textContent = '⏳ Creating...';
@@ -831,6 +888,114 @@
                 btn.disabled = false;
                 btn.textContent = '📤 Share Game';
             }
+        }
+
+        async function createPartyGame() {
+            const btn = document.getElementById('showClueBtn');
+            btn.disabled = true;
+            btn.textContent = '⏳ Creating Party...';
+
+            const rawData = localStorage.getItem('pendingGame');
+            const gameData = JSON.parse(rawData);
+            const cacheKey = gameData?.cacheKey;
+
+            if (!cacheKey) {
+                alert('Error: No game loaded');
+                btn.disabled = false;
+                btn.textContent = '📤 Share Game';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/api/party/create`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        cacheKey: cacheKey,
+                        clues: wordClues,
+                        words: wordList
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!data.success) {
+                    alert('Failed to create party game');
+                    btn.disabled = false;
+                    btn.textContent = '📤 Share Game';
+                    return;
+                }
+
+                console.log('[PARTY] Created party game:', data.shareCode);
+
+                // Show party host modal with links
+                showPartyHostModal(data.shareCode, data.hostUrl);
+
+                btn.textContent = '📤 Share Game';
+                btn.disabled = false;
+
+            } catch (error) {
+                console.error('[PARTY] Create error:', error);
+                alert('Failed to create party game');
+                btn.disabled = false;
+                btn.textContent = '📤 Share Game';
+            }
+        }
+
+        function showPartyHostModal(shareCode, hostUrl) {
+            const backdrop = document.createElement('div');
+            backdrop.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); display: flex; align-items: center; justify-content: center; z-index: 10000;';
+
+            const modal = document.createElement('div');
+            modal.style.cssText = 'background: white; padding: 40px; border-radius: 16px; text-align: center; max-width: 450px; box-shadow: 0 10px 40px rgba(0,0,0,0.3);';
+
+            const playerUrl = 'https://wizbee.app/party-play.html?code=' + shareCode;
+
+            modal.innerHTML = `
+                <h2 style="margin: 0 0 10px 0; color: #2d3748;">🎉 Party Game Created!</h2>
+                <p style="color: #718096; margin-bottom: 25px;">Share the code with players, then open the host display.</p>
+
+                <div style="background: #f7fafc; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                    <div style="font-size: 14px; color: #718096; margin-bottom: 8px;">Player Join Code</div>
+                    <div style="font-size: 42px; font-weight: bold; color: #2d3748; letter-spacing: 6px;">${shareCode}</div>
+                    <button id="copyCodeBtn" style="margin-top: 12px; padding: 8px 20px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer;">📋 Copy Code</button>
+                </div>
+
+                <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                    <button id="openHostBtn" style="flex: 1; min-width: 140px; padding: 15px 20px; background: linear-gradient(135deg, #f093fb, #f5576c); color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 16px; font-weight: 600;">
+                        📺 Open Host Display
+                    </button>
+                    <button id="donePartyBtn" style="flex: 1; min-width: 100px; padding: 15px 20px; background: #e2e8f0; color: #4a5568; border: none; border-radius: 10px; cursor: pointer; font-size: 16px;">
+                        Done
+                    </button>
+                </div>
+
+                <p style="margin-top: 20px; font-size: 13px; color: #a0aec0;">
+                    Players join at: <a href="${playerUrl}" target="_blank" style="color: #667eea;">${playerUrl}</a>
+                </p>
+            `;
+
+            backdrop.appendChild(modal);
+            document.body.appendChild(backdrop);
+
+            document.getElementById('copyCodeBtn').onclick = () => {
+                navigator.clipboard.writeText(shareCode);
+                document.getElementById('copyCodeBtn').textContent = '✓ Copied!';
+                setTimeout(() => {
+                    document.getElementById('copyCodeBtn').textContent = '📋 Copy Code';
+                }, 2000);
+            };
+
+            document.getElementById('openHostBtn').onclick = () => {
+                window.open('party-host.html?code=' + shareCode, '_blank');
+            };
+
+            document.getElementById('donePartyBtn').onclick = () => {
+                backdrop.remove();
+            };
         }
 
         /**
