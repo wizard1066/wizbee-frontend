@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Party Mode - Host Display | Wizbee</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: white;
+            overflow: hidden;
+        }
+
+        .host-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            padding: 20px;
+        }
+
+        /* Top Section - Clue and Word */
+        .game-display {
+            flex: 0 0 auto;
+            text-align: center;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            margin-bottom: 20px;
+        }
+
+        .theme-badge {
+            display: inline-block;
+            background: #667eea;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .word-progress {
+            font-size: 18px;
+            color: #a0aec0;
+            margin-bottom: 20px;
+        }
+
+        .clue-display {
+            font-size: 28px;
+            color: #e2e8f0;
+            margin-bottom: 30px;
+            line-height: 1.4;
+            min-height: 80px;
+        }
+
+        .word-display {
+            font-size: 72px;
+            font-weight: bold;
+            letter-spacing: 12px;
+            color: #48bb78;
+            text-shadow: 0 0 30px rgba(72, 187, 120, 0.5);
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .word-display.hidden-word {
+            color: #4a5568;
+        }
+
+        .word-display .letter {
+            display: inline-block;
+            width: 60px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.1);
+            margin: 0 4px;
+            border-radius: 8px;
+            line-height: 80px;
+        }
+
+        .winner-announcement {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, #48bb78, #38a169);
+            padding: 15px;
+            font-size: 24px;
+            text-align: center;
+            animation: slideDown 0.5s ease;
+            z-index: 100;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-100%); }
+            to { transform: translateY(0); }
+        }
+
+        /* Bottom Section - Leaderboard */
+        .leaderboard-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        .leaderboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .leaderboard-title {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .player-count {
+            background: #ffc107;
+            color: #1a1a2e;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-weight: 600;
+        }
+
+        .sort-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .sort-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .sort-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .sort-btn.active {
+            background: #667eea;
+        }
+
+        .leaderboard-table {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .leaderboard-row {
+            display: grid;
+            grid-template-columns: 60px 1fr 100px 100px 120px 100px;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            background: rgba(255, 255, 255, 0.03);
+            align-items: center;
+            transition: all 0.3s;
+        }
+
+        .leaderboard-row.header {
+            background: rgba(255, 255, 255, 0.1);
+            font-weight: 600;
+            color: #a0aec0;
+            font-size: 14px;
+        }
+
+        .leaderboard-row:not(.header):hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .leaderboard-row.first-place {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(255, 215, 0, 0.1));
+            border: 1px solid rgba(255, 215, 0, 0.3);
+        }
+
+        .leaderboard-row.second-place {
+            background: linear-gradient(135deg, rgba(192, 192, 192, 0.15), rgba(192, 192, 192, 0.05));
+        }
+
+        .leaderboard-row.third-place {
+            background: linear-gradient(135deg, rgba(205, 127, 50, 0.15), rgba(205, 127, 50, 0.05));
+        }
+
+        .rank {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .rank-1 { color: #ffd700; }
+        .rank-2 { color: #c0c0c0; }
+        .rank-3 { color: #cd7f32; }
+
+        .player-name {
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        .stat {
+            text-align: center;
+            font-size: 16px;
+        }
+
+        .stat.solved {
+            color: #48bb78;
+            font-weight: 600;
+        }
+
+        .player-status {
+            text-align: center;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-badge.solving {
+            background: #ffc107;
+            color: #1a1a2e;
+            animation: pulse 1.5s infinite;
+        }
+
+        .status-badge.done {
+            background: #48bb78;
+            color: white;
+        }
+
+        .status-badge.gave-up {
+            background: #e53e3e;
+            color: white;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        /* Host Controls */
+        .host-controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .control-btn {
+            padding: 15px 40px;
+            font-size: 18px;
+            font-weight: 600;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .control-btn.primary {
+            background: linear-gradient(135deg, #48bb78, #38a169);
+            color: white;
+        }
+
+        .control-btn.primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(72, 187, 120, 0.3);
+        }
+
+        .control-btn.secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .control-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        /* Game Code Display */
+        .game-code-display {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px 25px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .game-code-label {
+            font-size: 12px;
+            color: #a0aec0;
+            margin-bottom: 5px;
+        }
+
+        .game-code-value {
+            font-size: 28px;
+            font-weight: bold;
+            letter-spacing: 4px;
+            color: #ffc107;
+        }
+
+        /* Loading State */
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        .loading img {
+            width: 100px;
+            animation: bounce 1s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+
+        /* Waiting for players */
+        .waiting-screen {
+            text-align: center;
+            padding: 60px;
+        }
+
+        .waiting-screen h2 {
+            font-size: 36px;
+            margin-bottom: 20px;
+        }
+
+        .waiting-screen .code-display {
+            font-size: 72px;
+            font-weight: bold;
+            letter-spacing: 12px;
+            color: #ffc107;
+            margin: 30px 0;
+        }
+
+        .waiting-screen p {
+            color: #a0aec0;
+            font-size: 18px;
+        }
+
+        .players-waiting {
+            margin-top: 40px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .player-chip {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div id="loading" class="loading">
+        <img src="bee4.png" alt="Loading...">
+        <p style="margin-top: 20px; color: #a0aec0;">Loading party game...</p>
+    </div>
+
+    <div id="host-content" class="host-container" style="display: none;">
+        <div class="game-code-display">
+            <div class="game-code-label">JOIN CODE</div>
+            <div class="game-code-value" id="gameCode">----</div>
+        </div>
+
+        <div id="winner-banner" class="winner-announcement" style="display: none;"></div>
+
+        <div class="game-display">
+            <div class="theme-badge" id="themeName">Theme</div>
+            <div class="word-progress">
+                Word <span id="currentWordNum">0</span> of <span id="totalWords">0</span>
+            </div>
+            <div class="clue-display" id="clueDisplay">Waiting to start...</div>
+            <div class="word-display hidden-word" id="wordDisplay"></div>
+        </div>
+
+        <div class="leaderboard-section">
+            <div class="leaderboard-header">
+                <div class="leaderboard-title">Leaderboard</div>
+                <div class="player-count"><span id="playerCount">0</span> Players</div>
+                <div class="sort-buttons">
+                    <button class="sort-btn active" data-sort="rank">Rank</button>
+                    <button class="sort-btn" data-sort="time">Time</button>
+                    <button class="sort-btn" data-sort="guesses">Guesses</button>
+                </div>
+            </div>
+
+            <div class="leaderboard-table">
+                <div class="leaderboard-row header">
+                    <div>#</div>
+                    <div>Player</div>
+                    <div style="text-align: center;">Solved</div>
+                    <div style="text-align: center;">Guesses</div>
+                    <div style="text-align: center;">Time</div>
+                    <div style="text-align: center;">Status</div>
+                </div>
+                <div id="leaderboardBody"></div>
+            </div>
+
+            <div class="host-controls">
+                <button id="startWordBtn" class="control-btn primary">Start First Word</button>
+                <button id="nextWordBtn" class="control-btn primary" style="display: none;">Next Word</button>
+                <button id="revealWordBtn" class="control-btn secondary" style="display: none;">Reveal Word</button>
+                <button id="endGameBtn" class="control-btn secondary" style="display: none;">End Game</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="party-host.js"></script>
+</body>
+</html>

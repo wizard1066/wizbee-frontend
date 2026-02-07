@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Party Mode - Wizbee</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .game-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .game-code {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .player-name-display {
+            font-size: 18px;
+            font-weight: 600;
+            margin-top: 5px;
+        }
+
+        /* Word Progress */
+        .word-progress {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px 20px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+        }
+
+        /* Clue Display */
+        .clue-section {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 25px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .clue-label {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .clue-text {
+            font-size: 20px;
+            line-height: 1.5;
+        }
+
+        /* Word Boxes */
+        .word-boxes {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .letter-box {
+            width: 40px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .letter-box.filled {
+            background: rgba(255, 255, 255, 0.9);
+            color: #764ba2;
+        }
+
+        .letter-box.correct {
+            background: #48bb78;
+            color: white;
+        }
+
+        /* Input Section */
+        .input-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .guess-input {
+            width: 100%;
+            padding: 18px;
+            font-size: 24px;
+            text-align: center;
+            border: none;
+            border-radius: 12px;
+            background: white;
+            color: #333;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 15px;
+        }
+
+        .guess-input:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.5);
+        }
+
+        .guess-input::placeholder {
+            color: #a0aec0;
+            text-transform: none;
+            letter-spacing: normal;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 18px;
+            font-size: 20px;
+            font-weight: 600;
+            background: linear-gradient(135deg, #48bb78, #38a169);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .give-up-btn {
+            width: 100%;
+            padding: 15px;
+            font-size: 16px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.2s;
+        }
+
+        .give-up-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Stats */
+        .stats-row {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* Feedback Messages */
+        .feedback {
+            text-align: center;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            font-weight: 500;
+            display: none;
+        }
+
+        .feedback.wrong {
+            display: block;
+            background: rgba(229, 62, 62, 0.3);
+            border: 1px solid rgba(229, 62, 62, 0.5);
+        }
+
+        .feedback.correct {
+            display: block;
+            background: rgba(72, 187, 120, 0.3);
+            border: 1px solid rgba(72, 187, 120, 0.5);
+        }
+
+        /* Waiting States */
+        .waiting-screen {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .waiting-screen img {
+            width: 80px;
+            animation: bounce 1s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .waiting-screen h2 {
+            margin: 20px 0 10px 0;
+        }
+
+        .waiting-screen p {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* Done state */
+        .done-screen {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .done-screen .checkmark {
+            width: 80px;
+            height: 80px;
+            background: #48bb78;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            margin-bottom: 20px;
+        }
+
+        .done-screen h2 {
+            margin-bottom: 10px;
+        }
+
+        .done-screen .time-display {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ffc107;
+            margin: 15px 0;
+        }
+
+        /* Join Screen */
+        .join-screen {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .join-screen img {
+            width: 100px;
+            margin-bottom: 20px;
+        }
+
+        .join-screen h1 {
+            font-size: 28px;
+            margin-bottom: 30px;
+        }
+
+        .join-input {
+            width: 100%;
+            max-width: 300px;
+            padding: 15px;
+            font-size: 18px;
+            border: none;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .join-input::placeholder {
+            color: #a0aec0;
+        }
+
+        .join-btn {
+            width: 100%;
+            max-width: 300px;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: 600;
+            background: #48bb78;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        /* Loading */
+        .loading {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .loading img {
+            width: 80px;
+            animation: bounce 1s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Join Screen (for guests without name) -->
+        <div id="join-screen" class="join-screen" style="display: none;">
+            <img src="bee4.png" alt="Wizbee">
+            <h1>Join Party Game</h1>
+            <input type="text" id="playerNameInput" class="join-input" placeholder="Enter your name" maxlength="20">
+            <button id="joinBtn" class="join-btn">Join Game</button>
+        </div>
+
+        <!-- Loading -->
+        <div id="loading" class="loading">
+            <img src="bee4.png" alt="Loading...">
+            <p style="margin-top: 15px;">Loading...</p>
+        </div>
+
+        <!-- Waiting for game to start -->
+        <div id="waiting-screen" class="waiting-screen" style="display: none;">
+            <img src="bee4.png" alt="Waiting...">
+            <h2>Waiting for host...</h2>
+            <p>The game will start soon!</p>
+        </div>
+
+        <!-- Waiting for next word -->
+        <div id="between-words" class="waiting-screen" style="display: none;">
+            <img src="bee4.png" alt="Waiting...">
+            <h2>Get ready!</h2>
+            <p>Next word coming up...</p>
+        </div>
+
+        <!-- Game Play Screen -->
+        <div id="game-screen" style="display: none;">
+            <div class="game-header">
+                <div class="game-code">Game: <span id="gameCodeDisplay">----</span></div>
+                <div class="player-name-display" id="playerNameDisplay">Player</div>
+            </div>
+
+            <div class="word-progress">
+                Word <span id="currentWord">1</span> of <span id="totalWords">10</span>
+            </div>
+
+            <div class="clue-section">
+                <div class="clue-label">Clue</div>
+                <div class="clue-text" id="clueText">Loading...</div>
+            </div>
+
+            <div class="word-boxes" id="wordBoxes"></div>
+
+            <div class="feedback" id="feedback"></div>
+
+            <div class="input-section">
+                <input type="text" id="guessInput" class="guess-input" placeholder="Type your guess..." autocomplete="off" autocapitalize="characters">
+                <button id="submitBtn" class="submit-btn">Submit</button>
+                <button id="giveUpBtn" class="give-up-btn">I Give Up</button>
+            </div>
+
+            <div class="stats-row">
+                <div class="stat-item">
+                    <div class="stat-value" id="guessCount">0</div>
+                    <div class="stat-label">Guesses</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="solvedCount">0</div>
+                    <div class="stat-label">Solved</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="timeElapsed">0s</div>
+                    <div class="stat-label">Time</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Done Screen (after solving or giving up) -->
+        <div id="done-screen" class="done-screen" style="display: none;">
+            <div class="checkmark" id="doneIcon"></div>
+            <h2 id="doneTitle">Well done!</h2>
+            <p id="doneMessage">Waiting for the next word...</p>
+            <div class="time-display" id="doneTime"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="party-play.js"></script>
+</body>
+</html>
