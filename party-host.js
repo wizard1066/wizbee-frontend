@@ -166,6 +166,38 @@ async function endWord() {
     }
 }
 
+async function endGame() {
+    try {
+        const response = await fetch(`${API_URL}/api/party/end`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify({
+                shareCode: gameCode
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            document.getElementById('clueDisplay').textContent = 'Game Over!';
+            document.getElementById('wordDisplay').textContent = 'Final Scores Above';
+            document.getElementById('wordDisplay').classList.remove('hidden-word');
+
+            // Hide all control buttons
+            document.getElementById('startGameBtn').style.display = 'none';
+            document.getElementById('startWordBtn').style.display = 'none';
+            document.getElementById('nextWordBtn').style.display = 'none';
+            document.getElementById('revealWordBtn').style.display = 'none';
+            document.getElementById('endGameBtn').style.display = 'none';
+        }
+    } catch (error) {
+        console.error('[HOST] Error ending game:', error);
+    }
+}
+
 // ============================================================================
 // SOCKET.IO CONNECTION
 // ============================================================================
@@ -462,7 +494,9 @@ function setupEventListeners() {
     });
 
     document.getElementById('endGameBtn').addEventListener('click', () => {
-        alert('Game completed! Final scores are displayed.');
+        if (confirm('End this game? All players will be notified.')) {
+            endGame();
+        }
     });
 
     // Sort buttons

@@ -192,6 +192,12 @@ function connectSocket() {
         }
     });
 
+    // Game ended
+    socket.on('game_ended', (data) => {
+        console.log('[PLAYER] Game ended:', data);
+        showGameEnded();
+    });
+
     socket.on('disconnect', () => {
         console.log('[PLAYER] Socket disconnected');
     });
@@ -343,9 +349,6 @@ function showWaitingScreen() {
     console.log('[PLAYER] waiting-screen element:', el);
     el.style.display = 'flex';
     console.log('[PLAYER] waiting-screen display set to flex');
-
-    // Start periodic resync to catch missed events
-    startResyncInterval();
 }
 
 let resyncInterval = null;
@@ -597,4 +600,29 @@ function leaveGame() {
         if (socket) socket.disconnect();
         window.location.href = 'index.html';
     }
+}
+
+function showGameEnded() {
+    console.log('[PLAYER] showGameEnded() called');
+    hideAll();
+    stopTimer();
+    stopResyncInterval();
+
+    const doneScreen = document.getElementById('done-screen');
+    doneScreen.style.display = 'flex';
+
+    const icon = document.getElementById('doneIcon');
+    const title = document.getElementById('doneTitle');
+    const message = document.getElementById('doneMessage');
+    const timeDisplay = document.getElementById('doneTime');
+
+    icon.textContent = '🏆';
+    icon.style.background = '#667eea';
+    title.textContent = 'Game Over!';
+    message.textContent = `You solved ${solvedCount} words. Thanks for playing!`;
+    timeDisplay.textContent = '';
+
+    // Clear stored game data
+    localStorage.removeItem('partyPlayerName');
+    localStorage.removeItem('partyGameCode');
 }
