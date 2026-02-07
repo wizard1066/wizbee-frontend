@@ -226,23 +226,26 @@ async function resyncGameState() {
 
         // Check what screen we're currently showing
         const waitingScreen = document.getElementById('waiting-screen');
-        const isShowingWaiting = waitingScreen.style.display !== 'none';
+        const betweenWords = document.getElementById('between-words');
+        const gameScreen = document.getElementById('game-screen');
 
-        // If game started but we're still showing waiting screen, update
-        if (gameStarted && isShowingWaiting) {
-            if (newWordStartedAt) {
-                // Word has started - show game screen
-                console.log('[PLAYER] Re-sync: Word started while we were connecting! Showing game screen.');
-                currentWordIndex = newWordIndex;
-                wordStartedAt = newWordStartedAt;
-                hasSubmittedResult = false;
-                guessCount = 0;
-                showGameScreen();
-            } else {
-                // Game started but word hasn't - show "Get ready!"
-                console.log('[PLAYER] Re-sync: Game started while we were connecting! Showing get ready screen.');
-                showBetweenWords();
-            }
+        const isShowingWaiting = waitingScreen.style.display !== 'none';
+        const isShowingBetween = betweenWords.style.display !== 'none';
+        const isShowingGame = gameScreen.style.display !== 'none';
+
+        // If a word has started but we're not showing the game screen, update
+        if (newWordStartedAt && !isShowingGame) {
+            console.log('[PLAYER] Re-sync: Word started! Showing game screen.');
+            currentWordIndex = newWordIndex;
+            wordStartedAt = newWordStartedAt;
+            hasSubmittedResult = false;
+            guessCount = 0;
+            showGameScreen();
+        }
+        // If game started but we're still on waiting screen, show "Get ready!"
+        else if (gameStarted && isShowingWaiting) {
+            console.log('[PLAYER] Re-sync: Game started! Showing get ready screen.');
+            showBetweenWords();
         }
     } catch (error) {
         console.error('[PLAYER] Re-sync error:', error);
@@ -339,13 +342,36 @@ function showWaitingScreen() {
     console.log('[PLAYER] waiting-screen element:', el);
     el.style.display = 'flex';
     console.log('[PLAYER] waiting-screen display set to flex');
+
+    // Start periodic resync to catch missed events
+    startResyncInterval();
 }
+
+let resyncInterval = null;
 
 function showBetweenWords() {
     console.log('[PLAYER] showBetweenWords() called');
     hideAll();
     stopTimer();
     document.getElementById('between-words').style.display = 'flex';
+
+    // Start periodic resync to catch missed events
+    startResyncInterval();
+}
+
+function startResyncInterval() {
+    stopResyncInterval();
+    resyncInterval = setInterval(() => {
+        console.log('[PLAYER] Periodic resync...');
+        resyncGameState();
+    }, 2000); // Check every 2 seconds
+}
+
+function stopResyncInterval() {
+    if (resyncInterval) {
+        clearInterval(resyncInterval);
+        resyncInterval = null;
+    }
 }
 
 function showGameScreen() {
@@ -354,6 +380,7 @@ function showGameScreen() {
     console.log('[PLAYER] gameData:', gameData);
 
     hideAll();
+    stopResyncInterval(); // Stop polling when playing
     const screen = document.getElementById('game-screen');
     screen.style.display = 'block';
 
@@ -412,6 +439,7 @@ function showGameScreen() {
 function showDone(solved) {
     hideAll();
     stopTimer();
+    stopResyncInterval();
 
     const doneScreen = document.getElementById('done-screen');
     doneScreen.style.display = 'flex';
