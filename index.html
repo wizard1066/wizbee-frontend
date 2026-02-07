@@ -588,6 +588,7 @@
 
         /**
          * Join a shared multiplayer game
+         * First checks game mode to redirect to correct page (co-op vs party)
          */
         async function joinSharedGame(code) {
             console.log('[JOIN] Starting join for code:', code);
@@ -599,6 +600,24 @@
             `;
 
             try {
+                // First check game type
+                const infoResponse = await fetch(`${API_URL}/api/game-info/${code}`);
+                const infoData = await infoResponse.json();
+
+                if (!infoData.success) {
+                    document.getElementById('generatingMessage').classList.add('hidden');
+                    showError(infoData.error || 'Invalid game code');
+                    return;
+                }
+
+                // If it's a party game, redirect to party-play.html
+                if (infoData.gameMode === 'party') {
+                    console.log('[JOIN] Party game detected, redirecting to party-play.html');
+                    window.location.href = `party-play.html?code=${code}`;
+                    return;
+                }
+
+                // It's a co-op game, continue with normal flow
                 const response = await fetch(`${API_URL}/api/get-shared-game/${code}`, {
                     headers: {
                         'Authorization': `Bearer ${authToken}`
@@ -717,8 +736,31 @@
 
         let pendingGuestJoinCode = null;
 
-        function showGuestJoinModal(code) {
+        async function showGuestJoinModal(code) {
             pendingGuestJoinCode = code.toUpperCase();
+
+            // First check game type - party games have their own join page
+            try {
+                const infoResponse = await fetch(`${API_URL}/api/game-info/${pendingGuestJoinCode}`);
+                const infoData = await infoResponse.json();
+
+                if (!infoData.success) {
+                    alert(infoData.error || 'Invalid game code');
+                    return;
+                }
+
+                // If it's a party game, redirect to party-play.html (has its own name entry)
+                if (infoData.gameMode === 'party') {
+                    console.log('[GUEST] Party game detected, redirecting to party-play.html');
+                    window.location.href = `party-play.html?code=${pendingGuestJoinCode}`;
+                    return;
+                }
+            } catch (e) {
+                console.error('[GUEST] Error checking game type:', e);
+                // Continue with co-op flow on error
+            }
+
+            // It's a co-op game, show the normal guest modal
             document.getElementById('guestJoinCode').textContent = pendingGuestJoinCode;
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('themeInputScreen').classList.add('hidden');
