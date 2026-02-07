@@ -117,14 +117,21 @@ async function joinGame() {
 
         updateStatus('Ready!');
 
+        console.log('[PLAYER] Deciding screen - started:', data.started, 'wordIndex:', currentWordIndex, 'wordStartedAt:', wordStartedAt);
+
         if (!data.started) {
             console.log('[PLAYER] Game not started, showing waiting screen');
             showWaitingScreen();
-        } else if (currentWordIndex >= 0 && wordStartedAt) {
-            console.log('[PLAYER] Word active, showing game screen');
+        } else if (currentWordIndex >= 0 && currentWordIndex < gameData.words.length) {
+            // Game is started and we have a valid word index - show game screen
+            // (even if wordStartedAt is null, the host has started so we should show the word)
+            console.log('[PLAYER] Game started with word', currentWordIndex, '- showing game screen');
+            if (!wordStartedAt) {
+                wordStartedAt = new Date(); // Use current time if not set
+            }
             showGameScreen();
         } else {
-            console.log('[PLAYER] Between words, showing waiting');
+            console.log('[PLAYER] Between words or invalid index, showing waiting');
             showBetweenWords();
         }
 
@@ -152,6 +159,9 @@ function connectSocket() {
     socket.on('connect', () => {
         console.log('[PLAYER] Socket connected:', socket.id);
         socket.emit('join_game', gameCode);
+
+        // Re-sync game state in case we missed any events while connecting
+        resyncGameState();
     });
 
     socket.on('connect_error', (error) => {
@@ -186,6 +196,51 @@ function connectSocket() {
     socket.on('disconnect', () => {
         console.log('[PLAYER] Socket disconnected');
     });
+}
+
+/**
+ * Re-sync game state from server after socket connects
+ * This handles the race condition where host starts game while player is connecting
+ */
+async function resyncGameState() {
+    try {
+        console.log('[PLAYER] Re-syncing game state...');
+
+        const response = await fetch(`${API_URL}/api/party/game/${gameCode}`, {
+            headers: {
+                'X-Game-Code': gameCode,
+                'X-Player-Name': encodeURIComponent(playerName)
+            }
+        });
+
+        const data = await response.json();
+
+        if (!data.success || !data.gameData) {
+            console.log('[PLAYER] Re-sync failed:', data.error);
+            return;
+        }
+
+        const newWordIndex = data.gameData.currentIndex;
+        const newWordStartedAt = data.gameData.wordStartedAt ? new Date(data.gameData.wordStartedAt) : null;
+        const gameStarted = data.started;
+
+        console.log('[PLAYER] Re-sync: started=', gameStarted, 'wordIndex=', newWordIndex, 'wordStartedAt=', newWordStartedAt);
+
+        // If game has started and we have a valid word, but we're not showing the game screen
+        const gameScreen = document.getElementById('game-screen');
+        const isShowingGame = gameScreen.style.display !== 'none';
+
+        if (gameStarted && newWordIndex >= 0 && newWordIndex < gameData.words.length && !isShowingGame) {
+            console.log('[PLAYER] Re-sync: Game started while we were connecting! Showing game screen.');
+            currentWordIndex = newWordIndex;
+            wordStartedAt = newWordStartedAt || new Date();
+            hasSubmittedResult = false;
+            guessCount = 0;
+            showGameScreen();
+        }
+    } catch (error) {
+        console.error('[PLAYER] Re-sync error:', error);
+    }
 }
 
 // ============================================================================
