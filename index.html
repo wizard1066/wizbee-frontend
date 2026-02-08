@@ -755,6 +755,13 @@
                     window.location.href = `party-play.html?code=${pendingGuestJoinCode}`;
                     return;
                 }
+
+                // If it's a homework game, redirect to homework-play.html
+                if (infoData.gameMode === 'homework') {
+                    console.log('[GUEST] Homework game detected, redirecting to homework-play.html');
+                    window.location.href = `homework-play.html?code=${pendingGuestJoinCode}`;
+                    return;
+                }
             } catch (e) {
                 console.error('[GUEST] Error checking game type:', e);
                 // Continue with co-op flow on error
