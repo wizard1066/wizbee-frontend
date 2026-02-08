@@ -250,6 +250,16 @@ function connectSocket() {
         startTimer();
     });
 
+    // Word ended (all players submitted)
+    socket.on('party_word_end', (data) => {
+        console.log('[HOST] Word ended:', data);
+        if (data.allPlayersSubmitted && !wordRevealed) {
+            console.log('[HOST] All players submitted - auto-revealing word');
+            showAllDoneBanner();
+            revealWord();
+        }
+    });
+
     socket.on('disconnect', () => {
         console.log('[HOST] Socket disconnected');
     });
@@ -358,6 +368,10 @@ function renderLeaderboard() {
         const placeClass = index === 0 ? 'first-place' : index === 1 ? 'second-place' : index === 2 ? 'third-place' : '';
         const rankClass = index < 3 ? `rank-${index + 1}` : '';
 
+        // Fade out lower-ranked players (12% per position, min 20%)
+        // Top 3 stay at full opacity, then fade starts from position 4
+        const opacity = index < 3 ? 1 : Math.max(0.2, 1 - ((index - 2) * 0.12));
+
         // Get current word status
         const currentResult = player.wordResults?.find(r => r.wordIndex === currentWordIndex);
         let statusHtml = '';
@@ -372,7 +386,7 @@ function renderLeaderboard() {
         }
 
         return `
-            <div class="leaderboard-row ${placeClass}">
+            <div class="leaderboard-row ${placeClass}" style="opacity: ${opacity}">
                 <div class="rank ${rankClass}">${index + 1}</div>
                 <div class="player-name">${escapeHtml(player.playerName)}</div>
                 <div class="stat solved">${player.wordsSolved}</div>
@@ -441,7 +455,21 @@ function showWinnerBanner(playerName) {
     }, 5000);
 }
 
+function showAllDoneBanner() {
+    const banner = document.getElementById('winner-banner');
+    banner.innerHTML = `All players done!`;
+    banner.style.background = 'linear-gradient(135deg, #667eea, #764ba2)';
+    banner.style.display = 'block';
+
+    // Hide banner after a few seconds
+    setTimeout(() => {
+        banner.style.display = 'none';
+        banner.style.background = ''; // Reset to default
+    }, 3000);
+}
+
 function revealWord() {
+    if (wordRevealed) return; // Prevent double-reveal
     wordRevealed = true;
     updateWordDisplay();
     updateControls();
