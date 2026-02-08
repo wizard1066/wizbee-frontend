@@ -97,6 +97,12 @@ async function joinGame() {
         console.log('[PLAYER] API response:', data);
 
         if (!data.success) {
+            // Check if this is a homework game - redirect to homework-play
+            if (data.redirectUrl) {
+                console.log('[PLAYER] Redirecting to:', data.redirectUrl);
+                window.location.href = data.redirectUrl;
+                return;
+            }
             showError(data.error || 'Failed to join game');
             return;
         }
