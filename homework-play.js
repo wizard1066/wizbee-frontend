@@ -162,7 +162,9 @@ async function submitResult(solved, gaveUp) {
             } else {
                 // Move to next word
                 currentWordIndex = data.nextIndex;
-                setTimeout(() => startWord(), solved ? 1500 : 500);
+                // Delay: 4s for give up (to see answer), 1.5s for correct, 0.5s for wrong guess
+                const delay = gaveUp ? 4000 : (solved ? 1500 : 500);
+                setTimeout(() => startWord(), delay);
             }
         }
 
@@ -379,11 +381,9 @@ function setupEventListeners() {
         renderWordBoxes(e.target.value);
     });
 
-    // Give up button
+    // Give up button - no confirmation, just show answer for 4 seconds
     document.getElementById('giveUpBtn').addEventListener('click', () => {
-        if (confirm('Are you sure you want to give up on this word?')) {
-            giveUp();
-        }
+        giveUp();
     });
 
     // View results button
