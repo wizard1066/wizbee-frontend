@@ -739,6 +739,26 @@
         async function showGuestJoinModal(code) {
             pendingGuestJoinCode = code.toUpperCase();
 
+            // If user is logged in, check if they own this game
+            const authToken = localStorage.getItem('authToken');
+            if (authToken) {
+                try {
+                    const ownerResponse = await fetch(`${API_URL}/api/check-ownership/${pendingGuestJoinCode}`, {
+                        headers: { 'Authorization': `Bearer ${authToken}` }
+                    });
+                    const ownerData = await ownerResponse.json();
+
+                    if (ownerData.success && ownerData.isOwner) {
+                        console.log('[OWNER] User owns this game, redirecting to my-games.html');
+                        window.location.href = 'my-games.html';
+                        return;
+                    }
+                } catch (e) {
+                    console.error('[OWNER] Error checking ownership:', e);
+                    // Continue with normal flow on error
+                }
+            }
+
             // First check game type - party games have their own join page
             try {
                 const infoResponse = await fetch(`${API_URL}/api/game-info/${pendingGuestJoinCode}`);
