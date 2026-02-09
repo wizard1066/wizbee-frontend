@@ -5,6 +5,46 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Play - Wizbee</title>
     <link rel="stylesheet" href="styles.css">
+    <style>
+        .guess-text-input {
+            width: 100%;
+            max-width: 400px;
+            padding: 15px 20px;
+            font-size: 24px;
+            text-align: center;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            background: white;
+            color: #333;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin: 15px auto;
+            display: block;
+            font-family: 'Montserrat', sans-serif;
+        }
+        .guess-text-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+        }
+        .guess-text-input::placeholder {
+            color: #a0aec0;
+            text-transform: none;
+            letter-spacing: normal;
+        }
+        .guess-input-container {
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        .button-container {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+    </style>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -58,22 +98,20 @@
             <div class="guesses-remaining">Guesses remaining: <span id="guessesRemaining"></span></div>
             <div id="keyboard" class="keyboard" hidden></div>
 
-            <input
-                type="text"
-                id="guessInput"
-                autocomplete="off"
-                autocorrect="off"
-                autocapitalize="characters"
-                style="
-                    position: absolute;
-                    left: -9999px;
-                    width: 1px;
-                    height: 1px;
-                    opacity: 0;
-                "
-            />
-
             <div class="guess-input-container">
+                <input
+                    type="text"
+                    id="guessInput"
+                    class="guess-text-input"
+                    placeholder="Type your guess..."
+                    autocomplete="off"
+                    autocorrect="off"
+                    autocapitalize="characters"
+                    spellcheck="false"
+                />
+            </div>
+
+            <div class="button-container">
                 <button id="submitGuess" class="submit-guess" onclick="submitGuess()">Submit Word</button>
                 <button id="showClueBtn" class="hint-btn" onclick="showClue()">💡 Show Clue</button>
                 <button id="giveUpBtn" class="give-up-btn" onclick="giveUp()">Give Up</button>
@@ -1794,6 +1832,8 @@
 
                 const guessInput = document.getElementById('guessInput');
                 if (guessInput) {
+                    guessInput.value = '';
+                    guessInput.maxLength = currentWord.length;
                     guessInput.focus();
                     console.log('Focused guessInput for mobile keyboard');
                 }
@@ -1866,6 +1906,8 @@
 
             if (guess !== currentWord.toUpperCase()) {
                 currentGuess = '';
+                const guessInput = document.getElementById('guessInput');
+                if (guessInput) guessInput.value = '';
                 updateWordBoxes();
             }
         }
@@ -2274,6 +2316,13 @@
             currentWord = wordList[currentWordIndex];
             currentGuess = '';
             guessHistory = [];
+
+            // Clear the text input
+            const guessInput = document.getElementById('guessInput');
+            if (guessInput) {
+                guessInput.value = '';
+                guessInput.maxLength = currentWord.length;
+            }
             remainingGuesses = maxGuesses;
             gameOver = false;
             wordStartTime = Date.now();
@@ -2512,9 +2561,11 @@
             document.getElementById('errorMessage').innerHTML = `${message}. <a href="browse.html">Return to browse</a>`;
         }
 
-        // Keyboard support
+        // Keyboard support (for physical keyboard when input not focused)
         document.addEventListener('keydown', function(e) {
             if (gameOver) return;
+            // Skip if typing in the text input
+            if (e.target.id === 'guessInput') return;
 
             if (e.key === 'Enter') {
                 submitGuess();
@@ -2524,6 +2575,25 @@
                 handleKeyPress(e.key.toUpperCase());
             }
         });
+
+        // Text input handler - sync with word boxes
+        const guessInputEl = document.getElementById('guessInput');
+        if (guessInputEl) {
+            guessInputEl.addEventListener('input', function(e) {
+                if (gameOver) return;
+                // Update currentGuess from input value
+                currentGuess = e.target.value.toUpperCase().slice(0, currentWord.length);
+                e.target.value = currentGuess; // Enforce max length and uppercase
+                updateWordBoxes();
+            });
+
+            guessInputEl.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    submitGuess();
+                }
+            });
+        }
 
         function scrambleDepreciated(word) {
             let arr = word.split("");
