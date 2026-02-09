@@ -1816,13 +1816,13 @@
             remainingGuesses--;
             updateGuessCount();
 
-            if (guess === currentWord) {
+            if (guess === currentWord.toUpperCase()) {
                 endGame(true);
             } else if (remainingGuesses === 0) {
                 endGame(false);
             }
 
-            if (guess != currentWord) {
+            if (guess !== currentWord.toUpperCase()) {
                 currentGuess = '';
                 updateWordBoxes();
             }
@@ -1863,12 +1863,13 @@
             const guessDiv = document.createElement('div');
             guessDiv.className = 'previous-guess';
 
-            const wordCopy = currentWord.split('');
+            const wordUpper = currentWord.toUpperCase();
+            const wordCopy = wordUpper.split('');
             const guessCopy = guess.split('');
             const feedback = new Array(guess.length).fill('absent');
 
             for (let i = 0; i < guess.length; i++) {
-                if (guess[i] === currentWord[i]) {
+                if (guess[i] === wordUpper[i]) {
                     feedback[i] = 'correct';
                     wordCopy[i] = null;
                     guessCopy[i] = null;
