@@ -1579,7 +1579,7 @@
 
         function getFeedbackForGuessDepreciated(guess) {
             const feedback = [];
-            const wordArray = currentWord.split('');
+            const wordArray = currentWord.toUpperCase().split('');
             const guessArray = guess.split('');
             const usedIndices = new Set();
 
@@ -1783,7 +1783,7 @@
             updatePreviousGuesses();
 
             const feedback = [];
-            const wordArray = currentWord.split('');
+            const wordArray = currentWord.toUpperCase().split('');
             const guessArray = guess.split('');
             const usedIndices = new Set();
 
