@@ -2318,12 +2318,6 @@
             currentGuess = '';
             guessHistory = [];
 
-            // Clear the text input
-            const guessInput = document.getElementById('guessInput');
-            if (guessInput) {
-                guessInput.value = '';
-                guessInput.maxLength = currentWord.length;
-            }
             remainingGuesses = maxGuesses;
             gameOver = false;
             wordStartTime = Date.now();
