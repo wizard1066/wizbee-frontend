@@ -2115,7 +2115,8 @@
 
         async function endGame(won) {
             gameOver = true;
-            hideClue();
+            // Show the completed clue with the answer filled in
+            showCompletedClue();
             localStorage.removeItem('lastEditedTheme');
 
             await recordWordAttempt(won);
@@ -2531,6 +2532,17 @@
                 document.getElementById('clueText').textContent = wordClues[currentWordIndex];
                 document.getElementById('clueDisplay').classList.remove('hidden');
                 clueViewCount++;
+            }
+        }
+
+        // Show the clue with asterisks replaced by the actual word
+        function showCompletedClue() {
+            if (wordClues.length > currentWordIndex) {
+                const clue = wordClues[currentWordIndex];
+                // Replace asterisks with the actual word
+                const completedClue = clue.replace(/\*+/g, currentWord);
+                document.getElementById('clueText').textContent = completedClue;
+                document.getElementById('clueDisplay').classList.remove('hidden');
             }
         }
 
