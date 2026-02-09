@@ -222,6 +222,11 @@ function startWord() {
     // Update stats
     updateStats();
 
+    // Re-enable input controls (they get disabled after correct/giveup)
+    document.getElementById('guessInput').disabled = false;
+    document.getElementById('submitBtn').disabled = false;
+    document.getElementById('giveUpBtn').style.display = 'block';
+
     // Clear input and feedback
     document.getElementById('guessInput').value = '';
     document.getElementById('feedback').className = 'feedback';
