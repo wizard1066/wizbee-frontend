@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Games - Wizbee</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <style>
+        .my-games-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .page-header h1 {
+            margin: 0;
+            color: #333;
+        }
+
+        .back-link {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .games-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .game-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .game-code {
+            font-size: 1.8em;
+            font-weight: bold;
+            font-family: monospace;
+            color: #333;
+            background: #f0f0f0;
+            padding: 10px 15px;
+            border-radius: 8px;
+        }
+
+        .game-info {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .game-theme {
+            font-weight: 600;
+            color: #333;
+            font-size: 1.1em;
+        }
+
+        .game-meta {
+            color: #666;
+            font-size: 0.9em;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .game-meta span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .mode-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .mode-badge.homework {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+
+        .mode-badge.party {
+            background: #fce4ec;
+            color: #c2185b;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: 500;
+        }
+
+        .status-badge.active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-badge.completed, .status-badge.ended {
+            background: #e2e3e5;
+            color: #383d41;
+        }
+
+        .status-badge.expired {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .game-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .game-actions a {
+            padding: 8px 16px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.9em;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a6fd6;
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .empty-state h2 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 600px) {
+            .game-card {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .game-code {
+                justify-self: start;
+            }
+
+            .game-actions {
+                flex-direction: row;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="my-games-container">
+        <div class="page-header">
+            <h1>My Games</h1>
+            <a href="play.html" class="back-link">+ Create New Game</a>
+        </div>
+
+        <div id="loading" class="loading">
+            <p>Loading your games...</p>
+        </div>
+
+        <div id="error" class="error-message" style="display: none;"></div>
+
+        <div id="games-list" class="games-list" style="display: none;"></div>
+
+        <div id="empty-state" class="empty-state" style="display: none;">
+            <h2>No games yet</h2>
+            <p>Create your first homework or party game to see it here.</p>
+            <a href="play.html" class="btn-primary" style="display: inline-block; margin-top: 20px; padding: 12px 24px; border-radius: 8px; text-decoration: none;">Create Game</a>
+        </div>
+    </div>
+
+    <script src="my-games.js"></script>
+</body>
+</html>
