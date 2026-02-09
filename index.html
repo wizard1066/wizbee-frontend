@@ -1082,6 +1082,39 @@
                 return;
             }
 
+            // Check if it looks like a conjugation pattern (verb + tense)
+            const words = input.trim().split(/\s+/).filter(w => w.length > 0);
+            if (words.length === 2) {
+                // Common tense indicators in multiple languages
+                const tenseKeywords = [
+                    // French
+                    'présent', 'present', 'imparfait', 'passé', 'passe', 'futur', 'conditionnel',
+                    'subjonctif', 'impératif', 'imperatif', 'composé', 'compose', 'simple',
+                    // Spanish
+                    'presente', 'pretérito', 'preterito', 'futuro', 'condicional', 'subjuntivo',
+                    'imperativo', 'perfecto', 'imperfecto', 'pluscuamperfecto',
+                    // German
+                    'präsens', 'prasens', 'präteritum', 'prateritum', 'perfekt', 'futur',
+                    'konjunktiv', 'imperativ',
+                    // Italian
+                    'presente', 'imperfetto', 'passato', 'futuro', 'condizionale', 'congiuntivo',
+                    // English
+                    'present', 'past', 'future', 'perfect', 'progressive', 'continuous'
+                ];
+
+                const secondWord = words[1].toLowerCase();
+                const looksLikeConjugation = tenseKeywords.some(tense =>
+                    secondWord.includes(tense.toLowerCase())
+                );
+
+                if (looksLikeConjugation) {
+                    console.log('[CONJUGATION] Detected verb+tense pattern:', input);
+                    // Go straight to conjugation mode - no need to ask
+                    await startConjugationGame(input);
+                    return;
+                }
+            }
+
             const themeInput = document.getElementById('themeInput');
             themeInput.value = '';
             themeInput.placeholder = "Enter theme (e.g. common animals) or 4-digit game code (e.g. A3F2)";
@@ -1414,6 +1447,33 @@
                 showError('Connection error');
                 playBtn.disabled = false;
             }
+        }
+
+        // Start conjugation game directly (skip vocabulary generation)
+        async function startConjugationGame(theme) {
+            console.log('[CONJUGATION] Starting conjugation game for:', theme);
+
+            // Clear any stale session data
+            localStorage.removeItem('sharedGameCode');
+            localStorage.removeItem('guestGameCode');
+            localStorage.removeItem('guestPlayerName');
+
+            // Get current language from selector (default to French for conjugations)
+            const languageSelect = document.getElementById('languageSelect');
+            const language = languageSelect ? languageSelect.value : 'fr';
+
+            // Create minimal game data - play.html will call generate-clues
+            // which will detect conjugation mode and generate the 6 forms
+            const gameData = {
+                theme: theme,
+                language: language,
+                words: [],  // Will be filled by generate-clues in conjugation mode
+                guesses: 8,
+                isConjugation: true  // Flag for play.html to know this is conjugation
+            };
+
+            localStorage.setItem('pendingGame', JSON.stringify(gameData));
+            window.location.href = 'play.html';
         }
 
         async function launchThemeFromBrowser(cacheKey) {

@@ -1488,13 +1488,55 @@
             clueViewCount = 0;
             currentGameData = gameData;
             gameResults = [];
-            wordList = gameData.words;
-            currentWordIndex = 0;
             selectedThemeWord = gameData.theme;
-            currentWord = wordList[currentWordIndex];
             maxGuesses = gameData.guesses || 8;
             remainingGuesses = maxGuesses;
             currentLanguage = gameData.language || 'en';
+
+            // Check if this is conjugation mode (empty words array or isConjugation flag)
+            if (gameData.isConjugation || !gameData.words || gameData.words.length === 0) {
+                console.log('[CONJUGATION] Detected conjugation mode, generating clues first...');
+                // Need to generate clues first to get the words
+                try {
+                    const response = await fetch(`${API_URL}/api/generate-clues`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${authToken}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            words: [],
+                            theme: selectedThemeWord,
+                            language: currentLanguage,
+                            difficulty: gameData.difficulty || 'medium'
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.words && data.words.length > 0) {
+                        console.log('[CONJUGATION] Got conjugated forms:', data.words);
+                        gameData.words = data.words;
+                        gameData.clues = data.clues;
+                        if (data.winMessage) gameData.winMessage = data.winMessage;
+                        if (data.loseMessage) gameData.loseMessage = data.loseMessage;
+                        if (data.direction) gameData.direction = data.direction;
+                    } else {
+                        alert('Failed to generate conjugation forms. Please try again.');
+                        window.location.href = 'index.html';
+                        return;
+                    }
+                } catch (error) {
+                    console.error('[CONJUGATION] Error:', error);
+                    alert('Failed to generate conjugation. Please try again.');
+                    window.location.href = 'index.html';
+                    return;
+                }
+            }
+
+            wordList = gameData.words;
+            currentWordIndex = 0;
+            currentWord = wordList[currentWordIndex];
             winMessage = gameData.winMessage || 'Correct!';
             loseMessage = gameData.loseMessage || 'Not quite! The word was';
             currentCacheKey = gameData.cacheKey || null;
