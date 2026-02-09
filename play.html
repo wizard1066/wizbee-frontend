@@ -2393,6 +2393,15 @@
 
                 if (data.clues) {
                     wordClues = data.clues;
+                    // Conjugation mode: backend provides words (conjugated forms)
+                    if (data.words && data.words.length > 0) {
+                        console.log('[CLUES] Conjugation mode - updating word list:', data.words);
+                        wordList = data.words;
+                        currentWord = wordList[currentWordIndex];
+                        // Update UI to reflect new word
+                        createWordBoxes();
+                        document.getElementById('selectedTheme').textContent = `${selectedThemeWord} (${currentWordIndex + 1}/${wordList.length})`;
+                    }
                     if (data.winMessage) winMessage = data.winMessage;
                     if (data.loseMessage) loseMessage = data.loseMessage;
                     if (data.direction) clueDirection = data.direction;
