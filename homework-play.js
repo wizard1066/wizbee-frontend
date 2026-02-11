@@ -256,6 +256,15 @@ function renderWordBoxes(guess) {
     }).join('');
 }
 
+// Replace asterisks in clue with the actual word
+function showCompletedClue() {
+    const clue = gameData.clues[currentWordIndex];
+    const clueText = Array.isArray(clue) ? clue.join(' | ') : clue;
+    // Replace asterisks with the actual word (case-preserved)
+    const completedClue = clueText.replace(/\*+/g, currentWord);
+    document.getElementById('clueText').textContent = completedClue;
+}
+
 function checkGuess(guess) {
     const normalizedGuess = guess.trim().toUpperCase();
     const normalizedWord = currentWord.toUpperCase();
@@ -271,6 +280,9 @@ function checkGuess(guess) {
         document.getElementById('guessInput').disabled = true;
         document.getElementById('submitBtn').disabled = true;
         document.getElementById('giveUpBtn').style.display = 'none';
+
+        // Show the clue with the answer filled in
+        showCompletedClue();
 
         submitResult(true, false);
     } else {
@@ -291,11 +303,14 @@ function checkGuess(guess) {
 function giveUp() {
     // Show the word
     renderWordBoxes(currentWord);
-    document.getElementById('feedback').textContent = `The word was: ${currentWord}`;
+    document.getElementById('feedback').textContent = `The word was: ${currentWord.toUpperCase()}`;
     document.getElementById('feedback').className = 'feedback wrong';
     document.getElementById('guessInput').disabled = true;
     document.getElementById('submitBtn').disabled = true;
     document.getElementById('giveUpBtn').style.display = 'none';
+
+    // Show the clue with the answer filled in
+    showCompletedClue();
 
     submitResult(false, true);
 }
